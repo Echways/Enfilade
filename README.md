@@ -377,6 +377,8 @@ Enfilade uses the host's authentication and does not provide its own.
 - Without `LoginPath`, every page is public.
 - With `LoginPath`, every page and endpoint requires an authenticated user, and anonymous visitors are redirected to `LoginPath`. Mark pages that stay public, including the sign-in page, with `[AllowAnonymous]`.
 - `SignOutPath` adds a sign-out item under the user name.
+- Sections follow their page's `[Authorize(Roles = ...)]` and `[Authorize(Policy = ...)]`: a section the user may not open is left out of the navigation, and a caption with no visible sections after it disappears. The page attribute is the only place rights are declared.
+- Opening such a page directly shows "No access" inside the panel to a signed-in user, and sends an anonymous visitor to `LoginPath`.
 
 ## Localization
 

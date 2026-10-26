@@ -12,20 +12,7 @@
 <div class="frame">
     <header class="side">
         <span class="brand">@Options.Value.Brand</span>
-        <nav class="nav" aria-label="@EnfiladeText.Sections" @ref="_nav">
-            <span class="mark pigment" aria-hidden="true"></span>
-            @foreach (var entry in Options.Value.Navigation)
-            {
-                if (entry is Section link)
-                {
-                    <NavLink href="@link.Href" Match="link.Match">@link.Title()</NavLink>
-                }
-                else if (entry is Caption caption)
-                {
-                    <span class="nav-caption">@caption.Text()</span>
-                }
-            }
-        </nav>
+        <Navigation />
         <AuthorizeView Context="auth">
             <Authorized>
                 @Account(auth.User.Identity?.Name)
@@ -59,7 +46,6 @@
 </div>
 
 @code {
-    private ElementReference _nav;
     private ErrorBoundary? _failure;
 
     private System.Globalization.CultureInfo? Language => LanguageChoice.Next(Options.Value);
@@ -70,16 +56,12 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender)
+        if (!firstRender || ViewerZone.Known)
             return;
 
-        await Js.InvokeVoidAsync("enfilade.followMark", _nav);
-        if (!ViewerZone.Known)
-        {
-            ViewerZone.Settle(await BrowserZoneAsync());
-            Words.Zone = ViewerZone.Zone;
-            StateHasChanged();
-        }
+        ViewerZone.Settle(await BrowserZoneAsync());
+        Words.Zone = ViewerZone.Zone;
+        StateHasChanged();
     }
 
     private async Task<string?> BrowserZoneAsync()

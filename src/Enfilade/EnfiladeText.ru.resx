@@ -174,4 +174,10 @@
   <data name="TimeOf" xml:space="preserve">
     <value>{0}, время</value>
   </data>
+  <data name="ForbiddenTitle" xml:space="preserve">
+    <value>Нет доступа</value>
+  </data>
+  <data name="ForbiddenHeading" xml:space="preserve">
+    <value>У вас нет доступа к этой странице</value>
+  </data>
 </root>

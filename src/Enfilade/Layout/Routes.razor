@@ -24,10 +24,17 @@
 </Router>
 
 @code {
-    private static RenderFragment Page(RouteData route) =>
+    private RenderFragment Page(RouteData route) =>
         @<AuthorizeRouteView RouteData="route" DefaultLayout="typeof(MainLayout)">
-            <NotAuthorized>
-                <ToLogin />
+            <NotAuthorized Context="authentication">
+                @if (authentication.User.Identity?.IsAuthenticated == true || Options.Value.LoginPath is null)
+                {
+                    <Forbidden />
+                }
+                else
+                {
+                    <ToLogin />
+                }
             </NotAuthorized>
         </AuthorizeRouteView>;
 }
