@@ -1,0 +1,148 @@
+@namespace Enfilade
+@typeparam TValue
+@using System.ComponentModel.DataAnnotations
+@using System.Linq.Expressions
+@using System.Reflection
+@using Microsoft.AspNetCore.Components.Forms
+
+@switch (_kind)
+{
+    case FieldKind.Text:
+        <MudTextField T="TValue" Value="Current" ValueChanged="SetAsync" For="For" Label="@Title" HelperText="@HintText" Required="_required"
+                      Disabled="Disabled" Lines="Lines" InputType="@(Secret ? InputType.Password : InputType.Text)" />
+        break;
+    case FieldKind.Number:
+        <MudNumericField T="TValue" Value="Current" ValueChanged="SetAsync" For="For" Label="@Title" HelperText="@HintText" Required="_required"
+                         Disabled="Disabled" />
+        break;
+    case FieldKind.Switch:
+        <MudSwitch T="TValue" Value="Current" ValueChanged="SetAsync" For="For" Label="@Title" Disabled="Disabled" Color="Color.Primary" />
+        break;
+    case FieldKind.Check:
+        <MudCheckBox T="TValue" Value="Current" ValueChanged="SetAsync" For="For" Label="@Title" Disabled="Disabled" TriState="true" />
+        break;
+    case FieldKind.Select:
+        <MudSelect T="TValue" Value="Current" ValueChanged="SetAsync" For="For" Label="@Title" HelperText="@HintText" Required="_required"
+                   Disabled="Disabled" ToStringFunc="TitleOf" Clearable="@(default(TValue) is null)">
+            @foreach (var option in Choices)
+            {
+                <MudSelectItem T="TValue" Value="option.Value">@option.Title</MudSelectItem>
+            }
+        </MudSelect>
+        break;
+    case FieldKind.Date:
+        <MudDatePicker Date="Day" DateChanged="DayChanged" Label="@Title" HelperText="@HintText" Required="_required" Disabled="Disabled"
+                       DateFormat="yyyy-MM-dd" Editable="true" />
+        <ValidationMessage For="For" />
+        break;
+    case FieldKind.Moment:
+        <div class="pair">
+            <MudDatePicker Date="Wall?.Date" DateChanged="WallDayChanged" Label="@Title" HelperText="@HintText" Required="_required"
+                           Disabled="Disabled" DateFormat="yyyy-MM-dd" Editable="true" />
+            <MudTimePicker Time="Wall?.TimeOfDay" TimeChanged="WallTimeChanged" Label="@string.Format(EnfiladeText.TimeOf, Title)" Required="_required"
+                           Disabled="Disabled" TimeFormat="HH:mm" AmPm="false" Editable="true" />
+        </div>
+        <ValidationMessage For="For" />
+        break;
+}
+
+@code {
+    private Expression<Func<TValue>>? _compiled;
+    private Func<TValue> _read = default!;
+    private Action<TValue> _write = default!;
+    private FieldIdentifier _field;
+    private MemberInfo _member = default!;
+    private FieldKind _kind;
+    private bool _required;
+
+    [CascadingParameter]
+    private EditContext? Edit { get; set; }
+
+    [Parameter, EditorRequired]
+    public Expression<Func<TValue>> For { get; set; } = default!;
+
+    [Parameter]
+    public string? Label { get; set; }
+
+    [Parameter]
+    public string? Hint { get; set; }
+
+    [Parameter]
+    public IReadOnlyList<Option<TValue>>? Options { get; set; }
+
+    [Parameter]
+    public int Lines { get; set; } = 1;
+
+    [Parameter]
+    public bool Secret { get; set; }
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    private TValue Current => _read();
+
+    private string Title => Label ?? FieldLabel.Of(_member);
+
+    private string? HintText => Hint ?? FieldLabel.HintOf(_member);
+
+    private static Type Plain => Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
+
+    private IEnumerable<Option<TValue>> Choices => Options
+        ?? (Plain.IsEnum ? Enum.GetValues(Plain).Cast<object>().Select(value => new Option<TValue>((TValue)value, Words.Of(value))) : []);
+
+    private DateTime? Day => Current is DateOnly day ? day.ToDateTime(TimeOnly.MinValue) : null;
+
+    private DateTime? Wall => Current switch
+    {
+        DateTimeOffset moment => ViewerTime.ToViewer(moment),
+        DateTime moment => ViewerTime.ToViewer(new DateTimeOffset(DateTime.SpecifyKind(moment, DateTimeKind.Utc))),
+        _ => null,
+    };
+
+    protected override void OnParametersSet()
+    {
+        if (_compiled == For)
+            return;
+
+        _compiled = For;
+        _read = For.Compile();
+        _field = FieldIdentifier.Create(For);
+        _member = ((MemberExpression)For.Body).Member;
+        var owner = _field.Model;
+        _write = _member switch
+        {
+            PropertyInfo property => value => property.SetValue(owner, value),
+            FieldInfo field => value => field.SetValue(owner, value),
+            _ => throw new NotSupportedException($"Enfilade: Field edits properties and fields, not {_member.Name}"),
+        };
+        _kind = FieldKinds.Of(typeof(TValue), Options is not null);
+        _required = _member.GetCustomAttribute<RequiredAttribute>() is not null;
+    }
+
+    private Task SetAsync(TValue value)
+    {
+        _write(value);
+        Edit?.NotifyFieldChanged(_field);
+        return Task.CompletedTask;
+    }
+
+    private string TitleOf(TValue value) => Choices.FirstOrDefault(option => EqualityComparer<TValue>.Default.Equals(option.Value, value))?.Title ?? "";
+
+    private Task DayChanged(DateTime? day) => day is { } chosen
+        ? SetAsync((TValue)(object)DateOnly.FromDateTime(chosen))
+        : default(TValue) is null ? SetAsync(default!) : Task.CompletedTask;
+
+    private Task WallDayChanged(DateTime? day) => day is { } chosen
+        ? SetWallAsync(chosen.Date + (Wall?.TimeOfDay ?? TimeSpan.Zero))
+        : default(TValue) is null ? SetAsync(default!) : Task.CompletedTask;
+
+    private Task WallTimeChanged(TimeSpan? time) => Wall is { } wall && time is { } chosen
+        ? SetWallAsync(wall.Date + chosen)
+        : Task.CompletedTask;
+
+    private Task SetWallAsync(DateTime wall)
+    {
+        var moment = ViewerTime.FromViewer(wall);
+        return SetAsync((TValue)(Plain == typeof(DateTimeOffset) ? moment : (object)moment.UtcDateTime));
+    }
+}

@@ -171,4 +171,7 @@
   <data name="Discard" xml:space="preserve">
     <value>Не сохранять</value>
   </data>
+  <data name="TimeOf" xml:space="preserve">
+    <value>{0}, время</value>
+  </data>
 </root>

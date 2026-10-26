@@ -289,6 +289,26 @@ var order = await Dialogs.ShowFormAsync<OrderSheet, OrderDraft>("New order");
 | `Refresh`      | Reloads the page's blocks after success. Default `true`.      |
 | `Actions`      | More buttons before the submit button.                          |
 
+`Field` picks the input from the property type and takes its label from `[Display(Name)]` (resources included), its hint from `[Display(Description)]` and its required mark from `[Required]`.
+
+| Type                                    | Input                                                    |
+| --------------------------------------- | -------------------------------------------------------- |
+| `string`                              | Text; `Lines` for several lines, `Secret` for a password. |
+| Numbers                                 | Numeric field.                                           |
+| `bool`, `bool?`                     | Switch, three-state checkbox.                            |
+| Enums, or any type with `Options`     | Select with the `[Display(Name)]` of each member.       |
+| `DateOnly`                            | Date.                                                    |
+| `DateTime`, `DateTimeOffset`        | Date and time in the viewer's time zone, saved in UTC.  |
+
+| Parameter        | Description                                                     |
+| ---------------- | --------------------------------------------------------------- |
+| `For`          | `() => _order.Customer`.                                      |
+| `Label`, `Hint` | Override the attributes.                                     |
+| `Options`      | `Option(Value, Title)` choices, for example for a `string`. |
+| `Lines`, `Secret`, `Disabled` | Text input settings.                            |
+
+Another type fails with a message that points to MudBlazor inputs.
+
 ## Components
 
 | Component                    | Description                                                                                                           |

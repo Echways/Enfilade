@@ -1,0 +1,12 @@
+<Form Model="Profile">
+    <Field For="() => Profile.Customer" />
+    <Field For="() => Profile.Note" />
+    <Field For="() => Profile.Status" />
+    <Field For="() => Profile.PaidAt" />
+    <Field For="() => Profile.Day" />
+</Form>
+
+@code {
+    [Parameter, EditorRequired]
+    public Profile Profile { get; set; } = default!;
+}

@@ -1227,6 +1227,12 @@ body:has(.mud-overlay-dialog) .mud-popover:has(.mud-menu-list) {
     color: var(--vermilion);
 }
 
+.form .validation-message {
+    margin-top: -12px;
+    font: 500 12px/18px var(--sans);
+    color: var(--vermilion);
+}
+
 .form {
     display: grid;
     gap: 24px;
