@@ -50,6 +50,28 @@ public class FormTests : PanelContext
     }
 
     [Fact]
+    public void Form_stays_busy_while_the_page_reloads_after_saving()
+    {
+        var reloading = new TaskCompletionSource();
+        using var source = Services.GetRequiredService<CurrentPage>().Track(() => reloading.Task);
+        var calls = 0;
+        _draft.Customer = "Анна";
+        var form = Render<DraftForm>(parameters => parameters.Add(host => host.Draft, _draft).Add(host => host.Save, () =>
+        {
+            calls++;
+            return Task.CompletedTask;
+        }));
+
+        form.Find("form").Submit();
+        form.Find("form").Submit();
+
+        Assert.Equal(1, calls);
+        Assert.True(form.Find("button[type=submit]").HasAttribute("disabled"));
+        reloading.SetResult();
+        form.WaitForAssertion(() => Assert.False(form.Find("button[type=submit]").HasAttribute("disabled")));
+    }
+
+    [Fact]
     public void Field_errors_from_the_server_land_on_the_field()
     {
         _draft.Customer = "Анна";

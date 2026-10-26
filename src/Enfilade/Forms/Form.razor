@@ -94,40 +94,48 @@
         _error = null;
         try
         {
+            if (!await SaveAsync())
+                return;
+
+            Mark(false);
+            Snackbar.Add(Done ?? EnfiladeText.Saved, Severity.Normal);
+            if (Refresh)
+                await CurrentPage.RefreshAsync();
+            Dialog?.Close(DialogResult.Ok(Model));
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task<bool> SaveAsync()
+    {
+        try
+        {
             await OnSubmit.InvokeAsync();
+            return true;
         }
         catch (FieldException exception)
         {
             foreach (var (field, message) in exception.Errors)
                 _server.Add(_edit.Field(field), message);
             _edit.NotifyValidationStateChanged();
-            return;
         }
         catch (PanelException exception)
         {
             _error = exception.Message;
-            return;
         }
         catch (OperationCanceledException)
         {
-            return;
         }
         catch (Exception exception)
         {
             Logger.LogError(exception, "Enfilade: a form could not be saved");
             _error = EnfiladeText.Failed;
-            return;
-        }
-        finally
-        {
-            _busy = false;
         }
 
-        Mark(false);
-        Snackbar.Add(Done ?? EnfiladeText.Saved, Severity.Normal);
-        if (Refresh)
-            await CurrentPage.RefreshAsync();
-        Dialog?.Close(DialogResult.Ok(Model));
+        return false;
     }
 
     private async Task LeavingAsync(LocationChangingContext leaving)
