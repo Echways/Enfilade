@@ -10,6 +10,8 @@ builder.Services.AddEnfilade()
 app.MapEnfilade();
 ```
 
+![An overview page with figures, a chart and a ranking](docs/screenshots/overview-dark.png)
+
 ## Installation
 
 ```shell
@@ -155,6 +157,8 @@ Other attributes, such as `class` or `aria-label`, pass through to the `<button>
 </Listing>
 ```
 
+![A listing with search, filters, selection and paging](docs/screenshots/orders.png)
+
 A server-side `Load` gets a `ListQuery<TItem>` with resolved expressions, so a store over `IQueryable` (EF Core included) stays one line:
 
 ```csharp
@@ -274,6 +278,8 @@ var result = await sheet.Result;
 var order = await Dialogs.ShowFormAsync<OrderSheet, OrderDraft>("New order");
 ```
 
+![A form in a side sheet](docs/screenshots/sheet.png)
+
 `Form` validates with data annotations, shows a busy submit button and submits once on Enter. On success it reports `Done`, reloads the page's blocks, and inside a sheet closes it with the model, which `ShowFormAsync` returns; a closed sheet returns `null`.
 
 - `OnSubmit` throws `FieldException(field, message)` or `FieldException(errors)` for errors next to fields; they clear when the field changes.
@@ -311,6 +317,8 @@ var order = await Dialogs.ShowFormAsync<OrderSheet, OrderDraft>("New order");
 Another type fails with a message that points to MudBlazor inputs.
 
 ## Components
+
+![Tabs with a timeline on an order page](docs/screenshots/order.png)
 
 | Component                    | Description                                                                                                           |
 | ---------------------------- | --------------------------------------------------------------------------------------------------------------------- |
@@ -382,6 +390,10 @@ Times are shown in the viewer's time zone, which the browser reports once per co
 | `group`, `pair`, `hint`, `form-error` | Form layout inside a sheet.                      |
 | `note`, `warn-t`, `bad-t`               | Secondary, warning and error text.               |
 | `sr`                                        | Visible to screen readers only.                  |
+
+Dark is the default; `Light` and `System` are one option away.
+
+![The same page in the light appearance](docs/screenshots/overview-light.png)
 
 Design tokens are CSS custom properties: `--night`, `--deep`, `--rule`, `--mist`, `--light`, `--klein`, `--glow`, `--vermilion`, `--ochre`, `--sans`, `--mono`. With `Appearance` set to `Light` (or `System` on a light device) they keep their names and take light values: `--night` becomes the light background and `--light` the dark text.
 
