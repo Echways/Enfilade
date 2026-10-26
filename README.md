@@ -192,7 +192,30 @@ Pass `Items` instead of `Load` to let the listing sort, filter and page an in-me
 
 `Slot` is a template-only column, such as actions; it never sorts.
 
-The address keys are `page`, `sort` and `q`. A hand-edited address never breaks the page: a bad page number opens the first page, a page past the end opens the last one, an unknown sort key falls back to the default sort. A sortable cell without a member path fails on the first render with a message naming the cell.
+### Filters
+
+```razor
+<Listing TItem="Order" Load="Store.PageAsync" SearchBy="[order => order.Customer, order => order.Email]">
+    <Filters>
+        <Search />
+        <Choice Title="Status" By="order => order.Status" Options="Statuses" />
+        <Flag Title="Large" Name="large" Where="order => order.Total > 1000" />
+    </Filters>
+    <Columns>...</Columns>
+</Listing>
+```
+
+Active filters appear as `Crumb`s that remove them. When filters leave nothing, the listing says so and links to the address without them. A filter change returns to the first page.
+
+| Filter    | Parameters                                                                                                                       |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `Search` | `Placeholder`. Case-insensitive "contains" over the listing's `SearchBy`, after typing pauses for 300 ms; it replaces the history entry instead of adding one. In-memory listings need `SearchBy`; a server `Load` without it gets the text in `query.Search`. |
+| `Choice` | `Title`, `By` (`order => order.Status`), `Options` (`Option(Value, Title)`), `Name` (default: the member path of `By`). |
+| `Flag`   | `Title`, `Name`, `Where` (`order => order.Total > 1000`). On is `name=1` in the address.                                  |
+
+Two filters with one name fail on the first render. An address value that matches no option is ignored.
+
+The address keys are `page`, `sort`, `q` and the filter names. A hand-edited address never breaks the page: a bad page number opens the first page, a page past the end opens the last one, an unknown sort key falls back to the default sort. A sortable cell without a member path fails on the first render with a message naming the cell.
 
 The first load shows a skeleton; a reload keeps the rows on screen; a failed load shows a message and a retry inside the listing while the rest of the page keeps working. Call `RefreshAsync()` on a `@ref` to reload from code.
 

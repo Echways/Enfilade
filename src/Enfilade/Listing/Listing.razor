@@ -16,6 +16,15 @@
         {
             <div class="filters">@Filters</div>
         }
+        @if (Active.Any())
+        {
+            <div class="crumbs">
+                @foreach (var (filter, raw) in Active)
+                {
+                    <Crumb Kind="@filter.Title" Value="@(filter.Shown(raw) ?? raw)" Without="@Without(filter.Name)" />
+                }
+            </div>
+        }
         @if (_failed)
         {
             <div class="listing-failed" role="alert">
@@ -29,6 +38,13 @@
             {
                 <Placeholder />
             }
+        }
+        else if (_page.Total == 0 && Narrowed)
+        {
+            <div class="nothing-found">
+                <p class="nothing">@EnfiladeText.NothingFound</p>
+                <a class="link" href="@Reset">@EnfiladeText.ResetFilters</a>
+            </div>
         }
         else if (_page.Total == 0)
         {
@@ -93,6 +109,7 @@
     private PageSource _source = default!;
     private CancellationTokenSource? _loading;
     private ListPage<TItem>? _page;
+    private ListQuery<TItem>? _query;
     private IReadOnlyCollection<TItem>? _items;
     private string? _loaded;
     private SortOrder? _sort;
@@ -144,13 +161,26 @@
 
     private long Last => First + _page!.Items.Count - 1;
 
+    private IEnumerable<(FilterDefinition<TItem> Filter, string Raw)> Active => _query is null
+        ? []
+        : _context.Filters.Where(filter => _query.Filters.ContainsKey(filter.Name)).Select(filter => (filter, _query.Filters[filter.Name]));
+
+    private bool Narrowed => _query is not null && (_query.Filters.Count > 0 || !string.IsNullOrEmpty(_query.Search));
+
+    private string Reset => _context.UriFor(address => address with
+    {
+        Page = 1,
+        Search = null,
+        Filters = address.Filters.Where(pair => _context.Filters.All(filter => filter.Name != pair.Key)).ToDictionary(StringComparer.Ordinal),
+    });
+
     private static RenderFragment Nothing => @<p class="nothing">@EnfiladeText.NothingYet</p>;
 
     public Task RefreshAsync() => InvokeAsync(LoadAsync);
 
     protected override void OnInitialized()
     {
-        _context = new ListingContext<TItem>(Navigation, () => Name);
+        _context = new ListingContext<TItem>(Navigation, () => Name, () => Load is not null || SearchBy.Count > 0);
         _source = CurrentPage.Track(RefreshAsync);
         Navigation.LocationChanged += LocationChanged;
     }
@@ -204,6 +234,7 @@
                 return;
 
             _page = page;
+            _query = query;
             _shown = query.Page;
             _sort = query.Sort;
             _source.Report(page.Total, Time.GetUtcNow());
@@ -268,6 +299,12 @@
         var next = new SortOrder(cell.Key!, _sort is { } current && current.Key == cell.Key && !current.Descending);
         return _context.GoAsync(address => address with { Sort = next, Page = 1 });
     }
+
+    private string Without(string name) => _context.UriFor(address => address with
+    {
+        Page = 1,
+        Filters = address.Filters.Where(pair => pair.Key != name).ToDictionary(StringComparer.Ordinal),
+    });
 
     private Task GoToPageAsync(int page) => _context.GoAsync(address => address with { Page = page });
 

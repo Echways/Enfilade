@@ -12,7 +12,7 @@ internal abstract record FilterDefinition<TItem>(string Name, string Title)
     public abstract string? Shown(string raw);
 }
 
-internal sealed class ListingContext<TItem>(NavigationManager navigation, Func<string?> prefix)
+internal sealed class ListingContext<TItem>(NavigationManager navigation, Func<string?> prefix, Func<bool> searches)
 {
     private readonly List<CellDefinition<TItem>> _cells = [];
 
@@ -23,6 +23,8 @@ internal sealed class ListingContext<TItem>(NavigationManager navigation, Func<s
     public IReadOnlyList<FilterDefinition<TItem>> Filters => _filters;
 
     public ListingAddress Address => ListingAddress.Read(navigation.Uri, prefix());
+
+    public bool Searches => searches();
 
     public void Add(CellDefinition<TItem> cell) => _cells.Add(cell);
 
@@ -43,12 +45,28 @@ internal sealed class ListingContext<TItem>(NavigationManager navigation, Func<s
 
     public Task GoAsync(Func<ListingAddress, ListingAddress> change, bool replace = false)
     {
+        navigation.NavigateTo(UriFor(change), replace: replace);
+        return Task.CompletedTask;
+    }
+
+    public string UriFor(Func<ListingAddress, ListingAddress> change)
+    {
         var current = Address;
         var next = change(current);
         var query = next.ToQuery().ToDictionary(StringComparer.Ordinal);
         foreach (var name in current.Filters.Keys.Where(name => !next.Filters.ContainsKey(name)))
             query[next.Key(name)] = null;
-        navigation.NavigateTo(navigation.GetUriWithQueryParameters(query), replace: replace);
-        return Task.CompletedTask;
+        return navigation.GetUriWithQueryParameters(query);
     }
+
+    public Task FilterAsync(string name, string? raw) => GoAsync(address => address with
+    {
+        Page = 1,
+        Filters = raw is null
+            ? address.Filters.Where(pair => pair.Key != name).ToDictionary(StringComparer.Ordinal)
+            : new Dictionary<string, string>(address.Filters, StringComparer.Ordinal) { [name] = raw },
+    });
+
+    public string? Raw(FilterDefinition<TItem> filter) =>
+        Address.Filters.GetValueOrDefault(filter.Name) is { } raw && filter.ConditionFor(raw) is not null ? raw : null;
 }

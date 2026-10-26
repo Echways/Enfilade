@@ -1,0 +1,9 @@
+<Listing TItem="Order" Items="Order.Sixty">
+    <Filters>
+        <Choice Title="Статус" By="order => order.Status" Options="FilteredListing.Statuses" />
+        <Choice Title="Статус ещё раз" By="order => order.Status" Options="FilteredListing.Statuses" />
+    </Filters>
+    <Columns>
+        <Cell Title="Клиент" Value="order => order.Customer" />
+    </Columns>
+</Listing>

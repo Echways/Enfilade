@@ -772,6 +772,38 @@ button.link:hover, .link:hover {
     gap: 12px 24px;
 }
 
+.filters .choice {
+    width: 200px;
+    flex: 0 0 auto;
+}
+
+.filters .search {
+    flex: 0 1 260px;
+    min-width: 160px;
+}
+
+.listing .crumbs {
+    margin: 0;
+}
+
+.nothing-found {
+    display: grid;
+    gap: 12px;
+    justify-items: start;
+    padding-block: 24px;
+}
+
+.nothing-found .nothing {
+    margin: 0;
+}
+
+@media (max-width: 599.98px) {
+    .filters .choice, .filters .search {
+        flex: 1 1 100%;
+        width: auto;
+    }
+}
+
 .tbl .sort {
     font: inherit;
     color: inherit;

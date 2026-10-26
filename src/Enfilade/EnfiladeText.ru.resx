@@ -138,4 +138,13 @@
   <data name="SortBy" xml:space="preserve">
     <value>Сортировать: {0}</value>
   </data>
+  <data name="Search" xml:space="preserve">
+    <value>Поиск</value>
+  </data>
+  <data name="NothingFound" xml:space="preserve">
+    <value>Ничего не найдено</value>
+  </data>
+  <data name="ResetFilters" xml:space="preserve">
+    <value>Сбросить фильтры</value>
+  </data>
 </root>
