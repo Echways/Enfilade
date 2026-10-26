@@ -98,10 +98,21 @@ else
 - Scoped CSS (`Orders.razor.css`) is linked automatically. Add global stylesheets with `AddStylesheet(path)`.
 - Call `NavigationManager.NotFound()` to render the panel's 404 page.
 
+```csharp
+.AddSection<Orders>("Orders", section => section
+    .Icon(Icons.Material.Outlined.ShoppingCart)
+    .Badge<OrderStore>(store => store.CountPendingAsync()))
+```
+
+- `Icon` takes an SVG path, such as the MudBlazor icons.
+- A badge counts on navigation, after an action through `Button`, `Act` or `Form` (any `CurrentPage.RefreshAsync()`), and every `AutoRefreshInterval` while the tab is visible. Zero shows nothing. A failing count is logged and leaves the navigation and the other badges alone. Badges count one after another, so they can share a scoped `DbContext`.
+
 | Method                                    | Description                                                                    |
 | ----------------------------------------- | ------------------------------------------------------------------------------ |
 | `AddSection<TPage>(string title)`       | Adds a navigation entry. The page needs an `@page` route without parameters. |
 | `AddSection<TPage>(Func<string> title)` | Same, with a title evaluated on each render, for localized titles.             |
+| `AddSection<TPage>(title, section => ...)` | Same, with `section.Icon(svg)` and `section.Badge<TService>(service => service.CountAsync())`. |
+| `AddAccountLink(title, href)`           | Adds a link such as "Profile" or "API keys" to the account menu; `title` can be a `Func<string>`. |
 | `AddCaption(string text)`               | Adds a caption above the sections that follow it.                              |
 | `AddPages(Assembly assembly)`           | Adds an assembly's routes without a navigation entry.                          |
 | `AddStylesheet(string path)`            | Links a stylesheet from static assets.                                         |

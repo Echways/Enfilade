@@ -1,9 +1,15 @@
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.Extensions.Logging
+@implements IDisposable
 @inject IOptions<EnfiladeOptions> Options
 @inject IAuthorizationPolicyProvider Policies
 @inject IAuthorizationService Authorization
+@inject IServiceProvider Services
+@inject NavigationManager Location
+@inject CurrentPage CurrentPage
 @inject IJSRuntime Js
+@inject ILogger<Navigation> Logger
 
 <nav class="nav" aria-label="@EnfiladeText.Sections" @ref="_nav">
     <span class="mark pigment" aria-hidden="true"></span>
@@ -11,7 +17,17 @@
     {
         if (entry is Section link)
         {
-            <NavLink href="@link.Href" Match="link.Match">@link.Title()</NavLink>
+            <NavLink href="@link.Href" Match="link.Match">
+                @if (link.Icon is { } icon)
+                {
+                    <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">@((MarkupString)icon)</svg>
+                }
+                @link.Title()
+                @if (_counts.GetValueOrDefault(link) is > 0 and var count)
+                {
+                    <span class="sr">, </span><sup class="count">@Words.Number(count)</sup>
+                }
+            </NavLink>
         }
         else if (entry is Caption caption)
         {
@@ -19,13 +35,24 @@
         }
     }
 </nav>
+@if (_shown.OfType<Section>().Any(section => section.Badge is not null))
+{
+    <AutoRefresh OnTick="RecountAsync" />
+}
 
 @code {
     private ElementReference _nav;
     private IReadOnlyList<NavEntry> _shown = [];
+    private Dictionary<Section, long> _counts = new(ReferenceEqualityComparer.Instance);
 
     [CascadingParameter]
     private Task<AuthenticationState>? Authentication { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Location.LocationChanged += Moved;
+        CurrentPage.Refreshed += Refreshed;
+    }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -38,6 +65,7 @@
         }
 
         _shown = [.. allowed.Where((entry, index) => entry is not Caption || allowed.Skip(index + 1).TakeWhile(next => next is not Caption).Any())];
+        await CountAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -45,4 +73,41 @@
         if (firstRender)
             await Js.InvokeVoidAsync("enfilade.followMark", _nav);
     }
+
+    public void Dispose()
+    {
+        Location.LocationChanged -= Moved;
+        CurrentPage.Refreshed -= Refreshed;
+    }
+
+    private async Task CountAsync()
+    {
+        var counts = new Dictionary<Section, long>(ReferenceEqualityComparer.Instance);
+        foreach (var section in _shown.OfType<Section>())
+        {
+            if (section.Badge is not { } badge)
+                continue;
+
+            try
+            {
+                counts[section] = await badge(Services);
+            }
+            catch (Exception exception)
+            {
+                Logger.LogError(exception, "Enfilade: the badge of the section {Section} could not be counted", section.Href);
+            }
+        }
+
+        _counts = counts;
+    }
+
+    private async Task RecountAsync()
+    {
+        await CountAsync();
+        StateHasChanged();
+    }
+
+    private void Moved(object? sender, LocationChangedEventArgs args) => _ = InvokeAsync(RecountAsync);
+
+    private Task Refreshed() => InvokeAsync(RecountAsync);
 }

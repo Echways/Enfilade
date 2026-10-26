@@ -13,6 +13,10 @@ public sealed record Section(Type Page, Func<string> Title) : NavEntry
 
     public NavLinkMatch Match => Href.Length == 0 ? NavLinkMatch.All : NavLinkMatch.Prefix;
 
+    public string? Icon { get; init; }
+
+    public Func<IServiceProvider, Task<long>>? Badge { get; init; }
+
     internal IReadOnlyList<IAuthorizeData> Requirements { get; } = [.. Page.GetCustomAttributes(inherit: true).OfType<IAuthorizeData>()];
 
     internal bool Anonymous { get; } = Page.GetCustomAttributes(inherit: true).OfType<IAllowAnonymous>().Any();

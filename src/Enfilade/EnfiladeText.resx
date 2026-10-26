@@ -180,4 +180,7 @@
   <data name="ForbiddenHeading" xml:space="preserve">
     <value>You have no access to this page</value>
   </data>
+  <data name="Account" xml:space="preserve">
+    <value>Account</value>
+  </data>
 </root>

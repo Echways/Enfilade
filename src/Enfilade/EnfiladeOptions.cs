@@ -25,6 +25,8 @@ public sealed class EnfiladeOptions
 
     public IList<NavEntry> Navigation { get; } = [];
 
+    public IList<AccountLink> AccountLinks { get; } = [];
+
     public ISet<Assembly> Assemblies { get; } = new HashSet<Assembly>();
 
     internal static bool SpeaksItsLanguage(EnfiladeOptions options) =>

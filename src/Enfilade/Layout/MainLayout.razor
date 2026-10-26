@@ -81,13 +81,17 @@
     private void SignOut() => Navigation.NavigateTo(Options.Value.SignOutPath!, forceLoad: true);
 
     private RenderFragment Account(string? name) => @<text>
-        @if (name is not null || Language is not null)
+        @if (name is not null || Language is not null || Options.Value.AccountLinks.Count > 0)
         {
             var leaving = name is not null && Options.Value.SignOutPath is not null;
             <div class="account">
                 @if (name is not null)
                 {
                     <span>@name</span>
+                }
+                @foreach (var link in Options.Value.AccountLinks)
+                {
+                    <a href="@link.Href">@link.Title()</a>
                 }
                 @if (Language is { } language)
                 {
@@ -98,7 +102,11 @@
                     <button type="button" @onclick="SignOut">@EnfiladeText.SignOut</button>
                 }
             </div>
-            <MudMenu Class="account-menu" Label="@(name ?? LanguageChoice.Title(Language!))" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
+            <MudMenu Class="account-menu" Label="@(name ?? (Language is { } shown ? LanguageChoice.Title(shown) : EnfiladeText.Account))" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
+                @foreach (var link in Options.Value.AccountLinks)
+                {
+                    <MudMenuItem Href="@link.Href">@link.Title()</MudMenuItem>
+                }
                 @if (Language is { } language)
                 {
                     <MudMenuItem OnClick="SwitchLanguage">
