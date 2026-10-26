@@ -1,0 +1,32 @@
+@namespace Enfilade
+@typeparam TItem
+@implements IDisposable
+
+@code {
+    private CellDefinition<TItem>? _definition;
+
+    [CascadingParameter]
+    private ListingContext<TItem> Context { get; set; } = default!;
+
+    [Parameter]
+    public string Title { get; set; } = "";
+
+    [Parameter, EditorRequired]
+    public RenderFragment<TItem> ChildContent { get; set; } = default!;
+
+    protected override void OnParametersSet()
+    {
+        var definition = new CellDefinition<TItem>(Title, null, null, false, ChildContent);
+        if (_definition is null)
+            Context.Add(definition);
+        else
+            Context.Replace(_definition, definition);
+        _definition = definition;
+    }
+
+    public void Dispose()
+    {
+        if (_definition is not null)
+            Context.Remove(_definition);
+    }
+}

@@ -1,0 +1,146 @@
+@namespace Enfilade
+@implements IDisposable
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.Extensions.Logging
+@inject ISnackbar Snackbar
+@inject CurrentPage CurrentPage
+@inject IDialogService Dialogs
+@inject ILogger<Form> Logger
+
+<EditForm EditContext="_edit" OnValidSubmit="SubmitAsync" class="form">
+    <DataAnnotationsValidator />
+    <div class="group">
+        @ChildContent
+    </div>
+    @if (_error is not null)
+    {
+        <p class="form-error" role="alert">@_error</p>
+    }
+    <div class="form-actions">
+        @Actions
+        <Button Submit Busy="_busy">@(Submit ?? EnfiladeText.Save)</Button>
+    </div>
+</EditForm>
+<NavigationLock OnBeforeInternalNavigation="LeavingAsync" ConfirmExternalNavigation="_dirty" />
+
+@code {
+    private EditContext _edit = default!;
+    private ValidationMessageStore _server = default!;
+    private string? _error;
+    private bool _busy;
+    private bool _dirty;
+
+    [CascadingParameter]
+    private SheetGuard? Guard { get; set; }
+
+    [CascadingParameter]
+    private IMudDialogInstance? Dialog { get; set; }
+
+    [Parameter, EditorRequired]
+    public object Model { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback OnSubmit { get; set; }
+
+    [Parameter]
+    public string? Submit { get; set; }
+
+    [Parameter]
+    public string? Done { get; set; }
+
+    [Parameter]
+    public bool Refresh { get; set; } = true;
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? Actions { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (_edit?.Model == Model)
+            return;
+
+        if (_edit is not null)
+            _edit.OnFieldChanged -= FieldChanged;
+        _edit = new EditContext(Model);
+        _server = new ValidationMessageStore(_edit);
+        _edit.OnFieldChanged += FieldChanged;
+        Mark(false);
+    }
+
+    public void Dispose() => _edit.OnFieldChanged -= FieldChanged;
+
+    private void FieldChanged(object? sender, FieldChangedEventArgs args)
+    {
+        _server.Clear(args.FieldIdentifier);
+        Mark(true);
+    }
+
+    private void Mark(bool dirty)
+    {
+        _dirty = dirty;
+        if (Guard is not null)
+            Guard.Dirty = dirty;
+    }
+
+    private async Task SubmitAsync()
+    {
+        if (_busy)
+            return;
+
+        _busy = true;
+        _error = null;
+        try
+        {
+            if (!await SaveAsync())
+                return;
+
+            Mark(false);
+            Snackbar.Add(Done ?? EnfiladeText.Saved, Severity.Normal);
+            if (Refresh)
+                await CurrentPage.RefreshAsync();
+            Dialog?.Close(DialogResult.Ok(Model));
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task<bool> SaveAsync()
+    {
+        try
+        {
+            await OnSubmit.InvokeAsync();
+            return true;
+        }
+        catch (FieldException exception)
+        {
+            foreach (var (field, message) in exception.Errors)
+                _server.Add(_edit.Field(field), message);
+            _edit.NotifyValidationStateChanged();
+        }
+        catch (PanelException exception)
+        {
+            _error = exception.Message;
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(exception, "Enfilade: a form could not be saved");
+            _error = EnfiladeText.Failed;
+        }
+
+        return false;
+    }
+
+    private async Task LeavingAsync(LocationChangingContext leaving)
+    {
+        if (_dirty && !await Dialogs.ConfirmAsync(EnfiladeText.DiscardQuestion, EnfiladeText.DiscardMessage, EnfiladeText.Discard, danger: true))
+            leaving.PreventNavigation();
+    }
+}

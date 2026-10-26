@@ -1,0 +1,16 @@
+<Listing TItem="Order" Load="Load" Items="@(Load is null ? Order.Sixty : null)" Selectable Live="Live">
+    <Selected>
+        <span class="picked">@string.Join(",", context.Select(order => order.Id))</span>
+    </Selected>
+    <Columns>
+        <Cell Title="Клиент" Value="order => order.Customer" />
+    </Columns>
+</Listing>
+
+@code {
+    [Parameter]
+    public Func<ListQuery<Order>, CancellationToken, Task<ListPage<Order>>>? Load { get; set; }
+
+    [Parameter]
+    public bool Live { get; set; }
+}

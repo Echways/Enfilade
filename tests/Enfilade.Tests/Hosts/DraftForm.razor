@@ -1,0 +1,14 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+<Form Model="Draft" OnSubmit="Save">
+    <InputText @bind-Value="Draft.Customer" />
+    <ValidationMessage For="() => Draft.Customer" />
+</Form>
+
+@code {
+    [Parameter, EditorRequired]
+    public OrderDraft Draft { get; set; } = default!;
+
+    [Parameter]
+    public Func<Task> Save { get; set; } = () => Task.CompletedTask;
+}

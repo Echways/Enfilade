@@ -1,6 +1,13 @@
 @namespace Enfilade
-<figure class="fig @(Alarm ? "alarm" : "")" aria-labelledby="@_id-value @_id-note">
-    <b id="@_id-value" class="@(Text is null ? "" : "word")">@(Text ?? Words.Number(Value))</b>
+<figure class="fig @(Alarm ? "alarm" : "")" aria-labelledby="@Labels">
+    <b id="@_id-value" class="@(Text is null ? "" : "word")" style="--chars: @Written.Count(char.IsLetterOrDigit)">@Written</b>
+    @if (Change is { } change)
+    {
+        <span id="@_id-change" class="change @ToneOf(change)">
+            <span aria-hidden="true">@Shown(change)</span>
+            <span class="sr">@string.Format(EnfiladeText.ChangeToPrevious, Shown(change))</span>
+        </span>
+    }
     <figcaption id="@_id-note">
         <span>@First</span>
         <span>@Second</span>
@@ -24,4 +31,28 @@
 
     [Parameter]
     public bool Alarm { get; set; }
+
+    [Parameter]
+    public double? Change { get; set; }
+
+    [Parameter]
+    public bool LowerIsBetter { get; set; }
+
+    private string Written => Text ?? Words.Number(Value);
+
+    private string Labels => Change is null ? $"{_id}-value {_id}-note" : $"{_id}-value {_id}-change {_id}-note";
+
+    private static string Shown(double change) => change switch
+    {
+        > 0 => "+" + Words.Share(change),
+        < 0 => "−" + Words.Share(-change),
+        _ => Words.Share(0),
+    };
+
+    private string ToneOf(double change) => (LowerIsBetter ? -Math.Sign(change) : Math.Sign(change)) switch
+    {
+        > 0 => "good",
+        < 0 => "bad",
+        _ => "neutral",
+    };
 }

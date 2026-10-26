@@ -1,5 +1,7 @@
 @namespace Enfilade
+@implements IDisposable
 @inject IOptions<EnfiladeOptions> Options
+@inject CurrentPage CurrentPage
 
 <PageTitle>@($"{Heading} · {Options.Value.Brand}")</PageTitle>
 
@@ -7,16 +9,16 @@
     <div>
         <h1 class="title">
             @Heading
-            @if (Count is > 0 and { } count)
+            @if (ShownCount is > 0 and { } count)
             {
                 <span class="sr">, </span><sup class="count">@Words.Number(count)</sup>
             }
         </h1>
         <p class="summary">
             @Summary
-            @if (UpdatedAt is { } updatedAt)
+            @if (ShownAt is { } updatedAt)
             {
-                <button type="button" class="stamp" aria-label="@EnfiladeText.Refresh" title="@EnfiladeText.Refresh" @onclick="OnRefresh">
+                <button type="button" class="stamp" aria-label="@EnfiladeText.Refresh" title="@EnfiladeText.Refresh" @onclick="RefreshAsync">
                     <i @key="updatedAt" aria-hidden="true"></i>
                     @string.Format(EnfiladeText.UpdatedAt, Words.Clock(updatedAt))
                 </button>
@@ -52,4 +54,22 @@
     public RenderFragment? Actions { get; set; }
 
     private string Heading => Title ?? Section?.Title() ?? "";
+
+    private bool FollowsThePage => Count is null && UpdatedAt is null;
+
+    private long? ShownCount => FollowsThePage ? CurrentPage.Count : Count;
+
+    private DateTimeOffset? ShownAt => FollowsThePage ? CurrentPage.UpdatedAt : UpdatedAt;
+
+    protected override void OnInitialized() => CurrentPage.Changed += PageChanged;
+
+    public void Dispose() => CurrentPage.Changed -= PageChanged;
+
+    private void PageChanged()
+    {
+        if (FollowsThePage)
+            _ = InvokeAsync(StateHasChanged);
+    }
+
+    private Task RefreshAsync() => OnRefresh.HasDelegate ? OnRefresh.InvokeAsync() : CurrentPage.RefreshAsync();
 }

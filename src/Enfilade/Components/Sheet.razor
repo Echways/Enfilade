@@ -1,14 +1,20 @@
 @namespace Enfilade
-<MudDialog Class="sheet" TitleClass="sheet-head" ContentClass="sheet-body" ActionsClass="sheet-foot">
+@inject IDialogService Dialogs
+
+<MudDialog Class="sheet" TitleClass="sheet-head" ContentClass="sheet-body" ActionsClass="sheet-foot" OnKeyDown="KeyDownAsync">
     <TitleContent>
         <h2>@Dialog.Title</h2>
-        <button type="button" class="link" @onclick="Dialog.Cancel">@EnfiladeText.Close</button>
+        <button type="button" class="link" @onclick="CloseAsync">@EnfiladeText.Close</button>
     </TitleContent>
     <DialogContent>
-        @ChildContent
+        <CascadingValue Value="_guard" IsFixed="true">
+            @ChildContent
+        </CascadingValue>
     </DialogContent>
     <DialogActions>
-        @Actions
+        <CascadingValue Value="_guard" IsFixed="true">
+            @Actions
+        </CascadingValue>
     </DialogActions>
 </MudDialog>
 
@@ -18,7 +24,7 @@
         Position = DialogPosition.CenterRight,
         MaxWidth = MaxWidth.False,
         BackdropClick = false,
-        CloseOnEscapeKey = true,
+        CloseOnEscapeKey = false,
         CloseButton = false,
         DefaultFocus = DefaultFocus.FirstChild,
     };
@@ -33,6 +39,8 @@
         DefaultFocus = DefaultFocus.FirstChild,
     };
 
+    private readonly SheetGuard _guard = new();
+
     [CascadingParameter]
     private IMudDialogInstance Dialog { get; set; } = default!;
 
@@ -41,4 +49,16 @@
 
     [Parameter]
     public RenderFragment? Actions { get; set; }
+
+    private async Task CloseAsync()
+    {
+        if (_guard.Dirty && !await Dialogs.ConfirmAsync(EnfiladeText.DiscardQuestion, EnfiladeText.DiscardMessage, EnfiladeText.Discard, danger: true))
+            return;
+
+        _guard.Dirty = false;
+        Dialog.Cancel();
+    }
+
+    private Task KeyDownAsync(KeyboardEventArgs key) =>
+        key.Key == "Escape" && Dialog.Options.CloseOnEscapeKey != true ? CloseAsync() : Task.CompletedTask;
 }

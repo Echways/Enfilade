@@ -1,3 +1,5 @@
+using Enfilade.Tests.Hosts;
+
 namespace Enfilade.Tests;
 
 public class WordsTests
@@ -6,6 +8,8 @@ public class WordsTests
         "{n, plural, one {{number} клиент} few {{number} клиента} many {{number} клиентов} other {{number} клиента}}";
 
     private static readonly DateTimeOffset Moment = new(2026, 10, 12, 2, 30, 0, TimeSpan.FromHours(3));
+
+    public WordsTests() => Words.Zone = TimeZoneInfo.Utc;
 
     [Fact]
     public void Middle_keeps_short_text_whole() => Assert.Equal("abc", Words.Middle("abc", 10));
@@ -32,6 +36,16 @@ public class WordsTests
         Assert.Equal("23:30", Words.Clock(Moment));
     }
 
+    [Fact]
+    public void Day_minute_and_clock_follow_the_viewer_zone()
+    {
+        Words.Zone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Yekaterinburg");
+
+        Assert.Equal("2026-10-12", Words.Day(Moment));
+        Assert.Equal("2026-10-12 04:30", Words.Minute(Moment));
+        Assert.Equal("04:30", Words.Clock(Moment));
+    }
+
     [Theory]
     [InlineData(0, "0\u00A0мс")]
     [InlineData(999, "999\u00A0мс")]
@@ -53,4 +67,29 @@ public class WordsTests
     [InlineData(0.1234, "12,3\u00A0%")]
     [InlineData(1, "100\u00A0%")]
     public void Share_is_a_percent_with_one_decimal(double share, string expected) => Assert.Equal(expected, Words.Share(share));
+
+    [Theory]
+    [InlineData(null, "–")]
+    [InlineData(1234, "1\u00A0234")]
+    [InlineData(1234L, "1\u00A0234")]
+    [InlineData((byte)5, "5")]
+    [InlineData(0.25, "0,25")]
+    [InlineData(2f, "2")]
+    [InlineData(true, "Да")]
+    [InlineData(false, "Нет")]
+    [InlineData(OrderStatus.Paid, "Оплачен")]
+    [InlineData(OrderStatus.New, "New")]
+    [InlineData("text", "text")]
+    public void Of_formats_by_type(object? value, string expected) => Assert.Equal(expected, Words.Of(value));
+
+    [Fact]
+    public void Of_formats_money_times_and_spans()
+    {
+        Assert.Equal("1\u00A0234,5", Words.Of(1234.5m));
+        Assert.Equal(Words.Minute(Moment), Words.Of(Moment));
+        Assert.Equal("2026-10-11 23:30", Words.Of(new DateTime(2026, 10, 11, 23, 30, 0)));
+        Assert.Equal("2026-10-12", Words.Of(new DateOnly(2026, 10, 12)));
+        Assert.Equal(Words.Duration(1_240), Words.Of(TimeSpan.FromMilliseconds(1_240)));
+        Assert.Equal("2\u00A0592\u00A0000\u00A0с", Words.Of(TimeSpan.FromDays(30)));
+    }
 }

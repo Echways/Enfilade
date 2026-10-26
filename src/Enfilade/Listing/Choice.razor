@@ -1,0 +1,67 @@
+@namespace Enfilade
+@typeparam TItem
+@typeparam TValue
+@using System.Globalization
+@using System.Linq.Expressions
+@implements IDisposable
+
+<MudSelect T="string" Value="@(_filter is null ? null : Context.Raw(_filter))" ValueChanged="ChooseAsync" Label="@Title" Clearable="true" Dense="true" Class="choice">
+    @foreach (var option in Options)
+    {
+        <MudSelectItem T="string" Value="@KeyOf(option.Value)">@option.Title</MudSelectItem>
+    }
+</MudSelect>
+
+@code {
+    private ChoiceFilter? _filter;
+
+    [CascadingParameter]
+    private ListingContext<TItem> Context { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public Expression<Func<TItem, TValue>> By { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<Option<TValue>> Options { get; set; } = [];
+
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = "";
+
+    [Parameter]
+    public string? Name { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        var name = Name ?? MemberKey.Of(By)
+            ?? throw new InvalidOperationException($"Enfilade: the choice \"{Title}\" needs a Name, because By is not a member path");
+        var filter = new ChoiceFilter(name, Title, By, Options);
+        if (_filter is null)
+            Context.Add(filter);
+        else
+            Context.Replace(_filter, filter);
+        _filter = filter;
+    }
+
+    public void Dispose()
+    {
+        if (_filter is not null)
+            Context.Remove(_filter);
+    }
+
+    private Task ChooseAsync(string? raw) => Context.FilterAsync(_filter!.Name, string.IsNullOrEmpty(raw) ? null : raw);
+
+    private static string KeyOf(TValue value) => value is IFormattable formattable
+        ? formattable.ToString(null, CultureInfo.InvariantCulture)
+        : value?.ToString() ?? "";
+
+    private sealed record ChoiceFilter(string Name, string Title, Expression<Func<TItem, TValue>> By, IReadOnlyList<Option<TValue>> Options)
+        : FilterDefinition<TItem>(Name, Title)
+    {
+        public override Expression<Func<TItem, bool>>? ConditionFor(string raw) =>
+            Chosen(raw) is { } option ? Conditions.Equal(By, option.Value) : null;
+
+        public override string? Shown(string raw) => Chosen(raw)?.Title;
+
+        private Option<TValue>? Chosen(string raw) => Options.FirstOrDefault(option => KeyOf(option.Value) == raw);
+    }
+}

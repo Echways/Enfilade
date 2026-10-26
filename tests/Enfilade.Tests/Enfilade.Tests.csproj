@@ -1,7 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="bunit" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.Testing" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+    <Using Include="Bunit" />
+    <Content Remove="xunit.runner.json" />
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
     <ProjectReference Include="..\..\src\Enfilade\Enfilade.csproj" />
   </ItemGroup>
 

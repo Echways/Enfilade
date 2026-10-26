@@ -1,0 +1,14 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+<Sheet>
+    <Form Model="_draft" OnSubmit="Save">
+        <InputText @bind-Value="_draft.Customer" />
+    </Form>
+</Sheet>
+
+@code {
+    private readonly OrderDraft _draft = new();
+
+    [Parameter]
+    public Func<Task> Save { get; set; } = () => Task.CompletedTask;
+}

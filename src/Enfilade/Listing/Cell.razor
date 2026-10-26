@@ -1,0 +1,73 @@
+@namespace Enfilade
+@typeparam TItem
+@typeparam TValue
+@using System.Linq.Expressions
+@implements IDisposable
+
+@code {
+    private CellDefinition<TItem>? _definition;
+    private Expression<Func<TItem, TValue>>? _compiled;
+    private Func<TItem, TValue> _read = default!;
+
+    [CascadingParameter]
+    private ListingContext<TItem> Context { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = "";
+
+    [Parameter, EditorRequired]
+    public Expression<Func<TItem, TValue>> Value { get; set; } = default!;
+
+    [Parameter]
+    public bool Sort { get; set; }
+
+    [Parameter]
+    public string? Key { get; set; }
+
+    [Parameter]
+    public bool? Number { get; set; }
+
+    [Parameter]
+    public Func<TValue, string>? Format { get; set; }
+
+    [Parameter]
+    public RenderFragment<TItem>? ChildContent { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        var key = Key ?? MemberKey.Of(Value);
+        if (Sort && key is null)
+            throw new InvalidOperationException($"Enfilade: the sortable cell \"{Title}\" needs a Key, because its Value is not a member path");
+
+        if (!ExpressionShape.Same(_compiled, Value))
+        {
+            _read = Value.Compile();
+            _compiled = Value;
+        }
+
+        var definition = new CellDefinition<TItem>(Title, key, Sort ? Value : null, Number ?? Numeric(typeof(TValue)), ChildContent ?? Shown);
+        if (_definition is null)
+            Context.Add(definition);
+        else
+            Context.Replace(_definition, definition);
+        _definition = definition;
+    }
+
+    public void Dispose()
+    {
+        if (_definition is not null)
+            Context.Remove(_definition);
+    }
+
+    private RenderFragment Shown(TItem item) => builder =>
+    {
+        var value = _read(item);
+        builder.AddContent(0, Format is null ? Words.Of(value) : Format(value));
+    };
+
+    private static bool Numeric(Type type)
+    {
+        var plain = Nullable.GetUnderlyingType(type) ?? type;
+        return !plain.IsEnum && Type.GetTypeCode(plain) is >= TypeCode.SByte and <= TypeCode.Decimal;
+    }
+}

@@ -52,6 +52,35 @@ public class EnfiladeOptionsTests
         Assert.Contains(nameof(EnfiladeOptions.AutoRefreshInterval), error.Message);
     }
 
+    [Fact]
+    public void Unknown_time_zone_fails_at_startup()
+    {
+        var error = Assert.Throws<OptionsValidationException>(() => Resolve([], shell => shell.TimeZone = "Mars/Olympus"));
+
+        Assert.Contains(nameof(EnfiladeOptions.TimeZone), error.Message);
+    }
+
+    [Theory]
+    [InlineData("blue")]
+    [InlineData("#12345")]
+    [InlineData("#1234567")]
+    [InlineData("#GG0000")]
+    public void Accent_must_be_a_color(string accent)
+    {
+        var error = Assert.Throws<OptionsValidationException>(() => Resolve([], shell => shell.Accent = accent));
+
+        Assert.Contains(nameof(EnfiladeOptions.Accent), error.Message);
+    }
+
+    [Fact]
+    public void Appearance_and_accent_come_from_configuration()
+    {
+        var options = Resolve(new Dictionary<string, string?> { ["Enfilade:Appearance"] = "System", ["Enfilade:Accent"] = "#0A7F5A" });
+
+        Assert.Equal(Appearance.System, options.Appearance);
+        Assert.Equal("#0A7F5A", options.Accent);
+    }
+
     private static EnfiladeOptions Resolve(Dictionary<string, string?> settings, Action<EnfiladeOptions>? configure = null)
     {
         var services = new ServiceCollection();

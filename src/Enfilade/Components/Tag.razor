@@ -1,0 +1,11 @@
+@namespace Enfilade
+
+<span class="tag @Tone.ToString().ToLowerInvariant()">@ChildContent</span>
+
+@code {
+    [Parameter]
+    public Tone Tone { get; set; }
+
+    [Parameter, EditorRequired]
+    public RenderFragment ChildContent { get; set; } = default!;
+}

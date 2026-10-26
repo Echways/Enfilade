@@ -1,0 +1,8 @@
+@inject IOptions<EnfiladeOptions> Options
+
+<PageTitle>@($"{EnfiladeText.ForbiddenTitle} · {Options.Value.Brand}")</PageTitle>
+
+<div class="empty forbidden" role="alert">
+    <h1>@EnfiladeText.ForbiddenHeading</h1>
+    <a class="link" href="">@EnfiladeText.BackHome</a>
+</div>

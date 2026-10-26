@@ -21,4 +21,12 @@ public static class EnfiladeDialogs
         this IDialogService dialogs, string title, DialogParameters<TSheet>? parameters = null, bool form = true)
         where TSheet : IComponent =>
         dialogs.ShowAsync<TSheet>(title, parameters ?? new DialogParameters<TSheet>(), form ? Sheet.Form : Sheet.View);
+
+    public static async Task<TModel?> ShowFormAsync<TSheet, TModel>(
+        this IDialogService dialogs, string title, DialogParameters<TSheet>? parameters = null)
+        where TSheet : IComponent
+    {
+        var sheet = await dialogs.ShowSheetAsync(title, parameters);
+        return await sheet.Result is { Canceled: false, Data: TModel model } ? model : default;
+    }
 }

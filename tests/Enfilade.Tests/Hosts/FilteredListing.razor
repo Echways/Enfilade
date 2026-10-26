@@ -1,0 +1,21 @@
+<Listing TItem="Order" Load="Load" Items="@(Load is null ? Order.Sixty : null)" SearchBy="[order => order.Customer]">
+    <Filters>
+        <Search />
+        <Choice Title="Статус" By="order => order.Status" Options="Statuses" />
+        <Flag Title="Крупные" Name="big" Where="order => order.Total > Threshold" />
+    </Filters>
+    <Columns>
+        <Cell Title="Клиент" Value="order => order.Customer" />
+        <Cell Title="Сумма" Value="order => order.Total" />
+    </Columns>
+</Listing>
+
+@code {
+    public static readonly IReadOnlyList<Option<OrderStatus>> Statuses = [new(OrderStatus.New, "Новый"), new(OrderStatus.Paid, "Оплачен")];
+
+    [Parameter]
+    public Func<ListQuery<Order>, CancellationToken, Task<ListPage<Order>>>? Load { get; set; }
+
+    [Parameter]
+    public decimal Threshold { get; set; } = 500;
+}

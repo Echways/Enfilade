@@ -1,5 +1,6 @@
 window.enfilade = {
     visible: () => document.visibilityState === "visible",
+    zone: () => Intl.DateTimeFormat().resolvedOptions().timeZone,
     followMark: nav => {
         const mark = nav.querySelector(".mark");
         const place = () => {

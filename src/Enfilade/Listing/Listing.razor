@@ -1,0 +1,405 @@
+@namespace Enfilade
+@typeparam TItem
+@attribute [CascadingTypeParameter(nameof(TItem))]
+@implements IDisposable
+@using System.Linq.Expressions
+@using Microsoft.Extensions.Logging
+@inject NavigationManager Navigation
+@inject CurrentPage CurrentPage
+@inject TimeProvider Time
+@inject ILogger<Listing<TItem>> Logger
+
+<CascadingValue Value="_context" IsFixed="true">
+    @Columns
+    @if (Live)
+    {
+        <AutoRefresh OnTick="RefreshAsync" />
+    }
+    <div class="listing">
+        @if (Filters is not null)
+        {
+            <div class="filters">@Filters</div>
+        }
+        @if (Active.Any())
+        {
+            <div class="crumbs">
+                @foreach (var (filter, raw) in Active)
+                {
+                    <Crumb Kind="@filter.Title" Value="@(filter.Shown(raw) ?? raw)" Without="@Without(filter.Name)" />
+                }
+            </div>
+        }
+        @if (_failed)
+        {
+            <div class="listing-failed" role="alert">
+                <p>@EnfiladeText.LoadFailed</p>
+                <button type="button" class="link" @onclick="LoadAsync">@EnfiladeText.TryAgain</button>
+            </div>
+        }
+        @if (_page is null)
+        {
+            if (!_failed)
+            {
+                <Placeholder />
+            }
+        }
+        else if (_page.Total == 0 && Narrowed)
+        {
+            <div class="nothing-found">
+                <p class="nothing">@EnfiladeText.NothingFound</p>
+                <a class="link" href="@Reset">@EnfiladeText.ResetFilters</a>
+            </div>
+        }
+        else if (_page.Total == 0)
+        {
+            @(Empty ?? Nothing)
+        }
+        else
+        {
+            @if (Selectable)
+            {
+                <div class="chosen-zone" aria-live="polite">
+                    @if (_chosen.Count > 0)
+                    {
+                        <div class="chosen">
+                            <span>@Words.Count(EnfiladeText.Chosen, _chosen.Count)</span>
+                            @Selected?.Invoke(Chosen)
+                        </div>
+                    }
+                </div>
+            }
+            <MudTable T="TItem" Items="_page.Items" Elevation="0" Class="@(Dense ? "tbl dense" : "tbl")" Breakpoint="Breakpoint.Xs"
+                      RowClass="@(Opens ? "click" : null)" OnRowClick="@(Opens ? EventCallback.Factory.Create<TableRowClickEventArgs<TItem>>(this, OpenRowAsync) : default)">
+                <HeaderContent>
+                    @if (Selectable)
+                    {
+                        <MudTh Class="pick">
+                            <MudCheckBox T="bool" Value="AllChosen" ValueChanged="ChooseAll" AriaLabel="@EnfiladeText.SelectAll" Dense="true" />
+                        </MudTh>
+                    }
+                    @foreach (var cell in _context.Cells)
+                    {
+                        <MudTh Class="@(cell.Number ? "num" : null)" aria-sort="@AriaSort(cell)">
+                            @if (cell.Order is not null)
+                            {
+                                <button type="button" class="@SortClass(cell)" aria-label="@string.Format(EnfiladeText.SortBy, cell.Title)" @onclick="() => SortByAsync(cell)">@cell.Title</button>
+                            }
+                            else
+                            {
+                                @cell.Title
+                            }
+                        </MudTh>
+                    }
+                </HeaderContent>
+                <RowTemplate>
+                    @if (Selectable)
+                    {
+                        var item = context;
+                        <MudTd Class="pick">
+                            <MudCheckBox T="bool" Value="Picked(item)" ValueChanged="on => Choose(item, on)" AriaLabel="@EnfiladeText.SelectRow" Dense="true" />
+                        </MudTd>
+                    }
+                    @foreach (var (cell, index) in _context.Cells.Select((cell, index) => (cell, index)))
+                    {
+                        <MudTd DataLabel="@cell.Title" Class="@(cell.Number ? "num" : null)">
+                            @if (index == 0 && Href is not null)
+                            {
+                                <a class="row-link" href="@Href(context)" @onclick:stopPropagation="true">@cell.Render(context)</a>
+                            }
+                            else if (index == 0 && OnOpen.HasDelegate)
+                            {
+                                var item = context;
+                                <button type="button" class="row-open" @onclick="() => OnOpen.InvokeAsync(item)" @onclick:stopPropagation="true">@cell.Render(context)</button>
+                            }
+                            else
+                            {
+                                @cell.Render(context)
+                            }
+                        </MudTd>
+                    }
+                </RowTemplate>
+            </MudTable>
+            <div class="pager">
+                <span>@string.Format(EnfiladeText.PageRange, Words.Number(First), Words.Number(Last), Words.Number(_page.Total))</span>
+                @if (Pages > 1)
+                {
+                    <button type="button" class="link" aria-label="@EnfiladeText.PreviousPage" title="@EnfiladeText.PreviousPage" disabled="@(_shown <= 1)"
+                            @onclick="() => GoToPageAsync(_shown - 1)">←</button>
+                    <button type="button" class="link" aria-label="@EnfiladeText.NextPage" title="@EnfiladeText.NextPage" disabled="@(_shown >= Pages)"
+                            @onclick="() => GoToPageAsync(_shown + 1)">→</button>
+                }
+            </div>
+        }
+    </div>
+</CascadingValue>
+
+@code {
+    private ListingContext<TItem> _context = default!;
+    private PageSource _source = default!;
+    private CancellationTokenSource? _loading;
+    private ListPage<TItem>? _page;
+    private ListQuery<TItem>? _query;
+    private HashSet<object> _chosen = [];
+    private string? _shownSignature;
+    private IReadOnlyCollection<TItem>? _items;
+    private string? _loaded;
+    private SortOrder? _sort;
+    private int _shown = 1;
+    private bool _failed;
+    private bool _ready;
+    private bool _disposed;
+
+    [Parameter]
+    public Func<ListQuery<TItem>, CancellationToken, Task<ListPage<TItem>>>? Load { get; set; }
+
+    [Parameter]
+    public IReadOnlyCollection<TItem>? Items { get; set; }
+
+    [Parameter, EditorRequired]
+    public RenderFragment Columns { get; set; } = default!;
+
+    [Parameter]
+    public RenderFragment? Filters { get; set; }
+
+    [Parameter]
+    public Func<TItem, string>? Href { get; set; }
+
+    [Parameter]
+    public EventCallback<TItem> OnOpen { get; set; }
+
+    [Parameter]
+    public IReadOnlyList<Expression<Func<TItem, string?>>> SearchBy { get; set; } = [];
+
+    [Parameter]
+    public string? Sort { get; set; }
+
+    [Parameter]
+    public int PageSize { get; set; } = 25;
+
+    [Parameter]
+    public string? Name { get; set; }
+
+    [Parameter]
+    public RenderFragment? Empty { get; set; }
+
+    [Parameter]
+    public bool Dense { get; set; }
+
+    [Parameter]
+    public bool Selectable { get; set; }
+
+    [Parameter]
+    public RenderFragment<IReadOnlyList<TItem>>? Selected { get; set; }
+
+    [Parameter]
+    public Func<TItem, object> ItemKey { get; set; } = item => item!;
+
+    [Parameter]
+    public bool Live { get; set; }
+
+    private IReadOnlyList<TItem> Chosen => [.. _page?.Items.Where(Picked) ?? []];
+
+    private bool AllChosen => _page is { Items.Count: > 0 } page && page.Items.All(Picked);
+
+    private bool Opens => Href is not null || OnOpen.HasDelegate;
+
+    private int Pages => _page is null ? 1 : (int)Math.Max(1, (_page.Total + PageSize - 1) / PageSize);
+
+    private long First => (_shown - 1L) * PageSize + 1;
+
+    private long Last => First + _page!.Items.Count - 1;
+
+    private IEnumerable<(FilterDefinition<TItem> Filter, string Raw)> Active => _query is null
+        ? []
+        : _context.Filters.Where(filter => _query.Filters.ContainsKey(filter.Name)).Select(filter => (filter, _query.Filters[filter.Name]));
+
+    private bool Narrowed => _query is not null && (_query.Filters.Count > 0 || !string.IsNullOrEmpty(_query.Search));
+
+    private string Reset => _context.UriFor(address => address with
+    {
+        Page = 1,
+        Search = null,
+        Filters = address.Filters.Where(pair => _context.Filters.All(filter => filter.Name != pair.Key)).ToDictionary(StringComparer.Ordinal),
+    });
+
+    private static RenderFragment Nothing => @<p class="nothing">@EnfiladeText.NothingYet</p>;
+
+    public Task RefreshAsync() => InvokeAsync(LoadAsync);
+
+    protected override void OnInitialized()
+    {
+        _context = new ListingContext<TItem>(Navigation, () => Name, () => Load is not null || SearchBy.Count > 0);
+        _source = CurrentPage.Track(RefreshAsync);
+        Navigation.LocationChanged += LocationChanged;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if ((Load is null) == (Items is null))
+            throw new InvalidOperationException("Enfilade: a Listing needs either Load or Items, not both");
+
+        var itemsChanged = !ReferenceEquals(_items, Items);
+        _items = Items;
+        if (_ready && itemsChanged)
+            await LoadAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        _ready = true;
+        await LoadAsync();
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        Navigation.LocationChanged -= LocationChanged;
+        _source.Dispose();
+        _loading?.Cancel();
+        _loading?.Dispose();
+    }
+
+    private async Task LoadAsync()
+    {
+        if (_disposed)
+            return;
+
+        _loading?.Cancel();
+        var loading = _loading = new CancellationTokenSource();
+        var address = _context.Address;
+        var signature = _loaded = Signature(address);
+        _failed = false;
+        try
+        {
+            var query = QueryFor(address, address.Page);
+            var page = await FetchAsync(query, loading.Token);
+            if (page.Items.Count == 0 && page.Total > 0 && query.Page > 1)
+            {
+                query = QueryFor(address, (int)((page.Total + PageSize - 1) / PageSize));
+                page = await FetchAsync(query, loading.Token);
+            }
+
+            if (loading.IsCancellationRequested)
+                return;
+
+            _chosen = signature == _shownSignature ? [.. page.Items.Select(ItemKey).Where(_chosen.Contains)] : [];
+            _shownSignature = signature;
+            _page = page;
+            _query = query;
+            _shown = query.Page;
+            _sort = query.Sort;
+            _source.Report(page.Total, Time.GetUtcNow());
+        }
+        catch (Exception) when (loading.IsCancellationRequested)
+        {
+            return;
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(exception, "Enfilade: a listing could not load");
+            _failed = true;
+        }
+
+        StateHasChanged();
+    }
+
+    private Task<ListPage<TItem>> FetchAsync(ListQuery<TItem> query, CancellationToken token) =>
+        Load is not null ? Load(query, token) : Task.FromResult(Items!.AsQueryable().ToPage(query));
+
+    private ListQuery<TItem> QueryFor(ListingAddress address, int page)
+    {
+        var sorted = Sorted(address.Sort) ?? Sorted(SortOrder.Parse(Sort));
+        var filters = _context.Filters
+            .Select(filter => (filter, raw: address.Filters.GetValueOrDefault(filter.Name)))
+            .Select(pair => (pair.filter.Name, pair.raw, condition: pair.raw is null ? null : pair.filter.ConditionFor(pair.raw)))
+            .Where(pair => pair.condition is not null)
+            .ToList();
+        IEnumerable<Expression<Func<TItem, bool>>> searched = string.IsNullOrEmpty(address.Search) || SearchBy.Count == 0
+            ? []
+            : [Conditions.Search(SearchBy, address.Search)];
+        return new ListQuery<TItem>
+        {
+            Page = page,
+            Size = PageSize,
+            Search = address.Search,
+            Sort = sorted?.Sort,
+            Order = sorted?.Order,
+            Filters = filters.ToDictionary(pair => pair.Name, pair => pair.raw!, StringComparer.Ordinal),
+            Conditions = [.. filters.Select(pair => pair.condition!), .. searched],
+        };
+    }
+
+    private (SortOrder Sort, LambdaExpression Order)? Sorted(SortOrder? sort) =>
+        sort is not null && _context.Cells.FirstOrDefault(cell => cell.Order is not null && cell.Key == sort.Key) is { Order: { } order }
+            ? (sort, order)
+            : null;
+
+    private string Signature(ListingAddress address) => string.Join(
+        '\n',
+        [address.Page.ToString(System.Globalization.CultureInfo.InvariantCulture), address.Search, address.Sort?.ToString(),
+            .. _context.Filters.Select(filter => address.Filters.GetValueOrDefault(filter.Name))]);
+
+    private void LocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        if (Signature(ListingAddress.Read(args.Location, Name)) != _loaded)
+            _ = InvokeAsync(LoadAsync);
+    }
+
+    private Task SortByAsync(CellDefinition<TItem> cell)
+    {
+        var next = new SortOrder(cell.Key!, _sort is { } current && current.Key == cell.Key && !current.Descending);
+        return _context.GoAsync(address => address with { Sort = next, Page = 1 });
+    }
+
+    private string Without(string name) => _context.UriFor(address => address with
+    {
+        Page = 1,
+        Filters = address.Filters.Where(pair => pair.Key != name).ToDictionary(StringComparer.Ordinal),
+    });
+
+    private bool Picked(TItem item) => _chosen.Contains(ItemKey(item));
+
+    private void Choose(TItem item, bool on)
+    {
+        if (on)
+            _chosen.Add(ItemKey(item));
+        else
+            _chosen.Remove(ItemKey(item));
+    }
+
+    private void ChooseAll(bool on) => _chosen = on ? [.. _page!.Items.Select(ItemKey)] : [];
+
+    private Task GoToPageAsync(int page) => _context.GoAsync(address => address with { Page = page });
+
+    private Task OpenRowAsync(TableRowClickEventArgs<TItem> row)
+    {
+        if (row.Item is not { } item)
+            return Task.CompletedTask;
+        if (Href is not null)
+        {
+            Navigation.NavigateTo(Href(item));
+            return Task.CompletedTask;
+        }
+
+        return OnOpen.InvokeAsync(item);
+    }
+
+    private string? AriaSort(CellDefinition<TItem> cell) => SortedBy(cell) switch
+    {
+        null => null,
+        { Descending: true } => "descending",
+        _ => "ascending",
+    };
+
+    private string SortClass(CellDefinition<TItem> cell) => SortedBy(cell) switch
+    {
+        null => "sort",
+        { Descending: true } => "sort on down",
+        _ => "sort on",
+    };
+
+    private SortOrder? SortedBy(CellDefinition<TItem> cell) => cell.Order is not null && _sort?.Key == cell.Key ? _sort : null;
+}

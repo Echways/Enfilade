@@ -22,7 +22,7 @@
     <value>Обновить</value>
   </data>
   <data name="UpdatedAt" xml:space="preserve">
-    <value>обновлено {0} UTC</value>
+    <value>обновлено {0}</value>
   </data>
   <data name="Close" xml:space="preserve">
     <value>Закрыть</value>
@@ -107,5 +107,83 @@
   </data>
   <data name="Crashed" xml:space="preserve">
     <value>Панель остановилась из-за ошибки</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>Не получилось. Попробуйте ещё раз.</value>
+  </data>
+  <data name="Working" xml:space="preserve">
+    <value>Выполняется…</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Да</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="NothingYet" xml:space="preserve">
+    <value>Здесь пока пусто</value>
+  </data>
+  <data name="LoadFailed" xml:space="preserve">
+    <value>Не удалось загрузить список</value>
+  </data>
+  <data name="PreviousPage" xml:space="preserve">
+    <value>Предыдущая страница</value>
+  </data>
+  <data name="NextPage" xml:space="preserve">
+    <value>Следующая страница</value>
+  </data>
+  <data name="PageRange" xml:space="preserve">
+    <value>{0}–{1} из {2}</value>
+  </data>
+  <data name="SortBy" xml:space="preserve">
+    <value>Сортировать: {0}</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Поиск</value>
+  </data>
+  <data name="NothingFound" xml:space="preserve">
+    <value>Ничего не найдено</value>
+  </data>
+  <data name="ResetFilters" xml:space="preserve">
+    <value>Сбросить фильтры</value>
+  </data>
+  <data name="Chosen" xml:space="preserve">
+    <value>{n, plural, one {Выбран {number}} few {Выбрано {number}} many {Выбрано {number}} other {Выбрано {number}}}</value>
+  </data>
+  <data name="SelectAll" xml:space="preserve">
+    <value>Выбрать все на странице</value>
+  </data>
+  <data name="SelectRow" xml:space="preserve">
+    <value>Выбрать</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Сохранить</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>Сохранено</value>
+  </data>
+  <data name="DiscardQuestion" xml:space="preserve">
+    <value>Не сохранять изменения?</value>
+  </data>
+  <data name="DiscardMessage" xml:space="preserve">
+    <value>Введённое пропадёт.</value>
+  </data>
+  <data name="Discard" xml:space="preserve">
+    <value>Не сохранять</value>
+  </data>
+  <data name="TimeOf" xml:space="preserve">
+    <value>{0}, время</value>
+  </data>
+  <data name="ForbiddenTitle" xml:space="preserve">
+    <value>Нет доступа</value>
+  </data>
+  <data name="ForbiddenHeading" xml:space="preserve">
+    <value>У вас нет доступа к этой странице</value>
+  </data>
+  <data name="Account" xml:space="preserve">
+    <value>Аккаунт</value>
+  </data>
+  <data name="ChangeToPrevious" xml:space="preserve">
+    <value>{0} к прошлому периоду</value>
   </data>
 </root>

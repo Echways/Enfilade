@@ -1,0 +1,49 @@
+@namespace Enfilade
+@typeparam TItem
+@using System.Linq.Expressions
+@implements IDisposable
+
+<MudSwitch T="bool" Value="@(_filter is not null && Context.Raw(_filter) is not null)" ValueChanged="ToggleAsync" Label="@Title" Color="Color.Primary" Class="flag" />
+
+@code {
+    private const string On = "1";
+
+    private FlagFilter? _filter;
+
+    [CascadingParameter]
+    private ListingContext<TItem> Context { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public Expression<Func<TItem, bool>> Where { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = "";
+
+    [Parameter, EditorRequired]
+    public string Name { get; set; } = "";
+
+    protected override void OnParametersSet()
+    {
+        var filter = new FlagFilter(Name, Title, Where);
+        if (_filter is null)
+            Context.Add(filter);
+        else
+            Context.Replace(_filter, filter);
+        _filter = filter;
+    }
+
+    public void Dispose()
+    {
+        if (_filter is not null)
+            Context.Remove(_filter);
+    }
+
+    private Task ToggleAsync(bool on) => Context.FilterAsync(Name, on ? On : null);
+
+    private sealed record FlagFilter(string Name, string Title, Expression<Func<TItem, bool>> Where) : FilterDefinition<TItem>(Name, Title)
+    {
+        public override Expression<Func<TItem, bool>>? ConditionFor(string raw) => raw == On ? Where : null;
+
+        public override string? Shown(string raw) => raw == On ? EnfiladeText.Yes : null;
+    }
+}

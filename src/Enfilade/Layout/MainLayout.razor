@@ -2,8 +2,9 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime Js
 @inject IOptions<EnfiladeOptions> Options
+@inject ViewerZone ViewerZone
 
-<MudThemeProvider Theme="EnfiladeTheme.Theme" IsDarkMode="true" />
+<MudThemeProvider @ref="_themes" Theme="_theme" IsDarkMode="_dark" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
@@ -11,20 +12,7 @@
 <div class="frame">
     <header class="side">
         <span class="brand">@Options.Value.Brand</span>
-        <nav class="nav" aria-label="@EnfiladeText.Sections" @ref="_nav">
-            <span class="mark pigment" aria-hidden="true"></span>
-            @foreach (var entry in Options.Value.Navigation)
-            {
-                if (entry is Section link)
-                {
-                    <NavLink href="@link.Href" Match="link.Match">@link.Title()</NavLink>
-                }
-                else if (entry is Caption caption)
-                {
-                    <span class="nav-caption">@caption.Text()</span>
-                }
-            }
-        </nav>
+        <Navigation />
         <AuthorizeView Context="auth">
             <Authorized>
                 @Account(auth.User.Identity?.Name)
@@ -35,33 +23,81 @@
         </AuthorizeView>
     </header>
     <main class="main">
-        <ErrorBoundary @ref="_failure">
-            <ChildContent>
-                @Body
-            </ChildContent>
-            <ErrorContent>
-                <div class="empty failure" role="alert">
-                    <h1>@EnfiladeText.FailureHeading</h1>
-                    <p class="note">@EnfiladeText.FailureHint</p>
-                    <button type="button" class="btn-k pigment" @onclick="_failure!.Recover">@EnfiladeText.TryAgain</button>
-                </div>
-            </ErrorContent>
-        </ErrorBoundary>
+        @if (ViewerZone.Known)
+        {
+            <ErrorBoundary @ref="_failure">
+                <ChildContent>
+                    @Body
+                </ChildContent>
+                <ErrorContent>
+                    <div class="empty failure" role="alert">
+                        <h1>@EnfiladeText.FailureHeading</h1>
+                        <p class="note">@EnfiladeText.FailureHint</p>
+                        <button type="button" class="btn-k pigment" @onclick="_failure!.Recover">@EnfiladeText.TryAgain</button>
+                    </div>
+                </ErrorContent>
+            </ErrorBoundary>
+        }
+        else
+        {
+            <Placeholder />
+        }
     </main>
 </div>
 
 @code {
-    private ElementReference _nav;
     private ErrorBoundary? _failure;
+    private MudThemeProvider? _themes;
+    private MudTheme _theme = default!;
+    private bool _dark = true;
 
     private System.Globalization.CultureInfo? Language => LanguageChoice.Next(Options.Value);
+
+    protected override void OnInitialized()
+    {
+        Words.Zone = ViewerZone.Zone;
+        _theme = EnfiladeTheme.For(Options.Value.Accent);
+        _dark = Options.Value.Appearance != Appearance.Light;
+    }
 
     protected override void OnParametersSet() => _failure?.Recover();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
-            await Js.InvokeVoidAsync("enfilade.followMark", _nav);
+        if (!firstRender)
+            return;
+
+        if (Options.Value.Appearance == Appearance.System && _themes is not null)
+        {
+            _dark = await _themes.GetSystemDarkModeAsync();
+            await _themes.WatchSystemDarkModeAsync(DarkModeChangedAsync);
+            StateHasChanged();
+        }
+
+        if (!ViewerZone.Known)
+        {
+            ViewerZone.Settle(await BrowserZoneAsync());
+            Words.Zone = ViewerZone.Zone;
+            StateHasChanged();
+        }
+    }
+
+    private Task DarkModeChangedAsync(bool dark)
+    {
+        _dark = dark;
+        return InvokeAsync(StateHasChanged);
+    }
+
+    private async Task<string?> BrowserZoneAsync()
+    {
+        try
+        {
+            return await Js.InvokeAsync<string?>("enfilade.zone");
+        }
+        catch (JSException)
+        {
+            return null;
+        }
     }
 
     private void SwitchLanguage() => Navigation.NavigateTo(LanguageChoice.Path(Navigation, Language!), forceLoad: true);
@@ -69,13 +105,17 @@
     private void SignOut() => Navigation.NavigateTo(Options.Value.SignOutPath!, forceLoad: true);
 
     private RenderFragment Account(string? name) => @<text>
-        @if (name is not null || Language is not null)
+        @if (name is not null || Language is not null || Options.Value.AccountLinks.Count > 0)
         {
             var leaving = name is not null && Options.Value.SignOutPath is not null;
             <div class="account">
                 @if (name is not null)
                 {
                     <span>@name</span>
+                }
+                @foreach (var link in Options.Value.AccountLinks)
+                {
+                    <a href="@link.Href">@link.Title()</a>
                 }
                 @if (Language is { } language)
                 {
@@ -86,7 +126,11 @@
                     <button type="button" @onclick="SignOut">@EnfiladeText.SignOut</button>
                 }
             </div>
-            <MudMenu Class="account-menu" Label="@(name ?? LanguageChoice.Title(Language!))" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
+            <MudMenu Class="account-menu" Label="@(name ?? (Language is { } shown ? LanguageChoice.Title(shown) : EnfiladeText.Account))" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
+                @foreach (var link in Options.Value.AccountLinks)
+                {
+                    <MudMenuItem Href="@link.Href">@link.Title()</MudMenuItem>
+                }
                 @if (Language is { } language)
                 {
                     <MudMenuItem OnClick="SwitchLanguage">

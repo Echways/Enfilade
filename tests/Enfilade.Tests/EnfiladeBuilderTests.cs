@@ -110,12 +110,39 @@ public class EnfiladeBuilderTests
         Assert.Equal(["a.css", "b.css"], options.Stylesheets);
     }
 
+    [Fact]
+    public async Task Section_setup_keeps_icon_and_badge()
+    {
+        var options = Build(shell => shell.AddSection<Clients>("Clients", section => section
+            .Icon("<path d=\"M0 0h24v24H0z\" />")
+            .Badge<Counter>(counter => counter.CountAsync())));
+        var services = new ServiceCollection().AddSingleton(new Counter(7)).BuildServiceProvider();
+
+        var section = Assert.IsType<Section>(Assert.Single(options.Navigation));
+        Assert.Equal("<path d=\"M0 0h24v24H0z\" />", section.Icon);
+        Assert.Equal(7, await section.Badge!(services));
+    }
+
+    [Fact]
+    public void Account_links_keep_their_order()
+    {
+        var options = Build(shell => shell.AddAccountLink("Profile", "profile").AddAccountLink(() => "Keys", "keys"));
+
+        Assert.Equal(["Profile", "Keys"], options.AccountLinks.Select(link => link.Title()));
+        Assert.Equal(["profile", "keys"], options.AccountLinks.Select(link => link.Href));
+    }
+
     private static EnfiladeOptions Build(Action<EnfiladeBuilder> configure)
     {
         var services = new ServiceCollection();
         services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
         configure(services.AddEnfilade());
         return services.BuildServiceProvider().GetRequiredService<IOptions<EnfiladeOptions>>().Value;
+    }
+
+    private sealed class Counter(long count)
+    {
+        public Task<long> CountAsync() => Task.FromResult(count);
     }
 
     [Route("/")]

@@ -1,0 +1,8 @@
+@page "/orders"
+@inject OrderStore Store
+
+<Listing TItem="Order" Load="Store.PageAsync">
+    <Columns>
+        <Cell Title="Клиент" Value="order => order.Customer" />
+    </Columns>
+</Listing>

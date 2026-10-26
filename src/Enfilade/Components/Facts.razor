@@ -1,0 +1,8 @@
+@namespace Enfilade
+
+<dl class="facts">@ChildContent</dl>
+
+@code {
+    [Parameter, EditorRequired]
+    public RenderFragment ChildContent { get; set; } = default!;
+}

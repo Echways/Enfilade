@@ -1,0 +1,12 @@
+<Listing TItem="Ticket" @ref="Listing" Load="Ticket.PageAsync" Selectable ItemKey="ticket => ticket.Id">
+    <Selected>
+        <span class="picked">@string.Join(",", context.Select(ticket => ticket.Id))</span>
+    </Selected>
+    <Columns>
+        <Cell Title="Заявка" Value="ticket => ticket.Title" />
+    </Columns>
+</Listing>
+
+@code {
+    public Listing<Ticket> Listing { get; private set; } = default!;
+}

@@ -1,0 +1,9 @@
+<Tabs>
+    <Tab Title="Обзор"><p class="overview">Обзор заказа</p></Tab>
+    <Tab Title="История" Name="@SecondName"><p class="history">История заказа</p></Tab>
+</Tabs>
+
+@code {
+    [Parameter]
+    public string? SecondName { get; set; }
+}

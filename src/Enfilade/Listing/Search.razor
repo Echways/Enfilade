@@ -1,0 +1,69 @@
+@namespace Enfilade
+@typeparam TItem
+@implements IDisposable
+@inject NavigationManager Navigation
+@inject TimeProvider Time
+
+<MudTextField T="string" Value="@_text" ValueChanged="TypedAsync" Immediate="true" Class="search" Placeholder="@(Placeholder ?? EnfiladeText.Search)"
+              aria-label="@EnfiladeText.Search" InputType="InputType.Search" />
+
+@code {
+    private static readonly TimeSpan Pause = TimeSpan.FromMilliseconds(300);
+
+    private CancellationTokenSource? _typing;
+    private string? _text;
+
+    [CascadingParameter]
+    private ListingContext<TItem> Context { get; set; } = default!;
+
+    [Parameter]
+    public string? Placeholder { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (!Context.Searches)
+            throw new InvalidOperationException("Enfilade: <Search /> searches an in-memory listing by its SearchBy fields; give the listing SearchBy");
+
+        _text = Context.Address.Search;
+        Navigation.LocationChanged += LocationChanged;
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= LocationChanged;
+        _typing?.Cancel();
+        _typing?.Dispose();
+    }
+
+    private async Task TypedAsync(string? text)
+    {
+        _text = text;
+        _typing?.Cancel();
+        var typing = _typing = new CancellationTokenSource();
+        try
+        {
+            await Task.Delay(Pause, Time, typing.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
+        _typing = null;
+        var search = string.IsNullOrWhiteSpace(text) ? null : text.Trim();
+        await Context.GoAsync(address => address with { Search = search, Page = 1 }, replace: true);
+    }
+
+    private void LocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        if (_typing is not null)
+            return;
+
+        var search = ListingAddress.Read(args.Location, Context.Address.Prefix).Search;
+        if (search != _text?.Trim())
+        {
+            _text = search;
+            _ = InvokeAsync(StateHasChanged);
+        }
+    }
+}
