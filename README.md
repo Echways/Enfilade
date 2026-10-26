@@ -249,31 +249,45 @@ var sheet = await Dialogs.ShowSheetAsync<OrderForm>("New order");
 var result = await sheet.Result;
 ```
 
-`ShowSheetAsync` opens a side sheet on desktop and a bottom sheet on phones. With the default `form: true`, a click outside the sheet does not close it. Pass `form: false` for read-only details.
+`ShowSheetAsync` opens a side sheet on desktop and a bottom sheet on phones. With the default `form: true`, a click outside the sheet does not close it. Pass `form: false` for read-only details. A sheet component wraps its markup in `Sheet`, which has `ChildContent` and `Actions`.
 
-A sheet component wraps its markup in `Sheet` and closes through MudBlazor's `IMudDialogInstance`:
+## Forms
 
 ```razor
 <Sheet>
-    <ChildContent>
-        <div class="group">
-            <MudTextField @bind-Value="_customer" Label="Customer" />
-        </div>
-    </ChildContent>
-    <Actions>
-        <button type="button" class="btn-k pigment" @onclick="Save">Create</button>
-    </Actions>
+    <Form Model="_order" OnSubmit="SaveAsync" Submit="Create" Done="Order created">
+        <Field For="() => _order.Customer" />
+        <Field For="() => _order.Total" />
+        <Field For="() => _order.Status" />
+    </Form>
 </Sheet>
 
 @code {
-    [CascadingParameter]
-    private IMudDialogInstance Dialog { get; set; } = default!;
+    private readonly OrderDraft _order = new();
 
-    private string _customer = "";
-
-    private void Save() => Dialog.Close(DialogResult.Ok(_customer));
+    private Task SaveAsync() => Store.CreateAsync(_order);
 }
 ```
+
+```csharp
+var order = await Dialogs.ShowFormAsync<OrderSheet, OrderDraft>("New order");
+```
+
+`Form` validates with data annotations, shows a busy submit button and submits once on Enter. On success it reports `Done`, reloads the page's blocks, and inside a sheet closes it with the model, which `ShowFormAsync` returns; a closed sheet returns `null`.
+
+- `OnSubmit` throws `FieldException(field, message)` or `FieldException(errors)` for errors next to fields; they clear when the field changes.
+- A `PanelException` shows its message above the button; any other exception shows a general message and is logged.
+- A changed form asks before its sheet closes (the close button or Escape) and before the page is left.
+- Any MudBlazor input with `For=` works inside `Form`, and `Form` works on a page too, for example in settings.
+
+| Parameter        | Description                                                     |
+| ---------------- | --------------------------------------------------------------- |
+| `Model`        | The edited object.                                              |
+| `OnSubmit`     | Called with a valid model.                                      |
+| `Submit`       | Text of the submit button. Default "Save".                      |
+| `Done`         | Message after success. Default "Saved".                         |
+| `Refresh`      | Reloads the page's blocks after success. Default `true`.      |
+| `Actions`      | More buttons before the submit button.                          |
 
 ## Components
 

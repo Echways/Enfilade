@@ -1227,6 +1227,20 @@ body:has(.mud-overlay-dialog) .mud-popover:has(.mud-menu-list) {
     color: var(--vermilion);
 }
 
+.form {
+    display: grid;
+    gap: 24px;
+    min-width: 0;
+}
+
+.form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 16px 28px;
+}
+
 .mud-dialog.confirm {
     width: min(440px, calc(100% - 32px));
 }

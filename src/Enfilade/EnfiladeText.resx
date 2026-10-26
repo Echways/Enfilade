@@ -156,4 +156,19 @@
   <data name="SelectRow" xml:space="preserve">
     <value>Select</value>
   </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>Saved</value>
+  </data>
+  <data name="DiscardQuestion" xml:space="preserve">
+    <value>Discard the changes?</value>
+  </data>
+  <data name="DiscardMessage" xml:space="preserve">
+    <value>What you entered will be lost.</value>
+  </data>
+  <data name="Discard" xml:space="preserve">
+    <value>Don't save</value>
+  </data>
 </root>
