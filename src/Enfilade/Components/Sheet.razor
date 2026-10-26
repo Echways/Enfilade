@@ -1,7 +1,10 @@
 @namespace Enfilade
+@using MudBlazor.Services
+@implements IAsyncDisposable
 @inject IDialogService Dialogs
+@inject IKeyInterceptorService Keys
 
-<MudDialog Class="sheet" TitleClass="sheet-head" ContentClass="sheet-body" ActionsClass="sheet-foot" OnKeyDown="KeyDownAsync">
+<MudDialog Class="sheet" TitleClass="sheet-head" ContentClass="sheet-body" ActionsClass="sheet-foot">
     <TitleContent>
         <h2>@Dialog.Title</h2>
         <button type="button" class="link" @onclick="CloseAsync">@EnfiladeText.Close</button>
@@ -41,6 +44,8 @@
 
     private readonly SheetGuard _guard = new();
 
+    private string? _escapeTarget;
+
     [CascadingParameter]
     private IMudDialogInstance Dialog { get; set; } = default!;
 
@@ -50,6 +55,21 @@
     [Parameter]
     public RenderFragment? Actions { get; set; }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || Dialog.Options.CloseOnEscapeKey == true)
+            return;
+
+        _escapeTarget = $"_{Dialog.Id:N}";
+        await Keys.SubscribeAsync(_escapeTarget, new KeyInterceptorOptions(new KeyOptions("Escape", subscribeDown: true)), keys => keys.OnKeyDown("Escape", CloseAsync));
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_escapeTarget is not null)
+            await Keys.UnsubscribeAsync(_escapeTarget);
+    }
+
     private async Task CloseAsync()
     {
         if (_guard.Dirty && !await Dialogs.ConfirmAsync(EnfiladeText.DiscardQuestion, EnfiladeText.DiscardMessage, EnfiladeText.Discard, danger: true))
@@ -58,7 +78,4 @@
         _guard.Dirty = false;
         Dialog.Cancel();
     }
-
-    private Task KeyDownAsync(KeyboardEventArgs key) =>
-        key.Key == "Escape" && Dialog.Options.CloseOnEscapeKey != true ? CloseAsync() : Task.CompletedTask;
 }
