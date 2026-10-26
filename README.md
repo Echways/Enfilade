@@ -217,6 +217,26 @@ Two filters with one name fail on the first render. An address value that matche
 
 The address keys are `page`, `sort`, `q` and the filter names. A hand-edited address never breaks the page: a bad page number opens the first page, a page past the end opens the last one, an unknown sort key falls back to the default sort. A sortable cell without a member path fails on the first render with a message naming the cell.
 
+### Selection and freshness
+
+```razor
+<PageHead />
+<Listing TItem="Order" Load="Store.PageAsync" Selectable Live>
+    <Selected>
+        <Button Kind="ButtonKind.Danger" OnClick="() => Store.CancelAsync(context)" Done="Orders cancelled">Cancel</Button>
+    </Selected>
+    <Columns>...</Columns>
+</Listing>
+```
+
+| Parameter    | Description                                                                                               |
+| ------------ | --------------------------------------------------------------------------------------------------------- |
+| `Selectable` | Adds checkboxes. The selection covers the current page and clears when the page, sort or filters change. |
+| `Selected`   | A bar above the table while rows are selected; `context` is the selected items.                          |
+| `Live`       | Reloads every `AutoRefreshInterval` while the tab is visible.                                             |
+
+`PageHead` without `Count` and `UpdatedAt` follows the page: it shows the total and the time of the last load of the first listing on the page, and its refresh stamp reloads every listing. An action run through `Button` or `Act` reloads them too.
+
 The first load shows a skeleton; a reload keeps the rows on screen; a failed load shows a message and a retry inside the listing while the rest of the page keeps working. Call `RefreshAsync()` on a `@ref` to reload from code.
 
 ## Dialogs
@@ -259,7 +279,7 @@ A sheet component wraps its markup in `Sheet` and closes through MudBlazor's `IM
 
 | Component                    | Description                                                                                                           |
 | ---------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `PageHead`                 | Page title with `Count`, `Summary`, `UpdatedAt` with `OnRefresh`, and `Actions`.                            |
+| `PageHead`                 | Page title with `Count`, `Summary`, `UpdatedAt` with `OnRefresh`, and `Actions`. Without `Count` and `UpdatedAt` it follows the page's listings. |
 | `Placeholder`              | Skeleton for content that is still loading.                                                                           |
 | `AutoRefresh`              | Invokes `OnTick` every `AutoRefreshInterval` while the tab is visible.                                            |
 | `Sheet`                    | Layout for a sheet: `ChildContent` and `Actions`.                                                                 |

@@ -869,6 +869,52 @@ button.link:hover, .link:hover {
     cursor: default;
 }
 
+.chosen-zone:empty {
+    display: none;
+}
+
+.chosen {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 24px;
+    padding: 10px 14px;
+    border-radius: var(--soft);
+    background: var(--deep);
+    box-shadow: var(--edge);
+    font: 500 13px/20px var(--sans);
+}
+
+.tbl .mud-table-cell.pick {
+    width: 1%;
+    padding-right: 4px;
+}
+
+.tbl .mud-table-cell.pick .mud-checkbox {
+    margin: -8px 0;
+}
+
+@media (max-width: 599.98px) {
+    .tbl.mud-xs-table .mud-table-body .mud-table-cell.pick {
+        float: right;
+        width: auto;
+        padding: 0;
+    }
+
+    .tbl.mud-xs-table .mud-table-body .mud-table-cell.pick::before {
+        content: none;
+    }
+
+    .tbl.mud-xs-table .mud-table-body .mud-table-cell.pick + .mud-table-cell {
+        padding: 0 0 8px;
+        font: 500 17px/24px var(--sans);
+    }
+
+    .tbl.mud-xs-table .mud-table-body .mud-table-cell.pick + .mud-table-cell::before {
+        content: none;
+    }
+}
+
 .listing-failed {
     display: flex;
     flex-wrap: wrap;

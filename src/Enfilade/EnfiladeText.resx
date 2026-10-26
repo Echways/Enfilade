@@ -147,4 +147,13 @@
   <data name="ResetFilters" xml:space="preserve">
     <value>Reset filters</value>
   </data>
+  <data name="Chosen" xml:space="preserve">
+    <value>{n, plural, one {{number} selected} other {{number} selected}}</value>
+  </data>
+  <data name="SelectAll" xml:space="preserve">
+    <value>Select all on the page</value>
+  </data>
+  <data name="SelectRow" xml:space="preserve">
+    <value>Select</value>
+  </data>
 </root>

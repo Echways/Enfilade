@@ -1,0 +1,11 @@
+<PageHead Title="Заказы" />
+<Listing TItem="Order" Load="Load">
+    <Columns>
+        <Cell Title="Клиент" Value="order => order.Customer" />
+    </Columns>
+</Listing>
+
+@code {
+    [Parameter, EditorRequired]
+    public Func<ListQuery<Order>, CancellationToken, Task<ListPage<Order>>> Load { get; set; } = default!;
+}

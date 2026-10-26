@@ -147,4 +147,13 @@
   <data name="ResetFilters" xml:space="preserve">
     <value>Сбросить фильтры</value>
   </data>
+  <data name="Chosen" xml:space="preserve">
+    <value>{n, plural, one {Выбран {number}} few {Выбрано {number}} many {Выбрано {number}} other {Выбрано {number}}}</value>
+  </data>
+  <data name="SelectAll" xml:space="preserve">
+    <value>Выбрать все на странице</value>
+  </data>
+  <data name="SelectRow" xml:space="preserve">
+    <value>Выбрать</value>
+  </data>
 </root>
