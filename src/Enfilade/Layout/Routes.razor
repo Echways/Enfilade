@@ -1,7 +1,8 @@
 @inject IOptions<EnfiladeOptions> Options
 
-<Router AppAssembly="typeof(Routes).Assembly" AdditionalAssemblies="Options.Value.AdditionalAssemblies">
+<Router AppAssembly="typeof(Routes).Assembly" AdditionalAssemblies="Options.Value.AdditionalAssemblies" NotFoundPage="typeof(NotFound)">
     <Found Context="route">
+        <FocusOnNavigate RouteData="route" Selector="h1" />
         <CascadingValue Value="Options.Value.SectionOf(route.PageType)">
             @if (Options.Value.Guards(route.PageType))
             {

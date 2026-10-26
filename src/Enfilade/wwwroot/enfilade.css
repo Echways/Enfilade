@@ -42,7 +42,12 @@
     --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.86' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23g)'/%3E%3C/svg%3E");
     --pigment: radial-gradient(120% 90% at 18% 8%, rgba(255, 255, 255, 0.07), transparent 62%), radial-gradient(110% 110% at 100% 100%, rgba(0, 4, 40, 0.38), transparent 70%), var(--klein);
     --gutter: 16px;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
     color-scheme: dark;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
     scrollbar-width: thin;
     scrollbar-color: var(--rule) transparent;
 }
@@ -50,6 +55,12 @@
 @media (min-width: 841px) {
     :root {
         --gutter: 40px;
+    }
+}
+
+@media (hover: hover) and (pointer: fine) {
+    :root:has(.frame) {
+        scrollbar-gutter: stable;
     }
 }
 
@@ -71,6 +82,10 @@ p {
     text-wrap: pretty;
 }
 
+a, button, label, summary, input, select, textarea {
+    touch-action: manipulation;
+}
+
 ::selection {
     background: var(--klein);
     color: var(--white);
@@ -80,6 +95,10 @@ p {
 :is(a, button, summary, svg, [tabindex]:not([tabindex="-1"]):not(.pointer-events-none)):focus-visible {
     outline: 2px solid var(--ring, var(--glow)) !important;
     outline-offset: 3px;
+}
+
+h1:focus, h1:focus-visible {
+    outline: none !important;
 }
 
 input, textarea, select {
@@ -168,7 +187,7 @@ button.link:hover, .link:hover {
     display: grid;
     grid-template-columns: 176px minmax(0, 1fr);
     min-height: 100dvh;
-    padding-inline: var(--gutter);
+    padding-inline: max(var(--gutter), env(safe-area-inset-left, 0px)) max(var(--gutter), env(safe-area-inset-right, 0px));
 }
 
 .side {
@@ -376,6 +395,7 @@ button.link:hover, .link:hover {
 @media (max-width: 840px) {
     .frame {
         grid-template-columns: minmax(0, 1fr);
+        align-content: start;
     }
 
     .side {
@@ -385,7 +405,7 @@ button.link:hover, .link:hover {
         grid-template-columns: minmax(0, 1fr) auto;
         align-items: center;
         gap: 16px 24px;
-        padding-block: 18px 8px;
+        padding-block: calc(18px + var(--safe-top)) 8px;
     }
 
     .nav {
@@ -395,6 +415,7 @@ button.link:hover, .link:hover {
         gap: 20px;
         padding-bottom: 10px;
         overflow-x: auto;
+        overscroll-behavior-x: contain;
         scrollbar-width: none;
     }
 
@@ -433,7 +454,7 @@ button.link:hover, .link:hover {
     }
 
     .main {
-        padding: 28px 0 112px;
+        padding: 28px 0 calc(112px + var(--safe-bottom));
     }
 
     .title {
@@ -451,10 +472,6 @@ button.link:hover, .link:hover {
     }
 
     .actions {
-        width: 100%;
-    }
-
-    .search, .filter {
         width: 100%;
     }
 }
@@ -539,7 +556,7 @@ button.link:hover, .link:hover {
     padding-block: 24px;
 }
 
-.empty h2, .empty p {
+.empty :is(h1, h2), .empty p {
     margin: 0;
     font: 200 28px/36px var(--sans);
     letter-spacing: -0.02em;
@@ -787,10 +804,16 @@ button.link:hover, .link:hover {
 .mud-switch .mud-switch-span {
     position: relative;
     display: inline-block;
+    flex: none;
     width: 28px;
     height: 14px;
     padding: 0;
-    margin: 0;
+    margin: 0 14px 0 0;
+}
+
+.mud-switch .mud-typography {
+    font: 400 15px/24px var(--sans);
+    color: var(--light);
 }
 
 .mud-switch .mud-switch-track {
@@ -922,6 +945,12 @@ body:has(.mud-overlay-dialog) .mud-popover:has(.mud-menu-list) {
     margin: 0;
 }
 
+@media (max-width: 840px) {
+    .search, .filter {
+        width: 100%;
+    }
+}
+
 .mud-overlay-dialog .mud-overlay-scrim {
     background: var(--scrim) !important;
     backdrop-filter: blur(4px);
@@ -980,6 +1009,7 @@ body:has(.mud-overlay-dialog) .mud-popover:has(.mud-menu-list) {
     align-content: start;
     margin: 0;
     padding: 36px 32px 40px;
+    overscroll-behavior: contain;
 }
 
 .sheet-foot.mud-dialog-actions {
@@ -1234,11 +1264,55 @@ button.btn-k {
 
 @media (max-width: 600px) {
     .mud-dialog.sheet {
-        top: 8px;
+        top: auto;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        max-height: calc(100dvh - 32px - var(--safe-top));
+        border-radius: var(--pane) var(--pane) 0 0;
+        padding-bottom: var(--safe-bottom);
+    }
+
+    .mud-dialog.confirm {
+        position: fixed;
         right: 8px;
-        bottom: 8px;
-        width: calc(100% - 16px);
-        border-radius: 20px;
+        bottom: calc(8px + var(--safe-bottom));
+        left: 8px;
+        width: auto;
+        margin: 0;
+    }
+
+    .confirm-foot.mud-dialog-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+        gap: 4px;
+        padding: 24px 20px 20px;
+    }
+
+    .confirm-foot :is(.btn-k, .btn-danger, .link) {
+        padding-block: 13px;
+        text-align: center;
+    }
+
+    .confirm-head.mud-dialog-title {
+        padding: 24px 24px 0;
+    }
+
+    .confirm-body.mud-dialog-content {
+        padding-inline: 24px;
+    }
+}
+
+@media (max-width: 600px) and (prefers-reduced-motion: no-preference) {
+    .mud-dialog.sheet, .mud-dialog.confirm {
+        animation: rise 0.5s var(--spring) both;
+    }
+}
+
+@keyframes rise {
+    from {
+        transform: translateY(100%);
     }
 }
 
@@ -1374,7 +1448,7 @@ button.btn-k {
 
 .mud-snackbar-location-bottom-left {
     left: var(--gutter);
-    bottom: 24px;
+    bottom: calc(24px + var(--safe-bottom));
 }
 
 .mud-snackbar {
@@ -1849,6 +1923,152 @@ a.crumb:hover {
     white-space: nowrap;
     pointer-events: none;
     user-select: none;
+}
+
+.failure {
+    padding-top: 8px;
+}
+
+.failure .note {
+    max-width: 52ch;
+    margin: -12px 0 0;
+    font: 500 13px/20px var(--sans);
+}
+
+.wire {
+    position: fixed;
+    inset: 0;
+    width: fit-content;
+    max-width: calc(100vw - 2 * var(--gutter));
+    height: fit-content;
+    margin: auto;
+    border: 0;
+    padding: 16px 22px;
+    border-radius: var(--soft);
+    background: var(--deep);
+    color: var(--light);
+    box-shadow: var(--edge), var(--lift);
+    font: 500 13px/20px var(--sans);
+}
+
+.wire[open] {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.wire:focus, .wire:focus-visible {
+    outline: none !important;
+}
+
+.wire::backdrop {
+    background: var(--scrim);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.wire p {
+    margin: 0;
+}
+
+.wire :is(p, button) {
+    display: none;
+}
+
+.wire button {
+    margin-left: 14px;
+    color: var(--light);
+}
+
+.components-reconnect-show .wire-show,
+.components-reconnect-retrying .wire-retrying,
+.components-reconnect-failed .wire-failed,
+.components-reconnect-paused .wire-paused,
+.components-reconnect-resume-failed .wire-resume-failed {
+    display: block;
+}
+
+.components-reconnect-retrying .wire-show {
+    display: none;
+}
+
+.wire-dot {
+    flex: none;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--glow);
+}
+
+:is(.components-reconnect-failed, .components-reconnect-resume-failed) .wire-dot {
+    background: var(--vermilion);
+}
+
+.components-reconnect-paused .wire-dot {
+    background: var(--ochre);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .wire[open] {
+        animation: pop-in 0.45s var(--spring) both;
+    }
+
+    :is(.components-reconnect-show, .components-reconnect-retrying) .wire-dot {
+        animation: beat 1.4s var(--spring) infinite;
+    }
+}
+
+#blazor-error-ui {
+    display: none;
+    position: fixed;
+    left: max(var(--gutter), env(safe-area-inset-left, 0px));
+    bottom: calc(24px + var(--safe-bottom));
+    z-index: 10000;
+    width: auto;
+    max-width: calc(100vw - 2 * var(--gutter));
+    padding: 0;
+    background: none;
+    box-shadow: none;
+}
+
+.crash {
+    display: inline-flex;
+    align-items: center;
+    gap: 20px;
+    padding: 12px 18px 12px 21px;
+    border-radius: var(--soft);
+    background: var(--light);
+    color: var(--night);
+    box-shadow: inset 3px 0 0 var(--vermilion), 0 18px 48px -18px rgba(0, 0, 0, 0.8);
+    font: 500 13px/20px var(--sans);
+}
+
+.crash p {
+    margin: 0;
+}
+
+.crash .link {
+    color: var(--klein);
+}
+
+.crash .link:hover {
+    color: var(--night);
+}
+
+@media (pointer: coarse) {
+    button.link, a.link, .crumb-off, .stamp {
+        position: relative;
+    }
+
+    button.link::before, a.link::before, .crumb-off::before, .stamp::before {
+        content: "";
+        position: absolute;
+        inset: -12px -8px;
+    }
+
+    .nav a, .nav a:hover, .nav a.active {
+        padding-block: 10px;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -75,4 +75,37 @@
   <data name="Percent" xml:space="preserve">
     <value>{0}%</value>
   </data>
+  <data name="FailureHeading" xml:space="preserve">
+    <value>This page stopped on an error</value>
+  </data>
+  <data name="FailureHint" xml:space="preserve">
+    <value>The rest of the panel works. Try the page again or open another section.</value>
+  </data>
+  <data name="TryAgain" xml:space="preserve">
+    <value>Try again</value>
+  </data>
+  <data name="Reconnecting" xml:space="preserve">
+    <value>Connecting to the server</value>
+  </data>
+  <data name="RetryingIn" xml:space="preserve">
+    <value>No connection. Next attempt in {0} s</value>
+  </data>
+  <data name="ReconnectFailed" xml:space="preserve">
+    <value>The server is not answering</value>
+  </data>
+  <data name="Paused" xml:space="preserve">
+    <value>The session is paused</value>
+  </data>
+  <data name="Resume" xml:space="preserve">
+    <value>Resume</value>
+  </data>
+  <data name="ResumeFailed" xml:space="preserve">
+    <value>The session could not be resumed</value>
+  </data>
+  <data name="Reload" xml:space="preserve">
+    <value>Reload</value>
+  </data>
+  <data name="Crashed" xml:space="preserve">
+    <value>The panel stopped on an error</value>
+  </data>
 </root>

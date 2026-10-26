@@ -13,7 +13,7 @@
 </MudDialog>
 
 @code {
-    public static readonly DialogOptions Form = new()
+    internal static readonly DialogOptions Form = new()
     {
         Position = DialogPosition.CenterRight,
         MaxWidth = MaxWidth.False,
@@ -23,7 +23,7 @@
         DefaultFocus = DefaultFocus.FirstChild,
     };
 
-    public static readonly DialogOptions View = new()
+    internal static readonly DialogOptions View = new()
     {
         Position = DialogPosition.CenterRight,
         MaxWidth = MaxWidth.False,

@@ -25,6 +25,11 @@ public sealed class EnfiladeOptions
 
     public ISet<Assembly> Assemblies { get; } = new HashSet<Assembly>();
 
+    internal static bool SpeaksItsLanguage(EnfiladeOptions options) =>
+        options.Languages.Count == 0 || options.Languages.Contains(options.Language, StringComparer.Ordinal);
+
+    internal static bool RefreshesAtAll(EnfiladeOptions options) => options.AutoRefreshInterval > TimeSpan.Zero;
+
     internal Assembly[] AdditionalAssemblies => [.. Assemblies.Where(assembly => assembly != typeof(EnfiladeOptions).Assembly)];
 
     internal bool Guards(Type page) =>

@@ -13,7 +13,7 @@
 </MudDialog>
 
 @code {
-    private static readonly DialogOptions Centered = new()
+    internal static readonly DialogOptions Centered = new()
     {
         Position = DialogPosition.Center,
         MaxWidth = MaxWidth.False,
@@ -33,16 +33,4 @@
 
     [Parameter]
     public bool Danger { get; set; }
-
-    public static async Task<bool> AskAsync(IDialogService dialogs, string question, string message, string yes, bool danger)
-    {
-        var parameters = new DialogParameters<ConfirmDialog>
-        {
-            { dialog => dialog.Message, message },
-            { dialog => dialog.Yes, yes },
-            { dialog => dialog.Danger, danger },
-        };
-        var dialog = await dialogs.ShowAsync<ConfirmDialog>(question, parameters, Centered);
-        return await dialog.Result is { Canceled: false };
-    }
 }

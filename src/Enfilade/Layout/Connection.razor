@@ -1,0 +1,24 @@
+<dialog id="components-reconnect-modal" class="wire" data-nosnippet>
+    <span class="wire-dot" aria-hidden="true"></span>
+    <p class="wire-show">@EnfiladeText.Reconnecting</p>
+    <p class="wire-retrying">@Before<span id="components-seconds-to-next-attempt"></span>@After</p>
+    <p class="wire-failed">@EnfiladeText.ReconnectFailed</p>
+    <p class="wire-paused">@EnfiladeText.Paused</p>
+    <p class="wire-resume-failed">@EnfiladeText.ResumeFailed</p>
+    <button type="button" class="link wire-failed" data-link="retry">@EnfiladeText.TryAgain</button>
+    <button type="button" class="link wire-paused" data-link="resume">@EnfiladeText.Resume</button>
+    <button type="button" class="link wire-resume-failed" data-link="reload">@EnfiladeText.Reload</button>
+</dialog>
+
+<div id="blazor-error-ui" role="alert" data-nosnippet>
+    <div class="crash">
+        <p>@EnfiladeText.Crashed</p>
+        <button type="button" class="link" data-link="reload">@EnfiladeText.Reload</button>
+    </div>
+</div>
+
+@code {
+    private static string Before => EnfiladeText.RetryingIn.Split("{0}")[0];
+
+    private static string After => EnfiladeText.RetryingIn.Split("{0}")[^1];
+}

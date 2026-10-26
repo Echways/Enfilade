@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -112,6 +113,7 @@ public class EnfiladeBuilderTests
     private static EnfiladeOptions Build(Action<EnfiladeBuilder> configure)
     {
         var services = new ServiceCollection();
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
         configure(services.AddEnfilade());
         return services.BuildServiceProvider().GetRequiredService<IOptions<EnfiladeOptions>>().Value;
     }

@@ -75,4 +75,37 @@
   <data name="Percent" xml:space="preserve">
     <value>{0} %</value>
   </data>
+  <data name="FailureHeading" xml:space="preserve">
+    <value>Страница остановилась из-за ошибки</value>
+  </data>
+  <data name="FailureHint" xml:space="preserve">
+    <value>Остальная панель работает. Попробуйте открыть страницу ещё раз или перейдите в другой раздел.</value>
+  </data>
+  <data name="TryAgain" xml:space="preserve">
+    <value>Попробовать ещё раз</value>
+  </data>
+  <data name="Reconnecting" xml:space="preserve">
+    <value>Подключаемся к серверу</value>
+  </data>
+  <data name="RetryingIn" xml:space="preserve">
+    <value>Нет связи. Следующая попытка через {0} с</value>
+  </data>
+  <data name="ReconnectFailed" xml:space="preserve">
+    <value>Сервер не отвечает</value>
+  </data>
+  <data name="Paused" xml:space="preserve">
+    <value>Сеанс приостановлен</value>
+  </data>
+  <data name="Resume" xml:space="preserve">
+    <value>Продолжить</value>
+  </data>
+  <data name="ResumeFailed" xml:space="preserve">
+    <value>Сеанс не удалось продолжить</value>
+  </data>
+  <data name="Reload" xml:space="preserve">
+    <value>Перезагрузить</value>
+  </data>
+  <data name="Crashed" xml:space="preserve">
+    <value>Панель остановилась из-за ошибки</value>
+  </data>
 </root>

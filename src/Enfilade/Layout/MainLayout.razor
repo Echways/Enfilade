@@ -35,14 +35,28 @@
         </AuthorizeView>
     </header>
     <main class="main">
-        @Body
+        <ErrorBoundary @ref="_failure">
+            <ChildContent>
+                @Body
+            </ChildContent>
+            <ErrorContent>
+                <div class="empty failure" role="alert">
+                    <h1>@EnfiladeText.FailureHeading</h1>
+                    <p class="note">@EnfiladeText.FailureHint</p>
+                    <button type="button" class="btn-k pigment" @onclick="_failure!.Recover">@EnfiladeText.TryAgain</button>
+                </div>
+            </ErrorContent>
+        </ErrorBoundary>
     </main>
 </div>
 
 @code {
     private ElementReference _nav;
+    private ErrorBoundary? _failure;
 
     private System.Globalization.CultureInfo? Language => LanguageChoice.Next(Options.Value);
+
+    protected override void OnParametersSet() => _failure?.Recover();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

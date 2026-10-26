@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Localization;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using MudBlazor.Services;
@@ -10,10 +9,17 @@ namespace Enfilade;
 
 public static class EnfiladeServices
 {
+    public const string ConfigurationSection = "Enfilade";
+
     public static EnfiladeBuilder AddEnfilade(this IServiceCollection services, Action<EnfiladeOptions>? configure = null)
     {
+        var options = services.AddOptions<EnfiladeOptions>()
+            .BindConfiguration(ConfigurationSection)
+            .Validate(EnfiladeOptions.SpeaksItsLanguage, "Enfilade: Language must be one of Languages")
+            .Validate(EnfiladeOptions.RefreshesAtAll, "Enfilade: AutoRefreshInterval must be positive")
+            .ValidateOnStart();
         if (configure is not null)
-            services.Configure(configure);
+            options.Configure(configure);
 
         services.AddAuthorizationCore();
         services.AddCascadingAuthenticationState();
@@ -38,14 +44,14 @@ public static class EnfiladeServices
         return new EnfiladeBuilder(services);
     }
 
-    public static IApplicationBuilder UseEnfiladeLanguage(this IApplicationBuilder app) => app.UseRequestLocalization();
-
-    public static RazorComponentsEndpointConventionBuilder MapEnfilade(this IEndpointRouteBuilder endpoints)
+    public static RazorComponentsEndpointConventionBuilder MapEnfilade(this WebApplication app)
     {
-        var options = endpoints.ServiceProvider.GetRequiredService<IOptions<EnfiladeOptions>>().Value;
-        endpoints.MapStaticAssets();
-        endpoints.MapGet("/language/{culture}", LanguageChoice.Choose);
-        var panel = endpoints.MapRazorComponents<App>()
+        var options = app.Services.GetRequiredService<IOptions<EnfiladeOptions>>().Value;
+        app.UseRequestLocalization();
+        app.UseAntiforgery();
+        app.MapStaticAssets();
+        app.MapGet("/language/{culture}", LanguageChoice.Choose);
+        var panel = app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode()
             .AddAdditionalAssemblies(options.AdditionalAssemblies);
         return options.LoginPath is null ? panel : panel.RequireAuthorization();
