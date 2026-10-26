@@ -1,6 +1,6 @@
 @namespace Enfilade
 <figure class="fig @(Alarm ? "alarm" : "")" aria-labelledby="@Labels">
-    <b id="@_id-value" class="@(Text is null ? "" : "word")">@(Text ?? Words.Number(Value))</b>
+    <b id="@_id-value" class="@(Text is null ? "" : "word")" style="--chars: @Written.Count(char.IsLetterOrDigit)">@Written</b>
     @if (Change is { } change)
     {
         <span id="@_id-change" class="change @ToneOf(change)">
@@ -37,6 +37,8 @@
 
     [Parameter]
     public bool LowerIsBetter { get; set; }
+
+    private string Written => Text ?? Words.Number(Value);
 
     private string Labels => Change is null ? $"{_id}-value {_id}-note" : $"{_id}-value {_id}-change {_id}-note";
 

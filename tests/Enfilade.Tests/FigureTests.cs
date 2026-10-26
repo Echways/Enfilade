@@ -41,6 +41,14 @@ public class FigureTests : PanelContext
     public void Figure_without_change_shows_none() =>
         Assert.Empty(Render<Figure>(parameters => parameters.Add(figure => figure.Value, 5).Add(figure => figure.First, "заказов").Add(figure => figure.Second, "сегодня")).FindAll(".change"));
 
+    [Fact]
+    public void Value_counts_its_characters_without_separators() =>
+        Assert.Equal("--chars: 5", Render<Figure>(parameters => parameters.Add(figure => figure.Value, 48200).Add(figure => figure.First, "заказов").Add(figure => figure.Second, "за неделю")).Find("b").GetAttribute("style"));
+
+    [Fact]
+    public void Text_counts_its_letters() =>
+        Assert.Equal("--chars: 9", Render<Figure>(parameters => parameters.Add(figure => figure.Text, "Отключено").Add(figure => figure.First, "связь").Add(figure => figure.Second, "с банком")).Find("b").GetAttribute("style"));
+
     private AngleSharp.Dom.IElement Change(double share, bool lowerIsBetter = false) => Render<Figure>(parameters => parameters
         .Add(figure => figure.Value, 1284)
         .Add(figure => figure.First, "заказов")

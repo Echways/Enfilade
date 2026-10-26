@@ -1776,6 +1776,7 @@ button.btn-k {
     position: relative;
     margin: 0;
     padding: 4px 32px 8px;
+    container-type: inline-size;
 }
 
 .fig:first-child {
@@ -1791,11 +1792,23 @@ button.btn-k {
 }
 
 .fig b {
-    display: block;
-    margin-left: -0.05em;
-    font: 200 80px/80px var(--sans);
-    letter-spacing: -0.045em;
+    --size: 80px;
+    --fit: min(var(--size), 100cqi / (var(--chars) * 0.65));
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    height: var(--size);
+    margin-left: calc(var(--fit) * -0.05);
+    font: 200 var(--size)/1 var(--sans);
+    letter-spacing: calc(var(--fit) * -0.045);
     white-space: nowrap;
+    text-fit: shrink;
+}
+
+@supports not (text-fit: shrink) {
+    .fig b {
+        font-size: var(--fit);
+    }
 }
 
 .fig figcaption span {
@@ -1995,12 +2008,11 @@ a.crumb:hover {
     }
 
     .fig b {
-        font-size: 56px;
-        line-height: 56px;
+        --size: 56px;
     }
 
     .fig b.word {
-        font-size: clamp(32px, 11vw, 56px);
+        --size: clamp(32px, 11vw, 56px);
     }
 
     .block {
