@@ -139,6 +139,63 @@ await Act.RunAsync(() => Store.DeleteAsync(order), done: "Order deleted");
 
 Other attributes, such as `class` or `aria-label`, pass through to the `<button>`.
 
+## Listings
+
+`Listing` shows a table with sorting, paging, filters and the loading, empty and error states. Its state lives in the address, so a link to a filtered page can be sent to a colleague.
+
+```razor
+<PageHead />
+<Listing TItem="Order" Load="Store.PageAsync" Sort="-createdAt" Href="@(order => $"orders/{order.Id}")">
+    <Columns>
+        <Cell Title="Customer" Value="order => order.Customer" Sort />
+        <Cell Title="Total" Value="order => order.Total" Sort />
+        <Cell Title="Created" Value="order => order.CreatedAt" Sort />
+        <Slot Title="Status"><Tag Tone="ToneOf(context)">@context.Status</Tag></Slot>
+    </Columns>
+</Listing>
+```
+
+A server-side `Load` gets a `ListQuery<TItem>` with resolved expressions, so a store over `IQueryable` (EF Core included) stays one line:
+
+```csharp
+public Task<ListPage<Order>> PageAsync(ListQuery<Order> query, CancellationToken token) =>
+    Task.FromResult(db.Orders.ToPage(query));
+```
+
+`Filter(query)` applies the conditions, `Slice(query)` the order and the page, `ToPage(query)` both plus the count. For other stores the query also carries the raw values: `Page`, `Size`, `Search`, `Sort` (`Key`, `Descending`) and `Filters` by name.
+
+Pass `Items` instead of `Load` to let the listing sort, filter and page an in-memory collection.
+
+| Parameter        | Description                                                                                  |
+| ---------------- | -------------------------------------------------------------------------------------------- |
+| `Load`         | `(ListQuery<TItem>, CancellationToken) => Task<ListPage<TItem>>`. A newer load cancels an older one. |
+| `Items`        | An in-memory collection. Exactly one of `Load` and `Items` is required.                  |
+| `Columns`      | `Cell` and `Slot` components.                                                            |
+| `Href`         | A row link: middle click and "open in a new tab" work.                                     |
+| `OnOpen`       | Called with the row's item on click or Enter, for example to open a sheet.                   |
+| `Sort`         | Default sort key, `-` for descending: `"-total"`.                                       |
+| `PageSize`     | Rows per page. Default `25`.                                                               |
+| `Name`         | Prefix of the address keys, for two listings on one page: `orders.page`.                   |
+| `Empty`        | Content shown when there is nothing yet.                                                     |
+| `Dense`        | Tighter rows.                                                                                |
+
+`Cell` shows a value formatted by `Words.Of`: numbers, money, dates in the viewer's time zone, durations, `bool` and enums with `[Display(Name)]`.
+
+| Parameter        | Description                                                                                  |
+| ---------------- | -------------------------------------------------------------------------------------------- |
+| `Title`        | Column heading.                                                                              |
+| `Value`        | `order => order.Total`. Its member path, in camel case, is the sort key in the address.   |
+| `Sort`         | Makes the column sortable. A computed `Value` also needs `Key`.                          |
+| `Number`       | Right-aligns the column. Default: on for numeric values.                                     |
+| `Format`       | Own formatting of the value.                                                                 |
+| `ChildContent` | A template with `context`; the value still sorts.                                          |
+
+`Slot` is a template-only column, such as actions; it never sorts.
+
+The address keys are `page`, `sort` and `q`. A hand-edited address never breaks the page: a bad page number opens the first page, a page past the end opens the last one, an unknown sort key falls back to the default sort. A sortable cell without a member path fails on the first render with a message naming the cell.
+
+The first load shows a skeleton; a reload keeps the rows on screen; a failed load shows a message and a retry inside the listing while the rest of the page keeps working. Call `RefreshAsync()` on a `@ref` to reload from code.
+
 ## Dialogs
 
 ```csharp
@@ -204,6 +261,7 @@ MudBlazor inputs, selects, switches, checkboxes, tables, menus and snackbars are
 | `Size(1536)`                 | `1.5 KB`                                                                 |
 | `Duration(1240)`             | `1.2 s`                                                                  |
 | `Share(0.123)`               | `12.3%`                                                                  |
+| `Of(value)`                   | Any of the above by type, `–` for `null`                                |
 | `Day`, `Minute`, `Clock` | `2026-10-26`, `2026-10-26 14:05`, `14:05` in the viewer's time zone |
 | `Middle(text, 10)`           | `tnk_AB…XYZ`                                                            |
 | `Count(pattern, n)`          | ICU plurals: `{n, plural, one {{number} order} other {{number} orders}}` |

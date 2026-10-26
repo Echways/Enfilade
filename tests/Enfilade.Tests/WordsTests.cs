@@ -1,3 +1,5 @@
+using Enfilade.Tests.Hosts;
+
 namespace Enfilade.Tests;
 
 public class WordsTests
@@ -65,4 +67,28 @@ public class WordsTests
     [InlineData(0.1234, "12,3\u00A0%")]
     [InlineData(1, "100\u00A0%")]
     public void Share_is_a_percent_with_one_decimal(double share, string expected) => Assert.Equal(expected, Words.Share(share));
+
+    [Theory]
+    [InlineData(null, "–")]
+    [InlineData(1234, "1\u00A0234")]
+    [InlineData(1234L, "1\u00A0234")]
+    [InlineData((byte)5, "5")]
+    [InlineData(0.25, "0,25")]
+    [InlineData(2f, "2")]
+    [InlineData(true, "Да")]
+    [InlineData(false, "Нет")]
+    [InlineData(OrderStatus.Paid, "Оплачен")]
+    [InlineData(OrderStatus.New, "New")]
+    [InlineData("text", "text")]
+    public void Of_formats_by_type(object? value, string expected) => Assert.Equal(expected, Words.Of(value));
+
+    [Fact]
+    public void Of_formats_money_times_and_spans()
+    {
+        Assert.Equal("1\u00A0234,5", Words.Of(1234.5m));
+        Assert.Equal(Words.Minute(Moment), Words.Of(Moment));
+        Assert.Equal("2026-10-11 23:30", Words.Of(new DateTime(2026, 10, 11, 23, 30, 0)));
+        Assert.Equal("2026-10-12", Words.Of(new DateOnly(2026, 10, 12)));
+        Assert.Equal(Words.Duration(1_240), Words.Of(TimeSpan.FromMilliseconds(1_240)));
+    }
 }

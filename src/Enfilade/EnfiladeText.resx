@@ -114,4 +114,28 @@
   <data name="Working" xml:space="preserve">
     <value>Working…</value>
   </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="NothingYet" xml:space="preserve">
+    <value>Nothing here yet</value>
+  </data>
+  <data name="LoadFailed" xml:space="preserve">
+    <value>Could not load the list</value>
+  </data>
+  <data name="PreviousPage" xml:space="preserve">
+    <value>Previous page</value>
+  </data>
+  <data name="NextPage" xml:space="preserve">
+    <value>Next page</value>
+  </data>
+  <data name="PageRange" xml:space="preserve">
+    <value>{0}–{1} of {2}</value>
+  </data>
+  <data name="SortBy" xml:space="preserve">
+    <value>Sort by {0}</value>
+  </data>
 </root>

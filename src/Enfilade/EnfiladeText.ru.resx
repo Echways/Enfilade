@@ -114,4 +114,28 @@
   <data name="Working" xml:space="preserve">
     <value>Выполняется…</value>
   </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Да</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="NothingYet" xml:space="preserve">
+    <value>Здесь пока пусто</value>
+  </data>
+  <data name="LoadFailed" xml:space="preserve">
+    <value>Не удалось загрузить список</value>
+  </data>
+  <data name="PreviousPage" xml:space="preserve">
+    <value>Предыдущая страница</value>
+  </data>
+  <data name="NextPage" xml:space="preserve">
+    <value>Следующая страница</value>
+  </data>
+  <data name="PageRange" xml:space="preserve">
+    <value>{0}–{1} из {2}</value>
+  </data>
+  <data name="SortBy" xml:space="preserve">
+    <value>Сортировать: {0}</value>
+  </data>
 </root>

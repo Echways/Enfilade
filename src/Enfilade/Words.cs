@@ -1,4 +1,6 @@
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
+using System.Reflection;
 using Jeffijoe.MessageFormat;
 
 namespace Enfilade;
@@ -52,4 +54,24 @@ public static class Words
 
     public static string Count(string pattern, long count) => MessageFormatter.Format(
         pattern, new Dictionary<string, object?> { ["n"] = count, ["number"] = Number(count) }, CultureInfo.CurrentUICulture);
+
+    public static string Of(object? value) => value switch
+    {
+        null => "–",
+        sbyte or byte or short or ushort or int or uint or long or ulong => ((IFormattable)value).ToString("N0", CultureInfo.CurrentCulture),
+        decimal or double or float => ((IFormattable)value).ToString("#,##0.##", CultureInfo.CurrentCulture),
+        DateTimeOffset moment => Minute(moment),
+        DateTime moment => Minute(moment.Kind == DateTimeKind.Local ? new DateTimeOffset(moment) : new DateTimeOffset(DateTime.SpecifyKind(moment, DateTimeKind.Utc))),
+        DateOnly day => day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+        TimeSpan span => Duration((int)span.TotalMilliseconds),
+        bool yes => yes ? EnfiladeText.Yes : EnfiladeText.No,
+        Enum member => Named(member),
+        _ => value.ToString() ?? "",
+    };
+
+    private static string Named(Enum member)
+    {
+        var name = member.ToString();
+        return member.GetType().GetField(name)?.GetCustomAttribute<DisplayAttribute>()?.GetName() ?? name;
+    }
 }
