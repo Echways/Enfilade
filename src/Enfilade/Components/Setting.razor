@@ -1,0 +1,23 @@
+@namespace Enfilade
+
+<div class="setting">
+    <div class="setting-text">
+        <span class="setting-title">@Title</span>
+        @if (Hint is not null)
+        {
+            <span class="setting-hint">@Hint</span>
+        }
+    </div>
+    <div class="setting-control">@ChildContent</div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = "";
+
+    [Parameter]
+    public string? Hint { get; set; }
+
+    [Parameter, EditorRequired]
+    public RenderFragment ChildContent { get; set; } = default!;
+}

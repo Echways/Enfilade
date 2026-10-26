@@ -1,0 +1,57 @@
+@namespace Enfilade
+@using System.Globalization
+@using Microsoft.AspNetCore.WebUtilities
+@implements IDisposable
+@inject NavigationManager Navigation
+
+<CascadingValue Value="this" IsFixed="true">
+    <MudTabs ActivePanelIndex="_active" ActivePanelIndexChanged="Choose" Class="tabs" Elevation="0">
+        @ChildContent
+    </MudTabs>
+</CascadingValue>
+
+@code {
+    private readonly List<Tab> _tabs = [];
+    private int _active;
+
+    [Parameter]
+    public string Name { get; set; } = "tab";
+
+    [Parameter, EditorRequired]
+    public RenderFragment ChildContent { get; set; } = default!;
+
+    internal void Add(Tab tab) => _tabs.Add(tab);
+
+    internal void Remove(Tab tab) => _tabs.Remove(tab);
+
+    protected override void OnInitialized() => Navigation.LocationChanged += LocationChanged;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+            Settle(Navigation.Uri);
+    }
+
+    public void Dispose() => Navigation.LocationChanged -= LocationChanged;
+
+    private string NameOf(Tab tab) => tab.Name ?? _tabs.IndexOf(tab).ToString(CultureInfo.InvariantCulture);
+
+    private void Settle(string uri)
+    {
+        var chosen = QueryHelpers.ParseQuery(new Uri(uri).Query).GetValueOrDefault(Name).ToString();
+        var active = Math.Max(0, _tabs.FindIndex(tab => NameOf(tab) == chosen));
+        if (active == _active)
+            return;
+
+        _active = active;
+        StateHasChanged();
+    }
+
+    private void Choose(int index)
+    {
+        _active = index;
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameter(Name, index == 0 ? null : NameOf(_tabs[index])));
+    }
+
+    private void LocationChanged(object? sender, LocationChangedEventArgs args) => _ = InvokeAsync(() => Settle(args.Location));
+}

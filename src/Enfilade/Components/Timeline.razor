@@ -1,0 +1,21 @@
+@namespace Enfilade
+@using System.Globalization
+
+<ol class="timeline">
+    @foreach (var entry in Entries.OrderByDescending(entry => entry.At))
+    {
+        <li class="@entry.Tone.ToString().ToLowerInvariant()">
+            <time datetime="@entry.At.ToString("O", CultureInfo.InvariantCulture)">@Words.Minute(entry.At)</time>
+            <span class="timeline-text">@entry.Text</span>
+            @if (entry.Who is not null)
+            {
+                <span class="timeline-who">@entry.Who</span>
+            }
+        </li>
+    }
+</ol>
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<TimelineEntry> Entries { get; set; } = [];
+}

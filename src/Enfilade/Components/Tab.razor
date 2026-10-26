@@ -1,0 +1,22 @@
+@namespace Enfilade
+@implements IDisposable
+
+<MudTabPanel Text="@Title">@ChildContent</MudTabPanel>
+
+@code {
+    [CascadingParameter]
+    private Tabs Owner { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = "";
+
+    [Parameter]
+    public string? Name { get; set; }
+
+    [Parameter, EditorRequired]
+    public RenderFragment ChildContent { get; set; } = default!;
+
+    protected override void OnInitialized() => Owner.Add(this);
+
+    public void Dispose() => Owner.Remove(this);
+}

@@ -313,6 +313,13 @@ Another type fails with a message that points to MudBlazor inputs.
 
 | Component                    | Description                                                                                                           |
 | ---------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `Facts`, `Fact`           | A record's labelled values: `<Fact Label="Total" Value="order.Total" />`, formatted by `Words.Of`, or own content. |
+| `Tag`                      | A status label with `Tone`: `Neutral`, `Good`, `Warn` or `Bad`.                                        |
+| `Tabs`, `Tab`              | Tabs whose choice lives in the address (`tab=`, or `Name`). A `Tab` has `Title` and optional `Name`; only the open tab renders. |
+| `Timeline`                 | Events from `TimelineEntry(At, Text, Who, Tone)`, newest first, in the viewer's time zone.              |
+| `Pane`                     | A titled section of a page with `Hint` and `Actions`.                                                    |
+| `Setting`                  | A settings row: `Title`, `Hint` and the control on the right. Group rows in `<div class="settings">`. |
+| `EmptyState`               | An empty state: `Title`, `Hint` and an optional action.                                                  |
 | `PageHead`                 | Page title with `Count`, `Summary`, `UpdatedAt` with `OnRefresh`, and `Actions`. Without `Count` and `UpdatedAt` it follows the page's listings. |
 | `Placeholder`              | Skeleton for content that is still loading.                                                                           |
 | `AutoRefresh`              | Invokes `OnTick` every `AutoRefreshInterval` while the tab is visible.                                            |
@@ -355,8 +362,8 @@ Times are shown in the viewer's time zone, which the browser reports once per co
 | `btn-danger`                                | Destructive button.                              |
 | `link`                                      | Quiet text button.                               |
 | `tbl`, `tbl dense`                        | On `MudTable`. Add `num` to numeric columns. |
-| `empty`                                     | Empty state: a heading, then an optional button. |
-| `block`, `lead`                           | Titled section further down a page.              |
+| `empty`                                     | Empty state; `EmptyState` renders it.          |
+| `block`, `lead`                           | Titled section further down a page; `Pane` replaces them. |
 | `group`, `pair`, `hint`, `form-error` | Form layout inside a sheet.                      |
 | `note`, `warn-t`, `bad-t`               | Secondary, warning and error text.               |
 | `sr`                                        | Visible to screen readers only.                  |

@@ -1,0 +1,32 @@
+@namespace Enfilade
+
+<section class="pane">
+    <header class="pane-head">
+        <div>
+            <h2>@Title</h2>
+            @if (Hint is not null)
+            {
+                <p class="pane-hint">@Hint</p>
+            }
+        </div>
+        @if (Actions is not null)
+        {
+            <div class="actions">@Actions</div>
+        }
+    </header>
+    @ChildContent
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = "";
+
+    [Parameter]
+    public string? Hint { get; set; }
+
+    [Parameter]
+    public RenderFragment? Actions { get; set; }
+
+    [Parameter, EditorRequired]
+    public RenderFragment ChildContent { get; set; } = default!;
+}
