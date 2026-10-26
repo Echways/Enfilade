@@ -52,46 +52,33 @@ A section is a routable Razor component. It appears in the navigation in the ord
 @inject OrderStore Store
 @inject IDialogService Dialogs
 
-<PageHead Count="_orders?.Count" UpdatedAt="_loadedAt" OnRefresh="LoadAsync">
+<PageHead>
     <Actions>
-        <button type="button" class="btn-k pigment" @onclick="CreateAsync">New order</button>
+        <Button OnClick="CreateAsync" Refresh="false">New order</Button>
     </Actions>
 </PageHead>
-<AutoRefresh OnTick="LoadAsync" />
-
-@if (_orders is null)
-{
-    <Placeholder />
-}
-else
-{
-    <MudTable Items="_orders" Elevation="0" Class="tbl">
-        <HeaderContent>
-            <MudTh>Customer</MudTh>
-            <MudTh Class="num">Total</MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd>@context.Customer</MudTd>
-            <MudTd Class="num">@Words.Number(context.Total)</MudTd>
-        </RowTemplate>
-    </MudTable>
-}
+<Listing TItem="Order" Load="Store.PageAsync" SearchBy="[order => order.Customer]" Sort="-createdAt"
+         Href="@(order => $"orders/{order.Id}")" Live>
+    <Filters>
+        <Search />
+        <Choice Title="Status" By="order => order.Status" Options="Statuses" />
+    </Filters>
+    <Columns>
+        <Cell Title="Customer" Value="order => order.Customer" Sort />
+        <Cell Title="Total" Value="order => order.Total" Sort />
+        <Cell Title="Created" Value="order => order.CreatedAt" Sort />
+    </Columns>
+</Listing>
 
 @code {
-    private List<Order>? _orders;
-    private DateTimeOffset? _loadedAt;
+    private static readonly IReadOnlyList<Option<OrderStatus>> Statuses =
+        [new(OrderStatus.New, "New"), new(OrderStatus.Paid, "Paid")];
 
-    protected override Task OnInitializedAsync() => LoadAsync();
-
-    private async Task LoadAsync()
-    {
-        _orders = await Store.ListAsync();
-        _loadedAt = DateTimeOffset.UtcNow;
-    }
-
-    private Task CreateAsync() => Dialogs.ShowSheetAsync<OrderForm>("New order");
+    private Task CreateAsync() => Dialogs.ShowFormAsync<OrderSheet, OrderDraft>("New order");
 }
 ```
+
+`OrderSheet` is a `Sheet` with a `Form` of `Field`s; see [Forms](#forms).
 
 - `PageHead` takes its title from the navigation and sets the document title.
 - The section's assembly is added to the router, so nested routes such as `/orders/{id}` need no registration. Use `AddPages(assembly)` for an assembly without sections.
@@ -149,6 +136,8 @@ await Act.RunAsync(() => Store.DeleteAsync(order), done: "Order deleted");
 | `Busy`, `Disabled` | Show the button as busy or disabled from outside.                   |
 
 Other attributes, such as `class` or `aria-label`, pass through to the `<button>`.
+
+`CurrentPage` is the scoped service behind this. A custom block joins it with `using var source = CurrentPage.Track(ReloadAsync)` and calls `source.Report(count, at)` after each load; `PageHead` shows what the first source reported. `RefreshAsync()` reloads every source and then raises `Refreshed`; `Changed` fires when a report arrives.
 
 ## Listings
 
@@ -393,7 +382,7 @@ Times are shown in the viewer's time zone, which the browser reports once per co
 | `note`, `warn-t`, `bad-t`               | Secondary, warning and error text.               |
 | `sr`                                        | Visible to screen readers only.                  |
 
-Design tokens are CSS custom properties: `--night`, `--deep`, `--rule`, `--mist`, `--light`, `--klein`, `--glow`, `--vermilion`, `--ochre`, `--sans`, `--mono`.
+Design tokens are CSS custom properties: `--night`, `--deep`, `--rule`, `--mist`, `--light`, `--klein`, `--glow`, `--vermilion`, `--ochre`, `--sans`, `--mono`. With `Appearance` set to `Light` (or `System` on a light device) they keep their names and take light values: `--night` becomes the light background and `--light` the dark text.
 
 ## Authentication
 
