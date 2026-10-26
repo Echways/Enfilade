@@ -108,4 +108,10 @@
   <data name="Crashed" xml:space="preserve">
     <value>The panel stopped on an error</value>
   </data>
+  <data name="Failed" xml:space="preserve">
+    <value>Something went wrong. Try again.</value>
+  </data>
+  <data name="Working" xml:space="preserve">
+    <value>Working…</value>
+  </data>
 </root>

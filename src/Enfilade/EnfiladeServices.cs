@@ -33,6 +33,8 @@ public static class EnfiladeServices
             mud.SnackbarConfiguration.HideTransitionDuration = 160;
         });
         services.AddScoped<Clipboard>();
+        services.AddScoped<CurrentPage>();
+        services.AddScoped<Act>();
         services.AddOptions<RequestLocalizationOptions>().Configure<IOptions<EnfiladeOptions>>((localization, shell) =>
         {
             var spoken = LanguageChoice.Spoken(shell.Value).ToArray();

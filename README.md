@@ -106,6 +106,39 @@ else
 | `AddPages(Assembly assembly)`           | Adds an assembly's routes without a navigation entry.                          |
 | `AddStylesheet(string path)`            | Links a stylesheet from static assets.                                         |
 
+## Actions
+
+`Button` runs an action through `Act`: it asks for confirmation, blocks repeated clicks while the action runs, reports success and shows a readable error.
+
+```razor
+<Button Kind="ButtonKind.Danger" OnClick="() => Store.DeleteAsync(order)" Done="Order deleted"
+        Confirm="@(new Confirm("Delete the order?", "The customer is notified.", "Delete", Danger: true))">
+    Delete
+</Button>
+```
+
+From code, inject `Act`:
+
+```csharp
+await Act.RunAsync(() => Store.DeleteAsync(order), done: "Order deleted");
+```
+
+- A `PanelException(message)` shows its message to the user as is. Any other exception shows a general message and is logged.
+- After a successful action, everything on the page that reports to `CurrentPage` reloads. Pass `Refresh="false"` (`refresh: false`) to skip it.
+- `RunAsync` returns whether the action ran to the end.
+
+| Parameter         | Description                                                              |
+| ----------------- | ------------------------------------------------------------------------ |
+| `Kind`          | `Primary` (default), `Danger` or `Quiet`.                              |
+| `OnClick`       | The action. The button is disabled and shows that it is busy until it ends. |
+| `Confirm`       | `Confirm(Question, Message, Yes, Danger)` asked before the action.     |
+| `Done`          | Message shown after success.                                             |
+| `Refresh`       | Reloads the page's blocks after success. Default `true`.               |
+| `Submit`        | Renders a submit button and leaves the work to the form.                 |
+| `Busy`, `Disabled` | Show the button as busy or disabled from outside.                   |
+
+Other attributes, such as `class` or `aria-label`, pass through to the `<button>`.
+
 ## Dialogs
 
 ```csharp

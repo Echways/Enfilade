@@ -108,4 +108,10 @@
   <data name="Crashed" xml:space="preserve">
     <value>Панель остановилась из-за ошибки</value>
   </data>
+  <data name="Failed" xml:space="preserve">
+    <value>Не получилось. Попробуйте ещё раз.</value>
+  </data>
+  <data name="Working" xml:space="preserve">
+    <value>Выполняется…</value>
+  </data>
 </root>

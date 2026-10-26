@@ -1095,6 +1095,38 @@ button.btn-k {
     border: 0;
 }
 
+.busy, .btn-k.busy:disabled {
+    cursor: progress;
+}
+
+.btn-k.busy:disabled {
+    opacity: 0.7;
+}
+
+.busy::after {
+    content: "";
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin-left: 10px;
+    vertical-align: -1px;
+    border: 1.5px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .busy::after {
+        animation: turn 0.8s linear infinite;
+    }
+}
+
+@keyframes turn {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 .btn-danger {
     font: 600 13px/20px var(--sans);
     color: var(--vermilion);
