@@ -1,0 +1,8 @@
+@namespace Enfilade
+@inject NavigationManager Navigation
+@inject IOptions<EnfiladeOptions> Options
+
+@if (LanguageChoice.Next(Options.Value) is { } language)
+{
+    <a href="@LanguageChoice.Path(Navigation, language)" lang="@language.Name" data-enhance-nav="false">@LanguageChoice.Title(language)</a>
+}

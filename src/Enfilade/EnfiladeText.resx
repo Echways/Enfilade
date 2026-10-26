@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="SignOut" xml:space="preserve">
+    <value>Sign out</value>
+  </data>
+  <data name="Sections" xml:space="preserve">
+    <value>Sections</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="UpdatedAt" xml:space="preserve">
+    <value>updated {0} UTC</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="Copied" xml:space="preserve">
+    <value>Copied</value>
+  </data>
+  <data name="CopyNeedsHttps" xml:space="preserve">
+    <value>The browser copies only on a page opened over HTTPS: select the text and copy it yourself</value>
+  </data>
+  <data name="RemoveFilter" xml:space="preserve">
+    <value>Remove the filter {0}: {1}</value>
+  </data>
+  <data name="RemoveFilterHint" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="NotFoundTitle" xml:space="preserve">
+    <value>Page not found</value>
+  </data>
+  <data name="NotFoundHeading" xml:space="preserve">
+    <value>There is no such page</value>
+  </data>
+  <data name="BackHome" xml:space="preserve">
+    <value>Back to the main page</value>
+  </data>
+  <data name="Milliseconds" xml:space="preserve">
+    <value>{0} ms</value>
+  </data>
+  <data name="Seconds" xml:space="preserve">
+    <value>{0} s</value>
+  </data>
+  <data name="Bytes" xml:space="preserve">
+    <value>{0} B</value>
+  </data>
+  <data name="Kilobytes" xml:space="preserve">
+    <value>{0} KB</value>
+  </data>
+  <data name="Megabytes" xml:space="preserve">
+    <value>{0} MB</value>
+  </data>
+  <data name="Gigabytes" xml:space="preserve">
+    <value>{0} GB</value>
+  </data>
+  <data name="Percent" xml:space="preserve">
+    <value>{0}%</value>
+  </data>
+</root>

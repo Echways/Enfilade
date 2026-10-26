@@ -1,0 +1,32 @@
+@inject IOptions<EnfiladeOptions> Options
+
+<Router AppAssembly="typeof(Routes).Assembly" AdditionalAssemblies="Options.Value.AdditionalAssemblies">
+    <Found Context="route">
+        <CascadingValue Value="Options.Value.SectionOf(route.PageType)">
+            @if (Options.Value.Guards(route.PageType))
+            {
+                <AuthorizeView>
+                    <Authorized>
+                        @Page(route)
+                    </Authorized>
+                    <NotAuthorized>
+                        <ToLogin />
+                    </NotAuthorized>
+                </AuthorizeView>
+            }
+            else
+            {
+                @Page(route)
+            }
+        </CascadingValue>
+    </Found>
+</Router>
+
+@code {
+    private static RenderFragment Page(RouteData route) =>
+        @<AuthorizeRouteView RouteData="route" DefaultLayout="typeof(MainLayout)">
+            <NotAuthorized>
+                <ToLogin />
+            </NotAuthorized>
+        </AuthorizeRouteView>;
+}

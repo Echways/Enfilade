@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <PackageId>Enfilade</PackageId>
+    <Description>A Blazor admin panel shell: sections, navigation, theme and building blocks you assemble with one call per tab.</Description>
+    <PackageTags>blazor;admin;panel;dashboard;shell;mudblazor;razor</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="/" />
+    <InternalsVisibleTo Include="Enfilade.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="MudBlazor" />
+    <PackageReference Include="MessageFormat" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="EnfiladeText.resx" StronglyTypedLanguage="CSharp" StronglyTypedClassName="EnfiladeText"
+                      StronglyTypedNamespace="Enfilade" StronglyTypedFileName="$(IntermediateOutputPath)EnfiladeText.Designer.cs" />
+  </ItemGroup>
+
+</Project>

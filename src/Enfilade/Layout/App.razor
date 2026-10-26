@@ -1,0 +1,50 @@
+@inject IOptions<EnfiladeOptions> Options
+@inject Microsoft.Extensions.Hosting.IHostEnvironment Host
+
+<!DOCTYPE html>
+<html lang="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="same-origin" />
+    <meta name="theme-color" content="@EnfiladeTheme.Night" />
+    <meta name="color-scheme" content="dark" />
+    <base href="@(Context.Request.PathBase)/" />
+    <ResourcePreloader />
+    @if (Options.Value.Favicon is { } favicon)
+    {
+        <link rel="icon" href="@Assets[favicon]" />
+    }
+    <link rel="preload" href="_content/Enfilade/fonts/onest.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="@Assets["_content/MudBlazor/MudBlazor.min.css"]" />
+    <link rel="stylesheet" href="@Assets["_content/Enfilade/enfilade.css"]" />
+    @foreach (var stylesheet in Stylesheets)
+    {
+        <link rel="stylesheet" href="@Assets[stylesheet]" />
+    }
+    <ImportMap />
+    <HeadOutlet @rendermode="Mode" />
+</head>
+<body>
+    <Routes @rendermode="Mode" />
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script src="@Assets["_content/MudBlazor/MudBlazor.min.js"]"></script>
+    <script src="@Assets["_content/Enfilade/enfilade.js"]"></script>
+</body>
+</html>
+
+@code {
+    private static readonly IComponentRenderMode Live = new InteractiveServerRenderMode(prerender: false);
+
+    [CascadingParameter]
+    private HttpContext Context { get; set; } = default!;
+
+    private IComponentRenderMode? Mode => Context.AcceptsInteractiveRouting() ? Live : null;
+
+    private IEnumerable<string> Stylesheets => Published(Host.ApplicationName + ".styles.css")
+        ? [Host.ApplicationName + ".styles.css", .. Options.Value.Stylesheets]
+        : Options.Value.Stylesheets;
+
+    private bool Published(string path) => Assets[path] != path || Assets.Any(asset => asset.Url == path);
+}

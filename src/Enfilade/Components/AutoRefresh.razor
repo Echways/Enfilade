@@ -1,0 +1,38 @@
+@namespace Enfilade
+@implements IDisposable
+@inject IOptions<EnfiladeOptions> Options
+@inject IJSRuntime Js
+
+@code {
+    private readonly CancellationTokenSource _stop = new();
+
+    [Parameter, EditorRequired]
+    public EventCallback OnTick { get; set; }
+
+    protected override void OnInitialized() => _ = RepeatAsync();
+
+    public void Dispose()
+    {
+        _stop.Cancel();
+        _stop.Dispose();
+    }
+
+    private async Task RepeatAsync()
+    {
+        using var timer = new PeriodicTimer(Options.Value.AutoRefreshInterval);
+        try
+        {
+            while (await timer.WaitForNextTickAsync(_stop.Token))
+            {
+                await InvokeAsync(async () =>
+                {
+                    if (await Js.InvokeAsync<bool>("enfilade.visible", _stop.Token))
+                        await OnTick.InvokeAsync();
+                });
+            }
+        }
+        catch (Exception exception) when (exception is OperationCanceledException or JSDisconnectedException or ObjectDisposedException)
+        {
+        }
+    }
+}

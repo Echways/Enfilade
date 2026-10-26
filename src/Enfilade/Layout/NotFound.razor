@@ -1,0 +1,18 @@
+@page "/{*path:nonfile}"
+@layout EntranceLayout
+@inject IOptions<EnfiladeOptions> Options
+
+<PageTitle>@($"{EnfiladeText.NotFoundTitle} · {Options.Value.Brand}")</PageTitle>
+
+<div class="entrance-in">
+    <div class="lost">
+        <h1>@EnfiladeText.NotFoundHeading</h1>
+        <a href="">@EnfiladeText.BackHome</a>
+    </div>
+</div>
+<div class="monument" aria-hidden="true">404</div>
+
+@code {
+    [Parameter]
+    public string? Path { get; set; }
+}

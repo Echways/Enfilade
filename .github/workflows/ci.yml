@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["**.md", "LICENSE"]
+  pull_request:
+    paths-ignore: ["**.md", "LICENSE"]
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    name: Build, test and pack
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up .NET
+        uses: ./.github/actions/dotnet
+
+      - name: Check C# formatting
+        run: dotnet format Enfilade.slnx --verify-no-changes
+
+      - name: Build
+        run: dotnet build Enfilade.slnx -c Release -p:ContinuousIntegrationBuild=true
+
+      - name: Test
+        run: dotnet test --project tests/Enfilade.Tests -c Release --no-build --results-directory "$GITHUB_WORKSPACE/TestResults" --report-xunit-junit --coverage --coverage-output-format cobertura
+
+      - name: Publish test report
+        if: ${{ !cancelled() }}
+        uses: mikepenz/action-junit-report@v6
+        with:
+          report_paths: TestResults/*.junit.xml
+          check_name: Tests
+          annotate_only: true
+          require_tests: true
+          include_time_in_summary: true
+
+      - name: Pack
+        run: dotnet pack Enfilade.slnx -c Release --no-build -p:ContinuousIntegrationBuild=true -o artifacts/packages
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v7
+        with:
+          name: packages
+          path: artifacts/packages
+          retention-days: ${{ github.ref_type == 'tag' && 90 || 14 }}
+          if-no-files-found: error
