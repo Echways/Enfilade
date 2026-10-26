@@ -78,6 +78,21 @@ public class FieldTests : PanelContext
     }
 
     [Fact]
+    public async Task Another_model_is_edited_after_a_swap()
+    {
+        var next = new Profile { Note = "новый" };
+        var form = Render<SwappedProfile>(parameters => parameters.Add(host => host.Profile, _profile));
+
+        form.Render(parameters => parameters.Add(host => host.Profile, next));
+        var note = form.FindComponent<MudTextField<string>>();
+        Assert.Equal("новый", note.Find("input").GetAttribute("value"));
+        await form.InvokeAsync(() => note.Instance.ValueChanged.InvokeAsync("срочно"));
+
+        Assert.Equal("срочно", next.Note);
+        Assert.Equal("", _profile.Note);
+    }
+
+    [Fact]
     public async Task Editing_notifies_the_form()
     {
         var form = Render<ProfileForm>(parameters => parameters.Add(host => host.Profile, _profile));

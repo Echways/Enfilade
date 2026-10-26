@@ -233,6 +233,7 @@ The address keys are `page`, `sort`, `q` and the filter names. A hand-edited add
 | ------------ | --------------------------------------------------------------------------------------------------------- |
 | `Selectable` | Adds checkboxes. The selection covers the current page and clears when the page, sort or filters change. |
 | `Selected`   | A bar above the table while rows are selected; `context` is the selected items.                          |
+| `ItemKey`    | What identifies a row, so the selection survives a reload: `order => order.Id`. Default: the item itself. |
 | `Live`       | Reloads every `AutoRefreshInterval` while the tab is visible.                                             |
 
 `PageHead` without `Count` and `UpdatedAt` follows the page: it shows the total and the time of the last load of the first listing on the page, and its refresh stamp reloads every listing. An action run through `Button` or `Act` reloads them too.

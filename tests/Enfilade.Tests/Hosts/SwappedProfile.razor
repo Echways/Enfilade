@@ -1,0 +1,8 @@
+<Form Model="Profile">
+    <Field For="() => Profile.Note" />
+</Form>
+
+@code {
+    [Parameter, EditorRequired]
+    public Profile Profile { get; set; } = default!;
+}

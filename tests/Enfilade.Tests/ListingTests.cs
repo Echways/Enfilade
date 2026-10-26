@@ -1,3 +1,4 @@
+using Enfilade.Layout;
 using Enfilade.Tests.Hosts;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
@@ -199,6 +200,25 @@ public class ListingTests : PanelContext
         pending.SetResult(Order.Sixty.AsQueryable().ToPage(new ListQuery<Order>()));
 
         Assert.True(token.IsCancellationRequested);
+    }
+
+    [Fact]
+    public async Task Leaving_the_page_loads_nothing()
+    {
+        AddAuthorization().SetAuthorized("anna");
+        var store = new OrderStore();
+        Services.AddSingleton(store);
+        new EnfiladeBuilder(Services).AddSection<OrdersPage>("Заказы").AddSection<EveryonePage>("Все");
+        Navigation.NavigateTo("orders?page=2");
+        var routes = Render<Routes>();
+        routes.WaitForAssertion(() => Assert.Contains("Клиент 26", routes.Find("tbody tr").TextContent));
+        var listing = routes.FindComponent<Listing<Order>>().Instance;
+
+        Navigation.NavigateTo("everyone");
+        routes.WaitForAssertion(() => Assert.Empty(routes.FindAll("tbody tr")));
+        await routes.InvokeAsync(listing.RefreshAsync);
+
+        Assert.Equal(1, store.Calls);
     }
 
     [Fact]

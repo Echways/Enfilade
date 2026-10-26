@@ -29,7 +29,7 @@ public static class Words
 
     public static string Number(long value) => value.ToString("N0", CultureInfo.CurrentCulture);
 
-    public static string Duration(int milliseconds) => milliseconds < 1_000
+    public static string Duration(long milliseconds) => milliseconds < 1_000
         ? string.Format(EnfiladeText.Milliseconds, Number(milliseconds))
         : string.Format(EnfiladeText.Seconds, (milliseconds / 1_000.0).ToString(milliseconds < 10_000 ? "0.#" : "N0", CultureInfo.CurrentCulture));
 
@@ -63,7 +63,7 @@ public static class Words
         DateTimeOffset moment => Minute(moment),
         DateTime moment => Minute(moment.Kind == DateTimeKind.Local ? new DateTimeOffset(moment) : new DateTimeOffset(DateTime.SpecifyKind(moment, DateTimeKind.Utc))),
         DateOnly day => day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-        TimeSpan span => Duration((int)span.TotalMilliseconds),
+        TimeSpan span => Duration(span.Ticks / TimeSpan.TicksPerMillisecond),
         bool yes => yes ? EnfiladeText.Yes : EnfiladeText.No,
         Enum member => Named(member),
         _ => value.ToString() ?? "",

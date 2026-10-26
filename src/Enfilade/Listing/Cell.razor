@@ -39,7 +39,7 @@
         if (Sort && key is null)
             throw new InvalidOperationException($"Enfilade: the sortable cell \"{Title}\" needs a Key, because its Value is not a member path");
 
-        if (_compiled != Value)
+        if (!ExpressionShape.Same(_compiled, Value))
         {
             _read = Value.Compile();
             _compiled = Value;

@@ -47,7 +47,6 @@
 }
 
 @code {
-    private Expression<Func<TValue>>? _compiled;
     private Func<TValue> _read = default!;
     private Action<TValue> _write = default!;
     private FieldIdentifier _field;
@@ -101,21 +100,21 @@
 
     protected override void OnParametersSet()
     {
-        if (_compiled == For)
+        _kind = FieldKinds.Of(typeof(TValue), Options is not null);
+        var field = FieldIdentifier.Create(For);
+        if (field.Equals(_field))
             return;
 
-        _compiled = For;
-        _read = For.Compile();
-        _field = FieldIdentifier.Create(For);
+        _field = field;
         _member = ((MemberExpression)For.Body).Member;
-        var owner = _field.Model;
-        _write = _member switch
+        var owner = field.Model;
+        (Func<TValue> Read, Action<TValue> Write) access = _member switch
         {
-            PropertyInfo property => value => property.SetValue(owner, value),
-            FieldInfo field => value => field.SetValue(owner, value),
+            PropertyInfo property => (() => (TValue)property.GetValue(owner)!, value => property.SetValue(owner, value)),
+            FieldInfo member => (() => (TValue)member.GetValue(owner)!, value => member.SetValue(owner, value)),
             _ => throw new NotSupportedException($"Enfilade: Field edits properties and fields, not {_member.Name}"),
         };
-        _kind = FieldKinds.Of(typeof(TValue), Options is not null);
+        (_read, _write) = access;
         _required = _member.GetCustomAttribute<RequiredAttribute>() is not null;
     }
 

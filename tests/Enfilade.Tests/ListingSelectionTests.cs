@@ -48,6 +48,18 @@ public class ListingSelectionTests : PanelContext
     }
 
     [Fact]
+    public async Task Selection_of_class_items_survives_a_reload_by_key()
+    {
+        var listing = Render<TicketListing>();
+        listing.WaitForAssertion(() => Assert.Equal(3, listing.FindAll("tbody tr").Count));
+        await listing.InvokeAsync(() => listing.FindComponents<MudCheckBox<bool>>()[2].Instance.ValueChanged.InvokeAsync(true));
+
+        await listing.InvokeAsync(listing.Instance.Listing.RefreshAsync);
+
+        listing.WaitForAssertion(() => Assert.Equal("2", listing.Find(".picked").TextContent));
+    }
+
+    [Fact]
     public void Live_listing_reloads_on_tick()
     {
         Services.Configure<EnfiladeOptions>(options => options.AutoRefreshInterval = TimeSpan.FromMilliseconds(50));

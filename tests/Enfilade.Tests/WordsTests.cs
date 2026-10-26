@@ -90,5 +90,6 @@ public class WordsTests
         Assert.Equal("2026-10-11 23:30", Words.Of(new DateTime(2026, 10, 11, 23, 30, 0)));
         Assert.Equal("2026-10-12", Words.Of(new DateOnly(2026, 10, 12)));
         Assert.Equal(Words.Duration(1_240), Words.Of(TimeSpan.FromMilliseconds(1_240)));
+        Assert.Equal("2\u00A0592\u00A0000\u00A0с", Words.Of(TimeSpan.FromDays(30)));
     }
 }

@@ -96,7 +96,7 @@
                     {
                         var item = context;
                         <MudTd Class="pick">
-                            <MudCheckBox T="bool" Value="_chosen.Contains(item)" ValueChanged="on => Choose(item, on)" AriaLabel="@EnfiladeText.SelectRow" Dense="true" />
+                            <MudCheckBox T="bool" Value="Picked(item)" ValueChanged="on => Choose(item, on)" AriaLabel="@EnfiladeText.SelectRow" Dense="true" />
                         </MudTd>
                     }
                     @foreach (var (cell, index) in _context.Cells.Select((cell, index) => (cell, index)))
@@ -139,7 +139,7 @@
     private CancellationTokenSource? _loading;
     private ListPage<TItem>? _page;
     private ListQuery<TItem>? _query;
-    private HashSet<TItem> _chosen = [];
+    private HashSet<object> _chosen = [];
     private string? _shownSignature;
     private IReadOnlyCollection<TItem>? _items;
     private string? _loaded;
@@ -147,6 +147,7 @@
     private int _shown = 1;
     private bool _failed;
     private bool _ready;
+    private bool _disposed;
 
     [Parameter]
     public Func<ListQuery<TItem>, CancellationToken, Task<ListPage<TItem>>>? Load { get; set; }
@@ -191,11 +192,14 @@
     public RenderFragment<IReadOnlyList<TItem>>? Selected { get; set; }
 
     [Parameter]
+    public Func<TItem, object> ItemKey { get; set; } = item => item!;
+
+    [Parameter]
     public bool Live { get; set; }
 
-    private IReadOnlyList<TItem> Chosen => [.. _page?.Items.Where(_chosen.Contains) ?? []];
+    private IReadOnlyList<TItem> Chosen => [.. _page?.Items.Where(Picked) ?? []];
 
-    private bool AllChosen => _page is { Items.Count: > 0 } page && page.Items.All(_chosen.Contains);
+    private bool AllChosen => _page is { Items.Count: > 0 } page && page.Items.All(Picked);
 
     private bool Opens => Href is not null || OnOpen.HasDelegate;
 
@@ -251,6 +255,7 @@
 
     public void Dispose()
     {
+        _disposed = true;
         Navigation.LocationChanged -= LocationChanged;
         _source.Dispose();
         _loading?.Cancel();
@@ -259,6 +264,9 @@
 
     private async Task LoadAsync()
     {
+        if (_disposed)
+            return;
+
         _loading?.Cancel();
         var loading = _loading = new CancellationTokenSource();
         var address = _context.Address;
@@ -277,7 +285,7 @@
             if (loading.IsCancellationRequested)
                 return;
 
-            _chosen = signature == _shownSignature ? [.. _chosen.Intersect(page.Items)] : [];
+            _chosen = signature == _shownSignature ? [.. page.Items.Select(ItemKey).Where(_chosen.Contains)] : [];
             _shownSignature = signature;
             _page = page;
             _query = query;
@@ -352,15 +360,17 @@
         Filters = address.Filters.Where(pair => pair.Key != name).ToDictionary(StringComparer.Ordinal),
     });
 
+    private bool Picked(TItem item) => _chosen.Contains(ItemKey(item));
+
     private void Choose(TItem item, bool on)
     {
         if (on)
-            _chosen.Add(item);
+            _chosen.Add(ItemKey(item));
         else
-            _chosen.Remove(item);
+            _chosen.Remove(ItemKey(item));
     }
 
-    private void ChooseAll(bool on) => _chosen = on ? [.. _page!.Items] : [];
+    private void ChooseAll(bool on) => _chosen = on ? [.. _page!.Items.Select(ItemKey)] : [];
 
     private Task GoToPageAsync(int page) => _context.GoAsync(address => address with { Page = page });
 
