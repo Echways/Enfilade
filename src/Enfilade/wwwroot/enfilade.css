@@ -2319,6 +2319,35 @@ a.crumb:hover {
     max-width: 880px;
 }
 
+.fig .change {
+    display: block;
+    margin-top: 4px;
+    font: 500 13px/20px var(--sans);
+    font-variant-numeric: tabular-nums;
+    color: var(--mist);
+}
+
+.fig .change.good {
+    color: var(--glow);
+}
+
+.fig .change.bad {
+    color: var(--vermilion);
+}
+
+.chart {
+    min-width: 0;
+}
+
+.chart .mud-chart {
+    color: var(--mist);
+}
+
+.chart text {
+    fill: var(--mist);
+    font: 500 12px var(--sans);
+}
+
 .tag {
     --tone: var(--mist);
     display: inline-flex;

@@ -335,7 +335,8 @@ Another type fails with a message that points to MudBlazor inputs.
 | `Placeholder`              | Skeleton for content that is still loading.                                                                           |
 | `AutoRefresh`              | Invokes `OnTick` every `AutoRefreshInterval` while the tab is visible.                                            |
 | `Sheet`                    | Layout for a sheet: `ChildContent` and `Actions`.                                                                 |
-| `Figure`                   | Large number with two caption lines (`First`, `Second`). `Alarm` marks it red. Group in `<div class="figs">`. |
+| `Figure`                   | Large number with two caption lines (`First`, `Second`). `Alarm` marks it red. `Change` (a share: `0.12` is +12%) shows the change to the previous period, good when it grows unless `LowerIsBetter`. Group in `<div class="figs">`. |
+| `Chart`                    | A line or bar chart over time from `Trend(Name, Readings)` of `Reading(At, Value)`. See below.                        |
 | `Strips`                   | Horizontal bars for a ranking, from `Strip(Label, Value, Shown)`.                                                   |
 | `Meter`                    | `Used / Limit` with a bar that turns ochre at 90% and red at 100%.                                                  |
 | `Crumb`                    | Removable filter chip that links to the address without the filter.                                                   |
@@ -343,6 +344,19 @@ Another type fails with a message that points to MudBlazor inputs.
 | `KeyField`                 | A secret token in groups, with a copy button.                                                                         |
 | `EntranceLayout`           | Full-screen layout without navigation, for sign-in pages: `@layout EntranceLayout`.                                 |
 | `LanguageLink`             | Link to the next language, for pages outside the shell.                                                               |
+
+```razor
+<Chart Trends="[new Trend("Orders", _orders), new Trend("Refunds", _refunds)]" Step="Period.Day" From="_monthAgo" To="_now" />
+```
+
+| Parameter         | Description                                                                                  |
+| ----------------- | -------------------------------------------------------------------------------------------- |
+| `Trends`        | Series of readings. Readings in one bucket are summed; empty buckets are zero.              |
+| `Kind`          | `Line` (default) or `Bars`.                                                                |
+| `Step`          | `Hour`, `Day` (default), `Week` (from Monday) or `Month`, bounded in the viewer's time zone. |
+| `From`, `To`  | Extend the axis beyond the readings.                                                         |
+| `Format`        | Axis values. Default: whole numbers by `Words.Number`.                                     |
+| `Height`        | Pixels. Default `240`.                                                                     |
 
 MudBlazor inputs, selects, switches, checkboxes, tables, menus and snackbars are themed.
 

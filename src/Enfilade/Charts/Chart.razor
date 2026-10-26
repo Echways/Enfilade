@@ -1,0 +1,58 @@
+@namespace Enfilade
+@using System.Globalization
+
+<div class="chart">
+    <MudChart T="double" ChartType="@(Kind == ChartKind.Bars ? ChartType.Bar : ChartType.Line)" ChartSeries="_series" ChartLabels="_labels"
+              ChartOptions="_options" Width="100%" Height="@($"{Height}px")" />
+</div>
+
+@code {
+    private static readonly string[] Palette = [EnfiladeTheme.KleinGlow, EnfiladeTheme.Light, EnfiladeTheme.Ochre, EnfiladeTheme.Mist, EnfiladeTheme.Vermilion];
+
+    private List<ChartSeries<double>> _series = [];
+    private string[] _labels = [];
+    private MudBlazor.Charts.IChartOptions _options = new LineChartOptions();
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<Trend> Trends { get; set; } = [];
+
+    [Parameter]
+    public ChartKind Kind { get; set; }
+
+    [Parameter]
+    public Period Step { get; set; } = Period.Day;
+
+    [Parameter]
+    public DateTimeOffset? From { get; set; }
+
+    [Parameter]
+    public DateTimeOffset? To { get; set; }
+
+    [Parameter]
+    public Func<double, string>? Format { get; set; }
+
+    [Parameter]
+    public int Height { get; set; } = 240;
+
+    protected override void OnParametersSet()
+    {
+        var buckets = Buckets.Of(Trends, Step, From, To);
+        var format = Format ?? (value => Words.Number((long)Math.Round(value)));
+        _labels = [.. buckets.Select(bucket => bucket.Start.ToString(LabelFormat, CultureInfo.CurrentCulture))];
+        _series = [.. Trends.Select((trend, index) => new ChartSeries<double>
+        {
+            Name = trend.Name,
+            Data = buckets.Select(bucket => bucket.Sums[index]).ToArray(),
+        })];
+        _options = Kind == ChartKind.Bars
+            ? new BarChartOptions { ChartPalette = Palette, YAxisToStringFunc = format }
+            : new LineChartOptions { ChartPalette = Palette, YAxisToStringFunc = format };
+    }
+
+    private string LabelFormat => Step switch
+    {
+        Period.Hour => "HH:mm",
+        Period.Month => "MMM yyyy",
+        _ => "d MMM",
+    };
+}

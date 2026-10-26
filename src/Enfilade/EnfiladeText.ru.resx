@@ -183,4 +183,7 @@
   <data name="Account" xml:space="preserve">
     <value>Аккаунт</value>
   </data>
+  <data name="ChangeToPrevious" xml:space="preserve">
+    <value>{0} к прошлому периоду</value>
+  </data>
 </root>
