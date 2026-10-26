@@ -439,6 +439,8 @@ Options bind from the `Enfilade` configuration section. Code passed to `AddEnfil
 | `Languages`           | —           | Languages offered in the switch.                |
 | `LoginPath`           | —           | Sign-in page. Makes the panel private.          |
 | `SignOutPath`         | —           | Sign-out endpoint.                              |
+| `Appearance`          | `Dark`     | `Dark`, `Light`, or `System` to follow the device.                                  |
+| `Accent`              | —           | Brand color in place of Klein, as `#RRGGBB`.                                        |
 | `TimeZone`            | —           | Time zone id for every viewer, such as `UTC` or `Europe/Berlin`. Without it, each viewer sees their own zone. |
 | `AutoRefreshInterval` | `00:00:30` | Period of `AutoRefresh`.                      |
 

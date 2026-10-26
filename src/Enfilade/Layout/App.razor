@@ -2,14 +2,15 @@
 @inject Microsoft.Extensions.Hosting.IHostEnvironment Host
 
 <!DOCTYPE html>
-<html lang="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
+<html lang="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName" data-appearance="@Options.Value.Appearance.ToString().ToLowerInvariant()"
+      data-accent="@(Options.Value.Accent is null ? null : "")" style="@(Options.Value.Accent is { } accent ? $"--klein: {accent}" : null)">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="referrer" content="same-origin" />
-    <meta name="theme-color" content="@EnfiladeTheme.Night" />
-    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="@(Options.Value.Appearance == Appearance.Light ? EnfiladeTheme.Paper : EnfiladeTheme.Night)" />
+    <meta name="color-scheme" content="@ColorScheme" />
     <base href="@(Context.Request.PathBase)/" />
     <ResourcePreloader />
     @if (Options.Value.Favicon is { } favicon)
@@ -40,6 +41,13 @@
 
     [CascadingParameter]
     private HttpContext Context { get; set; } = default!;
+
+    private string ColorScheme => Options.Value.Appearance switch
+    {
+        Appearance.Light => "light",
+        Appearance.System => "light dark",
+        _ => "dark",
+    };
 
     private IComponentRenderMode? Mode => Context.AcceptsInteractiveRouting() ? Live : null;
 

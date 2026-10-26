@@ -20,6 +20,7 @@ public static class EnfiladeServices
             .Validate(EnfiladeOptions.SpeaksItsLanguage, "Enfilade: Language must be one of Languages")
             .Validate(EnfiladeOptions.RefreshesAtAll, "Enfilade: AutoRefreshInterval must be positive")
             .Validate(EnfiladeOptions.KnowsItsTimeZone, "Enfilade: TimeZone must be a known time zone id")
+            .Validate(EnfiladeOptions.HasAColorAccent, "Enfilade: Accent must be a #RRGGBB color")
             .ValidateOnStart();
         if (configure is not null)
             options.Configure(configure);

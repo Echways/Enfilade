@@ -58,6 +58,54 @@
     }
 }
 
+:root[data-accent] {
+    --glow: color-mix(in oklab, var(--klein), white 30%);
+}
+
+:root[data-appearance="light"] {
+    --night: #F6F4EF;
+    --deep: #ECE9E2;
+    --rule: #D9D5CC;
+    --line: #9A9FB5;
+    --mist: #5A607A;
+    --light: #0F1530;
+    --glow: #2442D6;
+    --vermilion: #C7381D;
+    --ochre: #8A5A00;
+    --scrim: rgba(15, 21, 48, 0.35);
+    --wash: rgba(15, 21, 48, 0.05);
+    --edge: inset 0 0 0 1px rgba(15, 21, 48, 0.08);
+    --lift: 0 24px 56px -28px rgba(15, 21, 48, 0.25);
+    color-scheme: light;
+}
+
+:root[data-appearance="light"][data-accent] {
+    --glow: var(--klein);
+}
+
+@media (prefers-color-scheme: light) {
+    :root[data-appearance="system"] {
+        --night: #F6F4EF;
+        --deep: #ECE9E2;
+        --rule: #D9D5CC;
+        --line: #9A9FB5;
+        --mist: #5A607A;
+        --light: #0F1530;
+        --glow: #2442D6;
+        --vermilion: #C7381D;
+        --ochre: #8A5A00;
+        --scrim: rgba(15, 21, 48, 0.35);
+        --wash: rgba(15, 21, 48, 0.05);
+        --edge: inset 0 0 0 1px rgba(15, 21, 48, 0.08);
+        --lift: 0 24px 56px -28px rgba(15, 21, 48, 0.25);
+        color-scheme: light;
+    }
+
+    :root[data-appearance="system"][data-accent] {
+        --glow: var(--klein);
+    }
+}
+
 @media (hover: hover) and (pointer: fine) {
     :root:has(.frame) {
         scrollbar-gutter: stable;
