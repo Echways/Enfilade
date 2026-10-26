@@ -204,9 +204,11 @@ MudBlazor inputs, selects, switches, checkboxes, tables, menus and snackbars are
 | `Size(1536)`                 | `1.5 KB`                                                                 |
 | `Duration(1240)`             | `1.2 s`                                                                  |
 | `Share(0.123)`               | `12.3%`                                                                  |
-| `Day`, `Minute`, `Clock` | `2026-10-26`, `2026-10-26 14:05`, `14:05` (UTC)                      |
+| `Day`, `Minute`, `Clock` | `2026-10-26`, `2026-10-26 14:05`, `14:05` in the viewer's time zone |
 | `Middle(text, 10)`           | `tnk_AB…XYZ`                                                            |
 | `Count(pattern, n)`          | ICU plurals: `{n, plural, one {{number} order} other {{number} orders}}` |
+
+Times are shown in the viewer's time zone, which the browser reports once per connection. A browser that reports no zone or an unknown one gets UTC. Set `TimeZone` to show every viewer the same zone. Keep data in UTC: blocks never change the host's values.
 
 `Clipboard.CopyAsync(text)` copies from code and explains when the page is not served over HTTPS.
 
@@ -268,6 +270,7 @@ Options bind from the `Enfilade` configuration section. Code passed to `AddEnfil
 | `Languages`           | —           | Languages offered in the switch.                |
 | `LoginPath`           | —           | Sign-in page. Makes the panel private.          |
 | `SignOutPath`         | —           | Sign-out endpoint.                              |
+| `TimeZone`            | —           | Time zone id for every viewer, such as `UTC` or `Europe/Berlin`. Without it, each viewer sees their own zone. |
 | `AutoRefreshInterval` | `00:00:30` | Period of `AutoRefresh`.                      |
 
 ## Runtime behavior

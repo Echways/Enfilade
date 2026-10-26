@@ -2,6 +2,7 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime Js
 @inject IOptions<EnfiladeOptions> Options
+@inject ViewerZone ViewerZone
 
 <MudThemeProvider Theme="EnfiladeTheme.Theme" IsDarkMode="true" />
 <MudPopoverProvider />
@@ -35,18 +36,25 @@
         </AuthorizeView>
     </header>
     <main class="main">
-        <ErrorBoundary @ref="_failure">
-            <ChildContent>
-                @Body
-            </ChildContent>
-            <ErrorContent>
-                <div class="empty failure" role="alert">
-                    <h1>@EnfiladeText.FailureHeading</h1>
-                    <p class="note">@EnfiladeText.FailureHint</p>
-                    <button type="button" class="btn-k pigment" @onclick="_failure!.Recover">@EnfiladeText.TryAgain</button>
-                </div>
-            </ErrorContent>
-        </ErrorBoundary>
+        @if (ViewerZone.Known)
+        {
+            <ErrorBoundary @ref="_failure">
+                <ChildContent>
+                    @Body
+                </ChildContent>
+                <ErrorContent>
+                    <div class="empty failure" role="alert">
+                        <h1>@EnfiladeText.FailureHeading</h1>
+                        <p class="note">@EnfiladeText.FailureHint</p>
+                        <button type="button" class="btn-k pigment" @onclick="_failure!.Recover">@EnfiladeText.TryAgain</button>
+                    </div>
+                </ErrorContent>
+            </ErrorBoundary>
+        }
+        else
+        {
+            <Placeholder />
+        }
     </main>
 </div>
 
@@ -56,12 +64,34 @@
 
     private System.Globalization.CultureInfo? Language => LanguageChoice.Next(Options.Value);
 
+    protected override void OnInitialized() => Words.Zone = ViewerZone.Zone;
+
     protected override void OnParametersSet() => _failure?.Recover();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
-            await Js.InvokeVoidAsync("enfilade.followMark", _nav);
+        if (!firstRender)
+            return;
+
+        await Js.InvokeVoidAsync("enfilade.followMark", _nav);
+        if (!ViewerZone.Known)
+        {
+            ViewerZone.Settle(await BrowserZoneAsync());
+            Words.Zone = ViewerZone.Zone;
+            StateHasChanged();
+        }
+    }
+
+    private async Task<string?> BrowserZoneAsync()
+    {
+        try
+        {
+            return await Js.InvokeAsync<string?>("enfilade.zone");
+        }
+        catch (JSException)
+        {
+            return null;
+        }
     }
 
     private void SwitchLanguage() => Navigation.NavigateTo(LanguageChoice.Path(Navigation, Language!), forceLoad: true);

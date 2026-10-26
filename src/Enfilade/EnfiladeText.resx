@@ -22,7 +22,7 @@
     <value>Refresh</value>
   </data>
   <data name="UpdatedAt" xml:space="preserve">
-    <value>updated {0} UTC</value>
+    <value>updated {0}</value>
   </data>
   <data name="Close" xml:space="preserve">
     <value>Close</value>

@@ -17,6 +17,8 @@ public sealed class EnfiladeOptions
 
     public string? SignOutPath { get; set; }
 
+    public string? TimeZone { get; set; }
+
     public TimeSpan AutoRefreshInterval { get; set; } = TimeSpan.FromSeconds(30);
 
     public IList<string> Stylesheets { get; } = [];
@@ -27,6 +29,9 @@ public sealed class EnfiladeOptions
 
     internal static bool SpeaksItsLanguage(EnfiladeOptions options) =>
         options.Languages.Count == 0 || options.Languages.Contains(options.Language, StringComparer.Ordinal);
+
+    internal static bool KnowsItsTimeZone(EnfiladeOptions options) =>
+        options.TimeZone is null || TimeZoneInfo.TryFindSystemTimeZoneById(options.TimeZone, out _);
 
     internal static bool RefreshesAtAll(EnfiladeOptions options) => options.AutoRefreshInterval > TimeSpan.Zero;
 

@@ -5,14 +5,22 @@ namespace Enfilade;
 
 public static class Words
 {
+    private static readonly AsyncLocal<TimeZoneInfo?> ViewerZone = new();
+
+    public static TimeZoneInfo Zone
+    {
+        get => ViewerZone.Value ?? TimeZoneInfo.Utc;
+        internal set => ViewerZone.Value = value;
+    }
+
     public static string Sentence(string text) => text.Length == 0 ? text : char.ToUpperInvariant(text[0]) + text[1..];
 
-    public static string Day(DateTimeOffset moment) => moment.UtcDateTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+    public static string Day(DateTimeOffset moment) => ViewerTime.ToViewer(moment).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
-    public static string Minute(DateTimeOffset moment) => moment.UtcDateTime.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
+    public static string Minute(DateTimeOffset moment) => ViewerTime.ToViewer(moment).ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
 
     public static string Clock(DateTimeOffset moment, bool seconds = false) =>
-        moment.UtcDateTime.ToString(seconds ? "HH:mm:ss" : "HH:mm", CultureInfo.InvariantCulture);
+        ViewerTime.ToViewer(moment).ToString(seconds ? "HH:mm:ss" : "HH:mm", CultureInfo.InvariantCulture);
 
     public static string Middle(string text, int length) =>
         text.Length <= length ? text : text[..(length * 3 / 5)] + "…" + text[^(length * 2 / 5 - 1)..];

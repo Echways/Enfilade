@@ -22,7 +22,7 @@
     <value>Обновить</value>
   </data>
   <data name="UpdatedAt" xml:space="preserve">
-    <value>обновлено {0} UTC</value>
+    <value>обновлено {0}</value>
   </data>
   <data name="Close" xml:space="preserve">
     <value>Закрыть</value>

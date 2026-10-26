@@ -52,6 +52,14 @@ public class EnfiladeOptionsTests
         Assert.Contains(nameof(EnfiladeOptions.AutoRefreshInterval), error.Message);
     }
 
+    [Fact]
+    public void Unknown_time_zone_fails_at_startup()
+    {
+        var error = Assert.Throws<OptionsValidationException>(() => Resolve([], shell => shell.TimeZone = "Mars/Olympus"));
+
+        Assert.Contains(nameof(EnfiladeOptions.TimeZone), error.Message);
+    }
+
     private static EnfiladeOptions Resolve(Dictionary<string, string?> settings, Action<EnfiladeOptions>? configure = null)
     {
         var services = new ServiceCollection();

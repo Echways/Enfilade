@@ -7,6 +7,8 @@ public class WordsTests
 
     private static readonly DateTimeOffset Moment = new(2026, 10, 12, 2, 30, 0, TimeSpan.FromHours(3));
 
+    public WordsTests() => Words.Zone = TimeZoneInfo.Utc;
+
     [Fact]
     public void Middle_keeps_short_text_whole() => Assert.Equal("abc", Words.Middle("abc", 10));
 
@@ -30,6 +32,16 @@ public class WordsTests
         Assert.Equal("2026-10-11", Words.Day(Moment));
         Assert.Equal("2026-10-11 23:30", Words.Minute(Moment));
         Assert.Equal("23:30", Words.Clock(Moment));
+    }
+
+    [Fact]
+    public void Day_minute_and_clock_follow_the_viewer_zone()
+    {
+        Words.Zone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Yekaterinburg");
+
+        Assert.Equal("2026-10-12", Words.Day(Moment));
+        Assert.Equal("2026-10-12 04:30", Words.Minute(Moment));
+        Assert.Equal("04:30", Words.Clock(Moment));
     }
 
     [Theory]

@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using MudBlazor.Services;
 using Enfilade.Layout;
@@ -17,6 +19,7 @@ public static class EnfiladeServices
             .BindConfiguration(ConfigurationSection)
             .Validate(EnfiladeOptions.SpeaksItsLanguage, "Enfilade: Language must be one of Languages")
             .Validate(EnfiladeOptions.RefreshesAtAll, "Enfilade: AutoRefreshInterval must be positive")
+            .Validate(EnfiladeOptions.KnowsItsTimeZone, "Enfilade: TimeZone must be a known time zone id")
             .ValidateOnStart();
         if (configure is not null)
             options.Configure(configure);
@@ -34,6 +37,9 @@ public static class EnfiladeServices
         });
         services.AddScoped<Clipboard>();
         services.AddScoped<CurrentPage>();
+        services.AddScoped<ViewerZone>();
+        services.TryAddEnumerable(ServiceDescriptor.Scoped<CircuitHandler, ZoneCircuitHandler>());
+        services.TryAddSingleton(TimeProvider.System);
         services.AddScoped<Act>();
         services.AddOptions<RequestLocalizationOptions>().Configure<IOptions<EnfiladeOptions>>((localization, shell) =>
         {
