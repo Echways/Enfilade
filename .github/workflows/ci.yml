@@ -31,7 +31,7 @@ jobs:
         run: dotnet format Enfilade.slnx --verify-no-changes
 
       - name: Build
-        run: dotnet build Enfilade.slnx -c Release -p:ContinuousIntegrationBuild=true
+        run: dotnet build Enfilade.slnx -c Release
 
       - name: Test
         run: dotnet test --project tests/Enfilade.Tests -c Release --no-build --results-directory "$GITHUB_WORKSPACE/TestResults" --report-xunit-junit --coverage --coverage-output-format cobertura
@@ -47,7 +47,7 @@ jobs:
           include_time_in_summary: true
 
       - name: Pack
-        run: dotnet pack Enfilade.slnx -c Release --no-build -p:ContinuousIntegrationBuild=true -o artifacts/packages
+        run: dotnet pack Enfilade.slnx -c Release --no-build -o artifacts/packages
 
       - name: Upload packages
         uses: actions/upload-artifact@v7

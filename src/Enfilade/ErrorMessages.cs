@@ -23,7 +23,7 @@ public sealed class ErrorMessages(IEnumerable<IErrorMessage> messages)
         if (Of(exception) is { } message)
             return message;
 
-        logger.LogError(exception, "Enfilade: an unexpected failure was shown to the user");
+        logger.UnexpectedFailure(exception);
         return fallback;
     }
 }

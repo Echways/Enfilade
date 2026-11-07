@@ -9,6 +9,9 @@ indent_style = space
 [*.{cs,razor,css,js,sh}]
 indent_size = 4
 
+[*.{cs,razor}]
+dotnet_diagnostic.CA1716.severity = none
+
 [{Dockerfile,*.Dockerfile}]
 indent_size = 4
 

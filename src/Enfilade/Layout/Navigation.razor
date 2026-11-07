@@ -108,7 +108,7 @@
             }
             catch (Exception exception)
             {
-                Logger.LogError(exception, "Enfilade: the badge of the section {Section} could not be counted", section.Href);
+                Logger.BadgeFailed(exception, section.Href);
             }
         }
 
