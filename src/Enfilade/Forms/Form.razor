@@ -143,17 +143,12 @@
                 _server.Add(_edit.Field(field), message);
             _edit.NotifyValidationStateChanged();
         }
-        catch (OperationCanceledException)
+        catch (Exception exception) when (ErrorMessages.Cancelled(exception))
         {
         }
         catch (Exception exception)
         {
-            _error = Errors.Of(exception);
-            if (_error is null)
-            {
-                Logger.LogError(exception, "Enfilade: a form could not be saved");
-                _error = EnfiladeText.Failed;
-            }
+            _error = Errors.Describe(exception, Logger, EnfiladeText.Failed);
         }
 
         return false;

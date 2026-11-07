@@ -1,5 +1,7 @@
 using Enfilade.Tests.Hosts;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using MudBlazor;
 
 namespace Enfilade.Tests;
@@ -38,6 +40,23 @@ public class ActTests : PanelContext
     {
         Assert.False(await Act.RunAsync(() => throw new InvalidOperationException("secret detail")));
         Assert.Equal(EnfiladeText.Failed, Assert.Single(Snackbar.ShownSnackbars).Message);
+    }
+
+    [Fact]
+    public async Task Timeout_is_a_failure_that_is_shown_and_logged()
+    {
+        Services.AddFakeLogging();
+
+        Assert.False(await Act.RunAsync(() => throw new TaskCanceledException("timed out", new TimeoutException())));
+        Assert.Equal(EnfiladeText.Failed, Assert.Single(Snackbar.ShownSnackbars).Message);
+        Assert.Contains(Services.GetFakeLogCollector().GetSnapshot(), record => record.Level == LogLevel.Error);
+    }
+
+    [Fact]
+    public async Task Cancelled_action_ends_quietly()
+    {
+        Assert.False(await Act.RunAsync(() => throw new OperationCanceledException()));
+        Assert.Empty(Snackbar.ShownSnackbars);
     }
 
     [Fact]

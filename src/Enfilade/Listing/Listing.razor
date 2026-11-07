@@ -300,12 +300,7 @@
         }
         catch (Exception exception)
         {
-            _failure = Errors.Of(exception);
-            if (_failure is null)
-            {
-                Logger.LogError(exception, "Enfilade: a listing could not load");
-                _failure = EnfiladeText.LoadFailed;
-            }
+            _failure = Errors.Describe(exception, Logger, EnfiladeText.LoadFailed);
         }
 
         StateHasChanged();

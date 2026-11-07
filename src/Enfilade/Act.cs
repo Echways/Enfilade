@@ -16,16 +16,13 @@ public sealed class Act(IDialogService dialogs, ISnackbar snackbar, CurrentPage 
         {
             await action();
         }
-        catch (OperationCanceledException)
+        catch (Exception exception) when (ErrorMessages.Cancelled(exception))
         {
             return false;
         }
         catch (Exception exception)
         {
-            var message = errors.Of(exception);
-            if (message is null)
-                logger.LogError(exception, "Enfilade: an action failed");
-            snackbar.Add(message ?? EnfiladeText.Failed, Severity.Error);
+            snackbar.Add(errors.Describe(exception, logger, EnfiladeText.Failed), Severity.Error);
             return false;
         }
 
