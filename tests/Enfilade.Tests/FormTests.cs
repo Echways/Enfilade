@@ -1,6 +1,7 @@
 using Enfilade.Tests.Hosts;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using MudBlazor;
 
@@ -184,6 +185,19 @@ public class FormTests : PanelContext
 
         Assert.EndsWith("elsewhere", Services.GetRequiredService<NavigationManager>().Uri);
         Assert.Empty(provider.FindAll(".confirm"));
+    }
+
+    [Fact]
+    public void Only_a_dirty_form_holds_navigation()
+    {
+        var form = Render<DraftForm>(parameters => parameters.Add(host => host.Draft, _draft));
+        Assert.Empty(form.FindComponents<NavigationLock>());
+
+        form.Find("input").Change("Анна");
+        Assert.Single(form.FindComponents<NavigationLock>());
+
+        form.Find("input").Change("");
+        Assert.Empty(form.FindComponents<NavigationLock>());
     }
 
     [Fact]
