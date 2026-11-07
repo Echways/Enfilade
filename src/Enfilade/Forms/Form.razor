@@ -176,7 +176,7 @@
 
     private async Task LeavingAsync(LocationChangingContext leaving)
     {
-        if (!await Dialogs.ConfirmAsync(EnfiladeText.DiscardQuestion, EnfiladeText.DiscardMessage, EnfiladeText.Discard, danger: true))
+        if (!await Dialogs.ConfirmDiscardAsync())
             leaving.PreventNavigation();
     }
 }

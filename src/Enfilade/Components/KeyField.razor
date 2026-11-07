@@ -8,7 +8,7 @@
 @code {
     private const int GroupLength = 4;
 
-    private readonly string _id = "key-" + Guid.NewGuid().ToString("N")[..8];
+    private readonly string _id = ElementId.New("key");
 
     private List<string> _groups = [];
 

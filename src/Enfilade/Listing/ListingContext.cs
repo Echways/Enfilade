@@ -14,17 +14,13 @@ internal abstract record FilterDefinition<TItem>(string Name, string Title)
 
 internal sealed class ListingContext<TItem>(NavigationManager navigation, Func<string?> prefix, Func<bool> searches)
 {
-    private readonly List<CellDefinition<TItem>> _cells = [];
-
-    private readonly List<FilterDefinition<TItem>> _filters = [];
-
     private ListingAddress? _address;
 
     private string? _addressUri;
 
-    public IReadOnlyList<CellDefinition<TItem>> Cells => _cells;
+    public ListingParts<CellDefinition<TItem>> Cells { get; } = new();
 
-    public IReadOnlyList<FilterDefinition<TItem>> Filters => _filters;
+    public ListingParts<FilterDefinition<TItem>> Filters { get; } = new(Unique);
 
     public string? Prefix => prefix();
 
@@ -45,23 +41,6 @@ internal sealed class ListingContext<TItem>(NavigationManager navigation, Func<s
     }
 
     public bool Searches => searches();
-
-    public void Add(CellDefinition<TItem> cell) => _cells.Add(cell);
-
-    public void Replace(CellDefinition<TItem> old, CellDefinition<TItem> cell) => _cells[_cells.IndexOf(old)] = cell;
-
-    public void Remove(CellDefinition<TItem> cell) => _cells.Remove(cell);
-
-    public void Add(FilterDefinition<TItem> filter)
-    {
-        if (_filters.Any(existing => existing.Name == filter.Name))
-            throw new InvalidOperationException($"Enfilade: two filters of one listing are named \"{filter.Name}\"; give one of them another Name");
-        _filters.Add(filter);
-    }
-
-    public void Replace(FilterDefinition<TItem> old, FilterDefinition<TItem> filter) => _filters[_filters.IndexOf(old)] = filter;
-
-    public void Remove(FilterDefinition<TItem> filter) => _filters.Remove(filter);
 
     public Task GoAsync(Func<ListingAddress, ListingAddress> change, bool replace = false)
     {
@@ -89,4 +68,10 @@ internal sealed class ListingContext<TItem>(NavigationManager navigation, Func<s
 
     public string? Raw(FilterDefinition<TItem> filter) =>
         Address.Filters.GetValueOrDefault(filter.Name) is { } raw && filter.ConditionFor(raw) is not null ? raw : null;
+
+    private static void Unique(IReadOnlyList<FilterDefinition<TItem>> filters, FilterDefinition<TItem> filter)
+    {
+        if (filters.Any(existing => existing.Name == filter.Name))
+            throw new InvalidOperationException($"Enfilade: two filters of one listing are named \"{filter.Name}\"; give one of them another Name");
+    }
 }

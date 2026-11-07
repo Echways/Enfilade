@@ -17,6 +17,9 @@ public static class EnfiladeDialogs
         return await dialog.Result is { Canceled: false };
     }
 
+    internal static Task<bool> ConfirmDiscardAsync(this IDialogService dialogs) =>
+        dialogs.ConfirmAsync(EnfiladeText.DiscardQuestion, EnfiladeText.DiscardMessage, EnfiladeText.Discard, danger: true);
+
     public static Task<IDialogReference> ShowSheetAsync<TSheet>(
         this IDialogService dialogs, string title, DialogParameters<TSheet>? parameters = null, bool form = true)
         where TSheet : IComponent =>

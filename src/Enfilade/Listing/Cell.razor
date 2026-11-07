@@ -46,29 +46,15 @@
             _compiled = Value;
         }
 
-        var definition = new CellDefinition<TItem>(Title, key, Sort ? Value : null, Number ?? Numeric(typeof(TValue)), ChildContent ?? Shown);
-        if (_definition is null)
-            Context.Add(definition);
-        else
-            Context.Replace(_definition, definition);
-        _definition = definition;
+        var definition = new CellDefinition<TItem>(Title, key, Sort ? Value : null, Number ?? Numeric.Is(typeof(TValue)), ChildContent ?? Shown);
+        _definition = Context.Cells.Place(_definition, definition);
     }
 
-    public void Dispose()
-    {
-        if (_definition is not null)
-            Context.Remove(_definition);
-    }
+    public void Dispose() => Context.Cells.Remove(_definition);
 
     private RenderFragment Shown(TItem item) => builder =>
     {
         var value = _read(item);
         builder.AddContent(0, Format is null ? Viewer.Of(value) : Format(value));
     };
-
-    private static bool Numeric(Type type)
-    {
-        var plain = Nullable.GetUnderlyingType(type) ?? type;
-        return !plain.IsEnum && Type.GetTypeCode(plain) is >= TypeCode.SByte and <= TypeCode.Decimal;
-    }
 }
