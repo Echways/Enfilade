@@ -5,9 +5,7 @@ namespace Enfilade;
 
 public sealed record Confirm(string Question, string Message, string Yes, bool Danger = false);
 
-public sealed class PanelException(string message) : Exception(message);
-
-public sealed class Act(IDialogService dialogs, ISnackbar snackbar, CurrentPage page, ILogger<Act> logger)
+public sealed class Act(IDialogService dialogs, ISnackbar snackbar, CurrentPage page, ErrorMessages errors, ILogger<Act> logger)
 {
     public async Task<bool> RunAsync(Func<Task> action, string? done = null, Confirm? confirm = null, bool refresh = true)
     {
@@ -18,19 +16,16 @@ public sealed class Act(IDialogService dialogs, ISnackbar snackbar, CurrentPage 
         {
             await action();
         }
-        catch (PanelException exception)
-        {
-            snackbar.Add(exception.Message, Severity.Error);
-            return false;
-        }
         catch (OperationCanceledException)
         {
             return false;
         }
         catch (Exception exception)
         {
-            logger.LogError(exception, "Enfilade: an action failed");
-            snackbar.Add(EnfiladeText.Failed, Severity.Error);
+            var message = errors.Of(exception);
+            if (message is null)
+                logger.LogError(exception, "Enfilade: an action failed");
+            snackbar.Add(message ?? EnfiladeText.Failed, Severity.Error);
             return false;
         }
 

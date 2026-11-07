@@ -147,6 +147,16 @@ public class ListingTests : PanelContext
     }
 
     [Fact]
+    public void Failed_load_shows_a_readable_message()
+    {
+        Services.ShowMessageOf<Refusal>(refusal => refusal.Message);
+        var listing = Render<OrderListing>(parameters => parameters.Add(host => host.Load, (_, _) => throw new Refusal("Нет доступа к заказам")));
+
+        listing.WaitForAssertion(() => Assert.Equal("Нет доступа к заказам", listing.Find(".listing-failed p").TextContent));
+        Assert.DoesNotContain(EnfiladeText.LoadFailed, listing.Markup);
+    }
+
+    [Fact]
     public void Stale_response_is_dropped()
     {
         var first = new TaskCompletionSource<ListPage<Order>>();

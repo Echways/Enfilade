@@ -1,3 +1,4 @@
+using Enfilade.Tests.Hosts;
 using Microsoft.Extensions.DependencyInjection;
 using MudBlazor;
 
@@ -21,6 +22,15 @@ public class ActTests : PanelContext
     {
         Assert.False(await Act.RunAsync(() => throw new PanelException("Лимит исчерпан")));
         Assert.Equal("Лимит исчерпан", Assert.Single(Snackbar.ShownSnackbars).Message);
+    }
+
+    [Fact]
+    public async Task Registered_exception_shows_its_message()
+    {
+        Services.ShowMessageOf<Refusal>(refusal => $"Отказ: {refusal.Message}");
+
+        Assert.False(await Act.RunAsync(() => throw new QuotaRefusal("квота")));
+        Assert.Equal("Отказ: квота", Assert.Single(Snackbar.ShownSnackbars).Message);
     }
 
     [Fact]

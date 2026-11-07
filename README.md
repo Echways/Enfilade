@@ -105,6 +105,7 @@ A section is a routable Razor component. It appears in the navigation in the ord
 | `AddCaption(string text)`               | Adds a caption above the sections that follow it.                              |
 | `AddPages(Assembly assembly)`           | Adds an assembly's routes without a navigation entry.                          |
 | `AddStylesheet(string path)`            | Links a stylesheet from static assets.                                         |
+| `ShowMessageOf<TException>(message)`    | Shows the message of an exception to the user; see [Error messages](#error-messages). |
 
 ## Actions
 
@@ -123,7 +124,7 @@ From code, inject `Act`:
 await Act.RunAsync(() => Store.DeleteAsync(order), done: "Order deleted");
 ```
 
-- A `PanelException(message)` shows its message to the user as is. Any other exception shows a general message and is logged.
+- A `PanelException(message)` shows its message to the user as is, and so does any exception registered with [`ShowMessageOf`](#error-messages). Any other exception shows a general message and is logged.
 - After a successful action, everything on the page that reports to `CurrentPage` reloads. Pass `Refresh="false"` (`refresh: false`) to skip it.
 - `RunAsync` returns whether the action ran to the end.
 
@@ -242,7 +243,7 @@ The address keys are `page`, `sort`, `q` and the filter names. A hand-edited add
 
 `PageHead` without `Count` and `UpdatedAt` follows the page: it shows the total and the time of the last load of the first listing on the page, and its refresh stamp reloads every listing. An action run through `Button` or `Act` reloads them too.
 
-The first load shows a skeleton; a reload keeps the rows on screen; a failed load shows a message and a retry inside the listing while the rest of the page keeps working. Call `RefreshAsync()` on a `@ref` to reload from code.
+The first load shows a skeleton; a reload keeps the rows on screen; a failed load shows a message and a retry inside the listing while the rest of the page keeps working. The message is the exception's own when it is [shown to users](#error-messages), and a general one otherwise. Call `RefreshAsync()` on a `@ref` to reload from code.
 
 ## Dialogs
 
@@ -283,8 +284,9 @@ var order = await Dialogs.ShowFormAsync<OrderSheet, OrderDraft>("New order");
 `Form` validates with data annotations, shows a busy submit button and submits once on Enter. On success it reports `Done`, reloads the page's blocks, and inside a sheet closes it with the model, which `ShowFormAsync` returns; a closed sheet returns `null`.
 
 - `OnSubmit` throws `FieldException(field, message)` or `FieldException(errors)` for errors next to fields; they clear when the field changes.
-- A `PanelException` shows its message above the button; any other exception shows a general message and is logged.
-- A changed form asks before its sheet closes (the close button or Escape) and before the page is left.
+- A `PanelException` or a [registered](#error-messages) exception shows its message above the button; any other exception shows a general message and is logged.
+- A changed form asks before its sheet closes (the close button or Escape) and before the page is left. A change is any difference from the model as it was given to the form or last saved, compared by its JSON snapshot, so rows added to or removed from a collection count, and a value changed back does not. Mark a property `[JsonIgnore]` to leave it out. Give the form a new model instance to start over.
+- `IsDirty` on a `@ref` tells whether the form has changes, for example before switching views inside a page, which is not navigation.
 - Any MudBlazor input with `For=` works inside `Form`, and `Form` works on a page too, for example in settings.
 
 | Parameter        | Description                                                     |
@@ -315,6 +317,20 @@ var order = await Dialogs.ShowFormAsync<OrderSheet, OrderDraft>("New order");
 | `Lines`, `Secret`, `Disabled` | Text input settings.                            |
 
 Another type fails with a message that points to MudBlazor inputs.
+
+## Error messages
+
+`Act`, `Button`, `Form` and `Listing` show the user the message of a `PanelException`. Register other exceptions whose messages are meant for users, such as a domain exception from a library that knows nothing of the panel:
+
+```csharp
+builder.Services.AddEnfilade()
+    .ShowMessageOf<DomainException>(failure => Words.Sentence(failure.Message));
+```
+
+- A registration covers the exception and its subclasses. Registrations are asked in order and the first message wins; returning `null` passes the exception to the next one.
+- `ShowMessageOf` also extends `IServiceCollection`, so a library can register its exceptions without the builder. For messages that need services, register an `IErrorMessage` implementation.
+- Inject `ErrorMessages` and call `Of(exception)` to get the message in your own components; it returns `null` for an exception the user should not see.
+- A shown message is not logged; any other exception is.
 
 ## Components
 

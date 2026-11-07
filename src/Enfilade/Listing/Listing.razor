@@ -7,6 +7,7 @@
 @inject NavigationManager Navigation
 @inject CurrentPage CurrentPage
 @inject TimeProvider Time
+@inject ErrorMessages Errors
 @inject ILogger<Listing<TItem>> Logger
 
 <CascadingValue Value="_context" IsFixed="true">
@@ -29,16 +30,16 @@
                 }
             </div>
         }
-        @if (_failed)
+        @if (_failure is not null)
         {
             <div class="listing-failed" role="alert">
-                <p>@EnfiladeText.LoadFailed</p>
+                <p>@_failure</p>
                 <button type="button" class="link" @onclick="LoadAsync">@EnfiladeText.TryAgain</button>
             </div>
         }
         @if (_page is null)
         {
-            if (!_failed)
+            if (_failure is null)
             {
                 <Placeholder />
             }
@@ -145,7 +146,7 @@
     private string? _loaded;
     private SortOrder? _sort;
     private int _shown = 1;
-    private bool _failed;
+    private string? _failure;
     private bool _ready;
     private bool _disposed;
 
@@ -271,7 +272,7 @@
         var loading = _loading = new CancellationTokenSource();
         var address = _context.Address;
         var signature = _loaded = Signature(address);
-        _failed = false;
+        _failure = null;
         try
         {
             var query = QueryFor(address, address.Page);
@@ -299,8 +300,12 @@
         }
         catch (Exception exception)
         {
-            Logger.LogError(exception, "Enfilade: a listing could not load");
-            _failed = true;
+            _failure = Errors.Of(exception);
+            if (_failure is null)
+            {
+                Logger.LogError(exception, "Enfilade: a listing could not load");
+                _failure = EnfiladeText.LoadFailed;
+            }
         }
 
         StateHasChanged();

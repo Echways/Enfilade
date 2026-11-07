@@ -103,6 +103,20 @@ public class FormTests : PanelContext
     }
 
     [Fact]
+    public void Registered_exception_shows_above_the_button()
+    {
+        Services.ShowMessageOf<Refusal>(refusal => refusal.Message);
+        _draft.Customer = "Анна";
+        var form = Render<DraftForm>(parameters => parameters
+            .Add(host => host.Draft, _draft)
+            .Add(host => host.Save, () => throw new QuotaRefusal("Квота исчерпана")));
+
+        form.Find("form").Submit();
+
+        Assert.Equal("Квота исчерпана", form.Find(".form-error").TextContent);
+    }
+
+    [Fact]
     public void Unexpected_failure_shows_the_general_message()
     {
         _draft.Customer = "Анна";
@@ -170,5 +184,59 @@ public class FormTests : PanelContext
 
         Assert.EndsWith("elsewhere", Services.GetRequiredService<NavigationManager>().Uri);
         Assert.Empty(provider.FindAll(".confirm"));
+    }
+
+    [Fact]
+    public void Changed_collection_makes_the_form_dirty()
+    {
+        var provider = Render<MudDialogProvider>();
+        var form = Render<RouteForm>(parameters => parameters.Add(host => host.Draft, new RouteDraft()));
+
+        form.Find(".add-stop").Click();
+
+        Assert.True(form.Instance.Form.IsDirty);
+        Services.GetRequiredService<NavigationManager>().NavigateTo("elsewhere");
+        provider.WaitForAssertion(() => Assert.Contains(EnfiladeText.DiscardQuestion, provider.Find(".confirm").TextContent));
+    }
+
+    [Fact]
+    public void Undone_change_leaves_the_form_clean()
+    {
+        var form = Render<RouteForm>(parameters => parameters.Add(host => host.Draft, new RouteDraft()));
+
+        form.Find(".add-stop").Click();
+        form.Find(".drop-stop").Click();
+        form.Find("input").Change("Север");
+        form.Find("input").Change("");
+
+        Assert.False(form.Instance.Form.IsDirty);
+    }
+
+    [Fact]
+    public void Saved_form_is_clean()
+    {
+        var provider = Render<MudDialogProvider>();
+        var form = Render<RouteForm>(parameters => parameters.Add(host => host.Draft, new RouteDraft()));
+        form.Find(".add-stop").Click();
+
+        form.Find("form").Submit();
+        Services.GetRequiredService<NavigationManager>().NavigateTo("elsewhere");
+
+        Assert.False(form.Instance.Form.IsDirty);
+        Assert.EndsWith("elsewhere", Services.GetRequiredService<NavigationManager>().Uri);
+        Assert.Empty(provider.FindAll(".confirm"));
+    }
+
+    [Fact]
+    public void Failed_save_keeps_the_form_dirty()
+    {
+        var form = Render<RouteForm>(parameters => parameters
+            .Add(host => host.Draft, new RouteDraft())
+            .Add(host => host.Save, () => throw new PanelException("Лимит исчерпан")));
+        form.Find(".add-stop").Click();
+
+        form.Find("form").Submit();
+
+        Assert.True(form.Instance.Form.IsDirty);
     }
 }

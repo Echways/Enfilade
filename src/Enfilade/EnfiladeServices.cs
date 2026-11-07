@@ -41,6 +41,7 @@ public static class EnfiladeServices
         services.AddScoped<ViewerZone>();
         services.TryAddEnumerable(ServiceDescriptor.Scoped<CircuitHandler, ZoneCircuitHandler>());
         services.TryAddSingleton(TimeProvider.System);
+        services.TryAddScoped<ErrorMessages>();
         services.AddScoped<Act>();
         services.AddOptions<RequestLocalizationOptions>().Configure<IOptions<EnfiladeOptions>>((localization, shell) =>
         {
@@ -51,6 +52,13 @@ public static class EnfiladeServices
             localization.RequestCultureProviders = [new CookieRequestCultureProvider()];
         });
         return new EnfiladeBuilder(services);
+    }
+
+    public static IServiceCollection ShowMessageOf<TException>(this IServiceCollection services, Func<TException, string?> message)
+        where TException : Exception
+    {
+        services.AddSingleton<IErrorMessage>(new ErrorMessage<TException>(message));
+        return services;
     }
 
     public static RazorComponentsEndpointConventionBuilder MapEnfilade(this WebApplication app)

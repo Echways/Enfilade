@@ -40,6 +40,12 @@ public sealed class EnfiladeBuilder(IServiceCollection services)
 
     public EnfiladeBuilder AddStylesheet(string path) => Configure(options => options.Stylesheets.Add(path));
 
+    public EnfiladeBuilder ShowMessageOf<TException>(Func<TException, string?> message) where TException : Exception
+    {
+        Services.ShowMessageOf(message);
+        return this;
+    }
+
     private EnfiladeBuilder Configure(Action<EnfiladeOptions> configure)
     {
         Services.Configure(configure);
