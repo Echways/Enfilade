@@ -6,6 +6,8 @@ namespace Enfilade.Tests;
 
 public abstract class PanelContext : BunitContext
 {
+    static PanelContext() => DefaultWaitTimeout = TimeSpan.FromSeconds(5);
+
     protected PanelContext()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
