@@ -13,6 +13,8 @@
 </div>
 
 @code {
+    private long _peak = 1;
+
     [Parameter, EditorRequired]
     public IReadOnlyList<Strip> Items { get; set; } = [];
 
@@ -22,6 +24,7 @@
     [Parameter]
     public bool Wide { get; set; }
 
-    private string Share(long value) =>
-        (100.0 * value / Math.Max(1, Peak ?? Items.Max(strip => strip.Value))).ToString("0.#", CultureInfo.InvariantCulture) + "%";
+    protected override void OnParametersSet() => _peak = Math.Max(1, Peak ?? Items.Select(strip => strip.Value).DefaultIfEmpty().Max());
+
+    private string Share(long value) => (100.0 * value / _peak).ToString("0.#", CultureInfo.InvariantCulture) + "%";
 }

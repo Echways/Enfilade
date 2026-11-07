@@ -43,7 +43,7 @@ public static class EnfiladeServices
         services.AddScoped<Act>();
         services.AddOptions<RequestLocalizationOptions>().Configure<IOptions<EnfiladeOptions>>((localization, shell) =>
         {
-            var spoken = LanguageChoice.Spoken(shell.Value).ToArray();
+            var spoken = LanguageChoice.Spoken(shell.Value);
             localization.SetDefaultCulture(shell.Value.Language)
                 .AddSupportedCultures(spoken)
                 .AddSupportedUICultures(spoken);

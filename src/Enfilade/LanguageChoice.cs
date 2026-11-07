@@ -10,17 +10,17 @@ internal static class LanguageChoice
 {
     private static readonly TimeSpan Remembered = TimeSpan.FromDays(365);
 
-    public static IReadOnlyList<string> Spoken(EnfiladeOptions options) =>
+    public static string[] Spoken(EnfiladeOptions options) =>
         options.Languages.Count == 0 ? [options.Language] : [.. options.Languages];
 
     public static CultureInfo? Next(EnfiladeOptions options)
     {
         var spoken = Spoken(options);
-        if (spoken.Count < 2)
+        if (spoken.Length < 2)
             return null;
 
-        var current = spoken.ToList().IndexOf(CultureInfo.CurrentUICulture.Name);
-        return CultureInfo.GetCultureInfo(spoken[(current + 1) % spoken.Count]);
+        var current = Array.IndexOf(spoken, CultureInfo.CurrentUICulture.Name);
+        return CultureInfo.GetCultureInfo(spoken[(current + 1) % spoken.Length]);
     }
 
     public static string Title(CultureInfo culture) => Words.Sentence(culture.NativeName);

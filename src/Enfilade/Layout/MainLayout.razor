@@ -50,11 +50,11 @@
     private MudThemeProvider? _themes;
     private MudTheme _theme = default!;
     private bool _dark = true;
-
-    private System.Globalization.CultureInfo? Language => LanguageChoice.Next(Options.Value);
+    private System.Globalization.CultureInfo? _language;
 
     protected override void OnInitialized()
     {
+        _language = LanguageChoice.Next(Options.Value);
         _theme = EnfiladeTheme.For(Options.Value.Accent);
         _dark = Options.Value.Appearance != Appearance.Light;
     }
@@ -98,12 +98,12 @@
         }
     }
 
-    private void SwitchLanguage() => Navigation.NavigateTo(LanguageChoice.Path(Navigation, Language!), forceLoad: true);
+    private void SwitchLanguage() => Navigation.NavigateTo(LanguageChoice.Path(Navigation, _language!), forceLoad: true);
 
     private void SignOut() => Navigation.NavigateTo(Options.Value.SignOutPath!, forceLoad: true);
 
     private RenderFragment Account(string? name) => @<text>
-        @if (name is not null || Language is not null || Options.Value.AccountLinks.Count > 0)
+        @if (name is not null || _language is not null || Options.Value.AccountLinks.Count > 0)
         {
             var leaving = name is not null && Options.Value.SignOutPath is not null;
             <div class="account">
@@ -115,7 +115,7 @@
                 {
                     <a href="@link.Href">@link.Title()</a>
                 }
-                @if (Language is { } language)
+                @if (_language is { } language)
                 {
                     <button type="button" lang="@language.Name" @onclick="SwitchLanguage">@LanguageChoice.Title(language)</button>
                 }
@@ -124,12 +124,12 @@
                     <button type="button" @onclick="SignOut">@EnfiladeText.SignOut</button>
                 }
             </div>
-            <MudMenu Class="account-menu" Label="@(name ?? (Language is { } shown ? LanguageChoice.Title(shown) : EnfiladeText.Account))" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
+            <MudMenu Class="account-menu" Label="@(name ?? (_language is { } shown ? LanguageChoice.Title(shown) : EnfiladeText.Account))" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
                 @foreach (var link in Options.Value.AccountLinks)
                 {
                     <MudMenuItem Href="@link.Href">@link.Title()</MudMenuItem>
                 }
-                @if (Language is { } language)
+                @if (_language is { } language)
                 {
                     <MudMenuItem OnClick="SwitchLanguage">
                         <span lang="@language.Name">@LanguageChoice.Title(language)</span>

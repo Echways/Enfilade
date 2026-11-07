@@ -1,5 +1,6 @@
 @inject IOptions<EnfiladeOptions> Options
 @inject Microsoft.Extensions.Hosting.IHostEnvironment Host
+@using System.Runtime.CompilerServices
 
 <!DOCTYPE html>
 <html lang="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName" data-appearance="@Options.Value.Appearance.ToString().ToLowerInvariant()"
@@ -39,6 +40,8 @@
 @code {
     private static readonly IComponentRenderMode Live = new InteractiveServerRenderMode(prerender: false);
 
+    private static readonly ConditionalWeakTable<ResourceAssetCollection, StrongBox<bool>> ScopedStyles = new();
+
     [CascadingParameter]
     private HttpContext Context { get; set; } = default!;
 
@@ -51,9 +54,11 @@
 
     private IComponentRenderMode? Mode => Context.AcceptsInteractiveRouting() ? Live : null;
 
-    private IEnumerable<string> Stylesheets => Published(Host.ApplicationName + ".styles.css")
-        ? [Host.ApplicationName + ".styles.css", .. Options.Value.Stylesheets]
+    private string ScopedStylesheet => Host.ApplicationName + ".styles.css";
+
+    private IEnumerable<string> Stylesheets => ScopedStyles.GetValue(Assets, assets => new StrongBox<bool>(Published(assets, ScopedStylesheet))).Value
+        ? [ScopedStylesheet, .. Options.Value.Stylesheets]
         : Options.Value.Stylesheets;
 
-    private bool Published(string path) => Assets[path] != path || Assets.Any(asset => asset.Url == path);
+    private static bool Published(ResourceAssetCollection assets, string path) => assets[path] != path || assets.Any(asset => asset.Url == path);
 }
