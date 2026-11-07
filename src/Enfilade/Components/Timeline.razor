@@ -1,11 +1,12 @@
 @namespace Enfilade
 @using System.Globalization
+@inject ViewerTime Viewer
 
 <ol class="timeline">
     @foreach (var entry in Entries.OrderByDescending(entry => entry.At))
     {
         <li class="@entry.Tone.ToString().ToLowerInvariant()">
-            <time datetime="@entry.At.ToString("O", CultureInfo.InvariantCulture)">@Words.Minute(entry.At)</time>
+            <time datetime="@entry.At.ToString("O", CultureInfo.InvariantCulture)">@Viewer.Minute(entry.At)</time>
             <span class="timeline-text">@entry.Text</span>
             @if (entry.Who is not null)
             {

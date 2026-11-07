@@ -184,7 +184,7 @@ Pass `Items` instead of `Load` to let the listing sort, filter and page an in-me
 | `Empty`        | Content shown when there is nothing yet.                                                     |
 | `Dense`        | Tighter rows.                                                                                |
 
-`Cell` shows a value formatted by `Words.Of`: numbers, money, dates in the viewer's time zone, durations, `bool` and enums with `[Display(Name)]`.
+`Cell` shows a value formatted by `ViewerTime.Of`: numbers, money, dates in the viewer's time zone, durations, `bool` and enums with `[Display(Name)]`.
 
 | Parameter        | Description                                                                                  |
 | ---------------- | -------------------------------------------------------------------------------------------- |
@@ -338,7 +338,7 @@ builder.Services.AddEnfilade()
 
 | Component                    | Description                                                                                                           |
 | ---------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `Facts`, `Fact`           | A record's labelled values: `<Fact Label="Total" Value="order.Total" />`, formatted by `Words.Of`, or own content. |
+| `Facts`, `Fact`           | A record's labelled values: `<Fact Label="Total" Value="order.Total" />`, formatted by `ViewerTime.Of`, or own content. |
 | `Tag`                      | A status label with `Tone`: `Neutral`, `Good`, `Warn` or `Bad`.                                        |
 | `Tabs`, `Tab`              | Tabs whose choice lives in the address (`tab=`, or `Name`). A `Tab` has `Title` and optional `Name`; only the open tab renders. |
 | `Timeline`                 | Events from `TimelineEntry(At, Text, Who, Tone)`, newest first, in the viewer's time zone.              |
@@ -384,10 +384,25 @@ MudBlazor inputs, selects, switches, checkboxes, tables, menus and snackbars are
 | `Size(1536)`                 | `1.5 KB`                                                                 |
 | `Duration(1240)`             | `1.2 s`                                                                  |
 | `Share(0.123)`               | `12.3%`                                                                  |
-| `Of(value)`                   | Any of the above by type, `–` for `null`                                |
-| `Day`, `Minute`, `Clock` | `2026-10-26`, `2026-10-26 14:05`, `14:05` in the viewer's time zone |
 | `Middle(text, 10)`           | `tnk_AB…XYZ`                                                            |
 | `Count(pattern, n)`          | ICU plurals: `{n, plural, one {{number} order} other {{number} orders}}` |
+| `Of(value, zone)`             | Any of these by type, times in `zone`, `–` for `null`                   |
+| `Day`, `Minute`, `Clock`  | `2026-10-26`, `2026-10-26 14:05`, `14:05` in the given zone             |
+
+`ViewerTime` is the viewer's side of the same methods. It is a service of the connection, so a page or a component injects it, and its time zone holds wherever the render starts, including updates pushed from background work.
+
+```razor
+@inject ViewerTime Viewer
+
+<span>@Viewer.Minute(order.CreatedAt)</span>
+```
+
+| Member                         | Use                                                                      |
+| ------------------------------ | ------------------------------------------------------------------------ |
+| `Of(value)`                   | `Words.Of` in the viewer's time zone                                    |
+| `Day`, `Minute`, `Clock`  | `2026-10-26`, `2026-10-26 14:05`, `14:05` in the viewer's time zone   |
+| `ToViewer`, `FromViewer`    | A UTC moment to the viewer's wall clock and back                         |
+| `Zone`                        | The viewer's `TimeZoneInfo`                                             |
 
 Times are shown in the viewer's time zone, which the browser reports once per connection. A browser that reports no zone or an unknown one gets UTC. Set `TimeZone` to show every viewer the same zone. Keep data in UTC: blocks never change the host's values.
 

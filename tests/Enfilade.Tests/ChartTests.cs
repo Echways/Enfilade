@@ -5,8 +5,6 @@ namespace Enfilade.Tests;
 
 public class ChartTests : PanelContext
 {
-    public ChartTests() => Words.Zone = TimeZoneInfo.Utc;
-
     [Fact]
     public void Chart_renders_one_series_per_trend_with_labels()
     {

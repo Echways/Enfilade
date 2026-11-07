@@ -9,7 +9,7 @@ public class WordsTests
 
     private static readonly DateTimeOffset Moment = new(2026, 10, 12, 2, 30, 0, TimeSpan.FromHours(3));
 
-    public WordsTests() => Words.Zone = TimeZoneInfo.Utc;
+    private static readonly TimeZoneInfo Utc = TimeZoneInfo.Utc;
 
     [Fact]
     public void Middle_keeps_short_text_whole() => Assert.Equal("abc", Words.Middle("abc", 10));
@@ -31,19 +31,20 @@ public class WordsTests
     [Fact]
     public void Day_minute_and_clock_are_in_utc()
     {
-        Assert.Equal("2026-10-11", Words.Day(Moment));
-        Assert.Equal("2026-10-11 23:30", Words.Minute(Moment));
-        Assert.Equal("23:30", Words.Clock(Moment));
+        Assert.Equal("2026-10-11", Words.Day(Moment, Utc));
+        Assert.Equal("2026-10-11 23:30", Words.Minute(Moment, Utc));
+        Assert.Equal("23:30", Words.Clock(Moment, Utc));
+        Assert.Equal("23:30:00", Words.Clock(Moment, Utc, seconds: true));
     }
 
     [Fact]
     public void Day_minute_and_clock_follow_the_viewer_zone()
     {
-        Words.Zone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Yekaterinburg");
+        var zone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Yekaterinburg");
 
-        Assert.Equal("2026-10-12", Words.Day(Moment));
-        Assert.Equal("2026-10-12 04:30", Words.Minute(Moment));
-        Assert.Equal("04:30", Words.Clock(Moment));
+        Assert.Equal("2026-10-12", Words.Day(Moment, zone));
+        Assert.Equal("2026-10-12 04:30", Words.Minute(Moment, zone));
+        Assert.Equal("04:30", Words.Clock(Moment, zone));
     }
 
     [Theory]
@@ -80,16 +81,16 @@ public class WordsTests
     [InlineData(OrderStatus.Paid, "Оплачен")]
     [InlineData(OrderStatus.New, "New")]
     [InlineData("text", "text")]
-    public void Of_formats_by_type(object? value, string expected) => Assert.Equal(expected, Words.Of(value));
+    public void Of_formats_by_type(object? value, string expected) => Assert.Equal(expected, Words.Of(value, Utc));
 
     [Fact]
     public void Of_formats_money_times_and_spans()
     {
-        Assert.Equal("1\u00A0234,5", Words.Of(1234.5m));
-        Assert.Equal(Words.Minute(Moment), Words.Of(Moment));
-        Assert.Equal("2026-10-11 23:30", Words.Of(new DateTime(2026, 10, 11, 23, 30, 0)));
-        Assert.Equal("2026-10-12", Words.Of(new DateOnly(2026, 10, 12)));
-        Assert.Equal(Words.Duration(1_240), Words.Of(TimeSpan.FromMilliseconds(1_240)));
-        Assert.Equal("2\u00A0592\u00A0000\u00A0с", Words.Of(TimeSpan.FromDays(30)));
+        Assert.Equal("1\u00A0234,5", Words.Of(1234.5m, Utc));
+        Assert.Equal(Words.Minute(Moment, Utc), Words.Of(Moment, Utc));
+        Assert.Equal("2026-10-11 23:30", Words.Of(new DateTime(2026, 10, 11, 23, 30, 0), Utc));
+        Assert.Equal("2026-10-12", Words.Of(new DateOnly(2026, 10, 12), Utc));
+        Assert.Equal(Words.Duration(1_240), Words.Of(TimeSpan.FromMilliseconds(1_240), Utc));
+        Assert.Equal("2\u00A0592\u00A0000\u00A0с", Words.Of(TimeSpan.FromDays(30), Utc));
     }
 }

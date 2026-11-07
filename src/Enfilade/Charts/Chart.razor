@@ -1,5 +1,6 @@
 @namespace Enfilade
 @using System.Globalization
+@inject ViewerTime Viewer
 
 <div class="chart">
     <MudChart T="double" ChartType="@(Kind == ChartKind.Bars ? ChartType.Bar : ChartType.Line)" ChartSeries="_series" ChartLabels="_labels"
@@ -36,7 +37,7 @@
 
     protected override void OnParametersSet()
     {
-        var buckets = Buckets.Of(Trends, Step, From, To);
+        var buckets = Buckets.Of(Trends, Step, From, To, Viewer.Zone);
         var format = Format ?? (value => Words.Number((long)Math.Round(value)));
         _labels = [.. buckets.Select(bucket => bucket.Start.ToString(LabelFormat, CultureInfo.CurrentCulture))];
         _series = [.. Trends.Select((trend, index) => new ChartSeries<double>

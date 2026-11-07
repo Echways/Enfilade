@@ -3,6 +3,7 @@
 @typeparam TValue
 @using System.Linq.Expressions
 @implements IDisposable
+@inject ViewerTime Viewer
 
 @code {
     private CellDefinition<TItem>? _definition;
@@ -62,7 +63,7 @@
     private RenderFragment Shown(TItem item) => builder =>
     {
         var value = _read(item);
-        builder.AddContent(0, Format is null ? Words.Of(value) : Format(value));
+        builder.AddContent(0, Format is null ? Viewer.Of(value) : Format(value));
     };
 
     private static bool Numeric(Type type)

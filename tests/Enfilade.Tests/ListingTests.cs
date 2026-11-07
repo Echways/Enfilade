@@ -29,7 +29,7 @@ public class ListingTests : PanelContext
         var listing = Render<OrderListing>(parameters => parameters.Add(host => host.Items, [new Order(1, "Анна", 1234.5m, OrderStatus.Paid)]));
 
         var total = listing.WaitForElement("td.num");
-        Assert.Equal(Words.Of(1234.5m), total.TextContent.Trim());
+        Assert.Equal(Words.Of(1234.5m, TimeZoneInfo.Utc), total.TextContent.Trim());
         Assert.Contains(listing.FindAll("td"), cell => cell.TextContent.Trim() == "Оплачен");
     }
 
@@ -87,7 +87,7 @@ public class ListingTests : PanelContext
 
         var listing = Render<OrderListing>(parameters => parameters.Add(host => host.Items, Order.Sixty).Add(host => host.Sort, "-total"));
 
-        listing.WaitForAssertion(() => Assert.Contains(Words.Of(600m), listing.Find("tbody tr").TextContent));
+        listing.WaitForAssertion(() => Assert.Contains(Words.Of(600m, TimeZoneInfo.Utc), listing.Find("tbody tr").TextContent));
     }
 
     [Fact]
@@ -108,7 +108,7 @@ public class ListingTests : PanelContext
     {
         var listing = Render<OrderListing>(parameters => parameters.Add(host => host.Items, Order.Sixty).Add(host => host.Sort, "-total"));
 
-        listing.WaitForAssertion(() => Assert.Contains(Words.Of(600m), listing.Find("tbody tr").TextContent));
+        listing.WaitForAssertion(() => Assert.Contains(Words.Of(600m, TimeZoneInfo.Utc), listing.Find("tbody tr").TextContent));
     }
 
     [Fact]

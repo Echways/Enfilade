@@ -1,5 +1,6 @@
 using Enfilade.Tests.Hosts;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.Extensions.DependencyInjection;
 using MudBlazor;
 
 namespace Enfilade.Tests;
@@ -12,7 +13,7 @@ public class FieldTests : PanelContext
         Day = new DateOnly(2026, 10, 12),
     };
 
-    public FieldTests() => Words.Zone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Berlin");
+    public FieldTests() => Services.GetRequiredService<ViewerTime>().Settle("Europe/Berlin");
 
     [Fact]
     public void Label_comes_from_display()

@@ -2,7 +2,7 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime Js
 @inject IOptions<EnfiladeOptions> Options
-@inject ViewerZone ViewerZone
+@inject ViewerTime Viewer
 
 <MudThemeProvider @ref="_themes" Theme="_theme" IsDarkMode="_dark" />
 <MudPopoverProvider />
@@ -23,7 +23,7 @@
         </AuthorizeView>
     </header>
     <main class="main">
-        @if (ViewerZone.Known)
+        @if (Viewer.Known)
         {
             <ErrorBoundary @ref="_failure">
                 <ChildContent>
@@ -55,7 +55,6 @@
 
     protected override void OnInitialized()
     {
-        Words.Zone = ViewerZone.Zone;
         _theme = EnfiladeTheme.For(Options.Value.Accent);
         _dark = Options.Value.Appearance != Appearance.Light;
     }
@@ -74,10 +73,9 @@
             StateHasChanged();
         }
 
-        if (!ViewerZone.Known)
+        if (!Viewer.Known)
         {
-            ViewerZone.Settle(await BrowserZoneAsync());
-            Words.Zone = ViewerZone.Zone;
+            Viewer.Settle(await BrowserZoneAsync());
             StateHasChanged();
         }
     }

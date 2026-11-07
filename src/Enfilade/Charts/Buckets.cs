@@ -4,17 +4,17 @@ internal sealed record Bucket(DateTime Start, IReadOnlyList<double> Sums);
 
 internal static class Buckets
 {
-    public static IReadOnlyList<Bucket> Of(IReadOnlyList<Trend> trends, Period step, DateTimeOffset? from, DateTimeOffset? to)
+    public static IReadOnlyList<Bucket> Of(IReadOnlyList<Trend> trends, Period step, DateTimeOffset? from, DateTimeOffset? to, TimeZoneInfo zone)
     {
         var sums = new SortedDictionary<DateTime, double[]>();
         for (var index = 0; index < trends.Count; index++)
         {
             foreach (var reading in trends[index].Readings)
-                Sums(sums, Start(reading.At, step), trends.Count)[index] += reading.Value;
+                Sums(sums, Start(reading.At, step, zone), trends.Count)[index] += reading.Value;
         }
 
         foreach (var bound in new[] { from, to }.OfType<DateTimeOffset>())
-            Sums(sums, Start(bound, step), trends.Count);
+            Sums(sums, Start(bound, step, zone), trends.Count);
         if (sums.Count == 0)
             return [];
 
@@ -31,9 +31,9 @@ internal static class Buckets
         return values;
     }
 
-    private static DateTime Start(DateTimeOffset moment, Period step)
+    private static DateTime Start(DateTimeOffset moment, Period step, TimeZoneInfo zone)
     {
-        var local = ViewerTime.ToViewer(moment);
+        var local = TimeZoneInfo.ConvertTime(moment, zone).DateTime;
         return step switch
         {
             Period.Hour => local.Date.AddHours(local.Hour),

@@ -1,18 +1,38 @@
+using Microsoft.Extensions.Options;
+
 namespace Enfilade;
 
-internal static class ViewerTime
+public sealed class ViewerTime(IOptions<EnfiladeOptions> options)
 {
-    public static DateTime ToViewer(DateTimeOffset moment) => TimeZoneInfo.ConvertTime(moment, Words.Zone).DateTime;
+    public TimeZoneInfo Zone { get; private set; } =
+        options.Value.TimeZone is { } id ? TimeZoneInfo.FindSystemTimeZoneById(id) : TimeZoneInfo.Utc;
 
-    public static DateTimeOffset FromViewer(DateTime wallClock)
+    internal bool Known { get; private set; } = options.Value.TimeZone is not null;
+
+    public string Day(DateTimeOffset moment) => Words.Day(moment, Zone);
+
+    public string Minute(DateTimeOffset moment) => Words.Minute(moment, Zone);
+
+    public string Clock(DateTimeOffset moment, bool seconds = false) => Words.Clock(moment, Zone, seconds);
+
+    public string Of(object? value) => Words.Of(value, Zone);
+
+    public DateTime ToViewer(DateTimeOffset moment) => TimeZoneInfo.ConvertTime(moment, Zone).DateTime;
+
+    public DateTimeOffset FromViewer(DateTime wallClock)
     {
-        var zone = Words.Zone;
         var local = DateTime.SpecifyKind(wallClock, DateTimeKind.Unspecified);
-        if (zone.IsInvalidTime(local))
-            local += DaylightDelta(zone, local);
+        if (Zone.IsInvalidTime(local))
+            local += DaylightDelta(Zone, local);
 
-        var offset = zone.IsAmbiguousTime(local) ? zone.BaseUtcOffset : zone.GetUtcOffset(local);
+        var offset = Zone.IsAmbiguousTime(local) ? Zone.BaseUtcOffset : Zone.GetUtcOffset(local);
         return new DateTimeOffset(local - offset, TimeSpan.Zero);
+    }
+
+    internal void Settle(string? id)
+    {
+        Zone = id is not null && TimeZoneInfo.TryFindSystemTimeZoneById(id, out var zone) ? zone : TimeZoneInfo.Utc;
+        Known = true;
     }
 
     private static TimeSpan DaylightDelta(TimeZoneInfo zone, DateTime local) =>

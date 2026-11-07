@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -38,8 +37,7 @@ public static class EnfiladeServices
         });
         services.AddScoped<Clipboard>();
         services.AddScoped<CurrentPage>();
-        services.AddScoped<ViewerZone>();
-        services.TryAddEnumerable(ServiceDescriptor.Scoped<CircuitHandler, ZoneCircuitHandler>());
+        services.AddScoped<ViewerTime>();
         services.TryAddSingleton(TimeProvider.System);
         services.TryAddScoped<ErrorMessages>();
         services.AddScoped<Act>();

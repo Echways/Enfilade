@@ -4,6 +4,7 @@
 @using System.Linq.Expressions
 @using System.Reflection
 @using Microsoft.AspNetCore.Components.Forms
+@inject ViewerTime Viewer
 
 @switch (_kind)
 {
@@ -87,14 +88,14 @@
     private static Type Plain => Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
 
     private IEnumerable<Option<TValue>> Choices => Options
-        ?? (Plain.IsEnum ? Enum.GetValues(Plain).Cast<object>().Select(value => new Option<TValue>((TValue)value, Words.Of(value))) : []);
+        ?? (Plain.IsEnum ? Enum.GetValues(Plain).Cast<object>().Select(value => new Option<TValue>((TValue)value, Words.Named((Enum)value))) : []);
 
     private DateTime? Day => Current is DateOnly day ? day.ToDateTime(TimeOnly.MinValue) : null;
 
     private DateTime? Wall => Current switch
     {
-        DateTimeOffset moment => ViewerTime.ToViewer(moment),
-        DateTime moment => ViewerTime.ToViewer(new DateTimeOffset(DateTime.SpecifyKind(moment, DateTimeKind.Utc))),
+        DateTimeOffset moment => Viewer.ToViewer(moment),
+        DateTime moment => Viewer.ToViewer(new DateTimeOffset(DateTime.SpecifyKind(moment, DateTimeKind.Utc))),
         _ => null,
     };
 
@@ -141,7 +142,7 @@
 
     private Task SetWallAsync(DateTime wall)
     {
-        var moment = ViewerTime.FromViewer(wall);
+        var moment = Viewer.FromViewer(wall);
         return SetAsync((TValue)(Plain == typeof(DateTimeOffset) ? moment : (object)moment.UtcDateTime));
     }
 }
