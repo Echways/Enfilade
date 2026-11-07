@@ -1,7 +1,7 @@
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.Extensions.Logging
-@implements IDisposable
+@implements IAsyncDisposable
 @inject IOptions<EnfiladeOptions> Options
 @inject IAuthorizationPolicyProvider Policies
 @inject IAuthorizationService Authorization
@@ -42,6 +42,8 @@
 
 @code {
     private ElementReference _nav;
+    private IJSObjectReference? _mark;
+    private string _path = "";
     private IReadOnlyList<NavEntry> _shown = [];
     private Dictionary<Section, long> _counts = new(ReferenceEqualityComparer.Instance);
 
@@ -50,6 +52,7 @@
 
     protected override void OnInitialized()
     {
+        _path = PathOf(Location.Uri);
         Location.LocationChanged += Moved;
         CurrentPage.Refreshed += Refreshed;
     }
@@ -71,13 +74,24 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
-            await Js.InvokeVoidAsync("enfilade.followMark", _nav);
+            _mark = await Js.InvokeAsync<IJSObjectReference>("enfilade.followMark", _nav);
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
         Location.LocationChanged -= Moved;
         CurrentPage.Refreshed -= Refreshed;
+        if (_mark is null)
+            return;
+
+        try
+        {
+            await _mark.InvokeVoidAsync("stop");
+            await _mark.DisposeAsync();
+        }
+        catch (JSDisconnectedException)
+        {
+        }
     }
 
     private async Task CountAsync()
@@ -107,7 +121,17 @@
         StateHasChanged();
     }
 
-    private void Moved(object? sender, LocationChangedEventArgs args) => _ = InvokeAsync(RecountAsync);
+    private void Moved(object? sender, LocationChangedEventArgs args)
+    {
+        var path = PathOf(args.Location);
+        if (path == _path)
+            return;
+
+        _path = path;
+        _ = InvokeAsync(RecountAsync);
+    }
+
+    private static string PathOf(string uri) => new Uri(uri).GetLeftPart(UriPartial.Path);
 
     private Task Refreshed() => InvokeAsync(RecountAsync);
 }

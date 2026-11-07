@@ -3,7 +3,10 @@ window.enfilade = {
     zone: () => Intl.DateTimeFormat().resolvedOptions().timeZone,
     followMark: nav => {
         const mark = nav.querySelector(".mark");
+        let frame = 0;
+        let stopped = false;
         const place = () => {
+            frame = 0;
             const link = nav.querySelector("a.active");
             mark.classList.toggle("placed", Boolean(link));
             if (!link) {
@@ -17,12 +20,28 @@ window.enfilade = {
                 nav.scrollTo({ left: link.offsetLeft - (nav.clientWidth - link.offsetWidth) / 2, behavior: "smooth" });
             }
         };
+        const schedule = () => {
+            if (!stopped && !frame) {
+                frame = requestAnimationFrame(place);
+            }
+        };
+        const mutations = new MutationObserver(schedule);
+        const resizes = new ResizeObserver(schedule);
         place();
         requestAnimationFrame(() => mark.classList.add("moving"));
-        new MutationObserver(place).observe(nav, { subtree: true, attributeFilter: ["class"] });
-        new ResizeObserver(place).observe(nav);
-        nav.addEventListener("transitionend", place);
-        document.fonts.ready.then(place);
+        mutations.observe(nav, { subtree: true, attributeFilter: ["class"] });
+        resizes.observe(nav);
+        nav.addEventListener("transitionend", schedule);
+        document.fonts.ready.then(schedule);
+        return {
+            stop: () => {
+                stopped = true;
+                cancelAnimationFrame(frame);
+                mutations.disconnect();
+                resizes.disconnect();
+                nav.removeEventListener("transitionend", schedule);
+            },
+        };
     },
 };
 

@@ -121,6 +121,24 @@ public class NavigationTests : PanelContext
     }
 
     [Fact]
+    public void Moving_within_a_page_keeps_the_badges()
+    {
+        AddAuthorization();
+        var inbox = new Inbox { Count = 1 };
+        Services.AddSingleton(inbox);
+        new EnfiladeBuilder(Services).AddSection<EveryonePage>("Все", section => section.Badge<Inbox>(counter => counter.CountAsync()));
+        var navigation = Render<Navigation>();
+        navigation.WaitForAssertion(() => Assert.Equal(1, inbox.Calls));
+        var location = Services.GetRequiredService<NavigationManager>();
+
+        location.NavigateTo("?q=анна");
+        location.NavigateTo("?q=анна&page=2#top");
+        location.NavigateTo("welcome");
+
+        navigation.WaitForAssertion(() => Assert.Equal(2, inbox.Calls));
+    }
+
+    [Fact]
     public void Icon_renders_before_the_title()
     {
         AddAuthorization();
