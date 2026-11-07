@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace Enfilade;
 
-public sealed class EnfiladeOptions
+public sealed partial class EnfiladeOptions
 {
     private readonly ConcurrentDictionary<Type, bool> _guarded = new();
 
@@ -44,8 +44,7 @@ public sealed class EnfiladeOptions
     internal static bool KnowsItsTimeZone(EnfiladeOptions options) =>
         options.TimeZone is null || TimeZoneInfo.TryFindSystemTimeZoneById(options.TimeZone, out _);
 
-    internal static bool HasAColorAccent(EnfiladeOptions options) =>
-        options.Accent is null || Regex.IsMatch(options.Accent, "^#[0-9A-Fa-f]{6}$", RegexOptions.None, TimeSpan.FromSeconds(1));
+    internal static bool HasAColorAccent(EnfiladeOptions options) => options.Accent is null || Color().IsMatch(options.Accent);
 
     internal static bool RefreshesAtAll(EnfiladeOptions options) => options.AutoRefreshInterval > TimeSpan.Zero;
 
@@ -55,4 +54,7 @@ public sealed class EnfiladeOptions
     internal bool Guards(Type page) => LoginPath is not null && _guarded.GetOrAdd(page, static page => !Section.AllowsAnonymous(page));
 
     internal Section? SectionOf(Type page) => Navigation.OfType<Section>().FirstOrDefault(section => section.Page == page);
+
+    [GeneratedRegex(@"^#[0-9A-Fa-f]{6}\z")]
+    private static partial Regex Color();
 }
