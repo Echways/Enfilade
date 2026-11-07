@@ -324,7 +324,7 @@
             .ToList();
         IEnumerable<Expression<Func<TItem, bool>>> searched = string.IsNullOrEmpty(address.Search) || SearchBy.Count == 0
             ? []
-            : [Conditions.Search(SearchBy, address.Search)];
+            : [Load is null ? Conditions.SearchInMemory(SearchBy, address.Search) : Conditions.Search(SearchBy, address.Search)];
         return new ListQuery<TItem>
         {
             Page = page,
