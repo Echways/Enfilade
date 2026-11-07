@@ -25,7 +25,7 @@
     case FieldKind.Select:
         <MudSelect T="TValue" Value="Current" ValueChanged="SetAsync" For="For" Label="@Title" HelperText="@HintText" Required="_required"
                    Disabled="Disabled" ToStringFunc="TitleOf" Clearable="@(default(TValue) is null)">
-            @foreach (var option in Choices)
+            @foreach (var option in _choices)
             {
                 <MudSelectItem T="TValue" Value="option.Value">@option.Title</MudSelectItem>
             }
@@ -40,7 +40,7 @@
         <div class="pair">
             <MudDatePicker Date="Wall?.Date" DateChanged="WallDayChanged" Label="@Title" HelperText="@HintText" Required="_required"
                            Disabled="Disabled" DateFormat="yyyy-MM-dd" Editable="true" />
-            <MudTimePicker Time="Wall?.TimeOfDay" TimeChanged="WallTimeChanged" Label="@string.Format(EnfiladeText.TimeOf, Title)" Required="_required"
+            <MudTimePicker Time="Wall?.TimeOfDay" TimeChanged="WallTimeChanged" Label="@Words.Format(EnfiladeText.TimeOf, Title)" Required="_required"
                            Disabled="Disabled" TimeFormat="HH:mm" AmPm="false" Editable="true" />
         </div>
         <ValidationMessage For="For" />
@@ -54,6 +54,10 @@
     private MemberInfo _member = default!;
     private FieldKind _kind;
     private bool _required;
+    private string _label = "";
+    private string? _hint;
+    private IReadOnlyList<Option<TValue>>? _members;
+    private IReadOnlyList<Option<TValue>> _choices = [];
 
     [CascadingParameter]
     private EditContext? Edit { get; set; }
@@ -81,14 +85,11 @@
 
     private TValue Current => _read();
 
-    private string Title => Label ?? FieldLabel.Of(_member);
+    private string Title => Label ?? _label;
 
-    private string? HintText => Hint ?? FieldLabel.HintOf(_member);
+    private string? HintText => Hint ?? _hint;
 
     private static Type Plain => Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
-
-    private IEnumerable<Option<TValue>> Choices => Options
-        ?? (Plain.IsEnum ? Enum.GetValues(Plain).Cast<object>().Select(value => new Option<TValue>((TValue)value, Words.Named((Enum)value))) : []);
 
     private DateTime? Day => Current is DateOnly day ? day.ToDateTime(TimeOnly.MinValue) : null;
 
@@ -102,6 +103,7 @@
     protected override void OnParametersSet()
     {
         _kind = FieldKinds.Of(typeof(TValue), Options is not null);
+        _choices = Options ?? (_members ??= Members());
         var field = FieldIdentifier.Create(For);
         if (field.Equals(_field))
             return;
@@ -117,7 +119,13 @@
         };
         (_read, _write) = access;
         _required = _member.GetCustomAttribute<RequiredAttribute>() is not null;
+        _label = FieldLabel.Of(_member);
+        _hint = FieldLabel.HintOf(_member);
     }
+
+    private static IReadOnlyList<Option<TValue>> Members() => Plain.IsEnum
+        ? [.. Enum.GetValues(Plain).Cast<Enum>().Select(value => new Option<TValue>((TValue)(object)value, Words.Named(value)))]
+        : [];
 
     private Task SetAsync(TValue value)
     {
@@ -126,7 +134,7 @@
         return Task.CompletedTask;
     }
 
-    private string TitleOf(TValue value) => Choices.FirstOrDefault(option => EqualityComparer<TValue>.Default.Equals(option.Value, value))?.Title ?? "";
+    private string TitleOf(TValue value) => _choices.FirstOrDefault(option => EqualityComparer<TValue>.Default.Equals(option.Value, value))?.Title ?? "";
 
     private Task DayChanged(DateTime? day) => day is { } chosen
         ? SetAsync((TValue)(object)DateOnly.FromDateTime(chosen))

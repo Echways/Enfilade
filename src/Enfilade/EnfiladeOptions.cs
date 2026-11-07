@@ -1,11 +1,15 @@
+using System.Collections.Concurrent;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Authorization;
 
 namespace Enfilade;
 
 public sealed class EnfiladeOptions
 {
+    private readonly ConcurrentDictionary<Type, bool> _guarded = new();
+
+    private Assembly[]? _additionalAssemblies;
+
     public string Brand { get; set; } = "Enfilade";
 
     public string? Favicon { get; set; }
@@ -45,10 +49,10 @@ public sealed class EnfiladeOptions
 
     internal static bool RefreshesAtAll(EnfiladeOptions options) => options.AutoRefreshInterval > TimeSpan.Zero;
 
-    internal Assembly[] AdditionalAssemblies => [.. Assemblies.Where(assembly => assembly != typeof(EnfiladeOptions).Assembly)];
+    internal Assembly[] AdditionalAssemblies =>
+        _additionalAssemblies ??= [.. Assemblies.Where(assembly => assembly != typeof(EnfiladeOptions).Assembly)];
 
-    internal bool Guards(Type page) =>
-        LoginPath is not null && !page.GetCustomAttributes(inherit: true).OfType<IAllowAnonymous>().Any();
+    internal bool Guards(Type page) => LoginPath is not null && _guarded.GetOrAdd(page, static page => !Section.AllowsAnonymous(page));
 
     internal Section? SectionOf(Type page) => Navigation.OfType<Section>().FirstOrDefault(section => section.Page == page);
 }

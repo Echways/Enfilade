@@ -21,7 +21,7 @@
             {
                 <button type="button" class="stamp" aria-label="@EnfiladeText.Refresh" title="@EnfiladeText.Refresh" @onclick="RefreshAsync">
                     <i @key="updatedAt" aria-hidden="true"></i>
-                    @string.Format(EnfiladeText.UpdatedAt, Viewer.Clock(updatedAt))
+                    @Words.Format(EnfiladeText.UpdatedAt, Viewer.Clock(updatedAt))
                 </button>
             }
         </p>

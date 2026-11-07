@@ -19,7 +19,9 @@ public sealed record Section(Type Page, Func<string> Title) : NavEntry
 
     internal IReadOnlyList<IAuthorizeData> Requirements { get; } = [.. Page.GetCustomAttributes(inherit: true).OfType<IAuthorizeData>()];
 
-    internal bool Anonymous { get; } = Page.GetCustomAttributes(inherit: true).OfType<IAllowAnonymous>().Any();
+    internal bool Anonymous { get; } = AllowsAnonymous(Page);
+
+    internal static bool AllowsAnonymous(Type page) => page.GetCustomAttributes(inherit: true).OfType<IAllowAnonymous>().Any();
 
     private static string Route(Type page) =>
         page.GetCustomAttributes<RouteAttribute>()

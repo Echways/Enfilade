@@ -83,7 +83,7 @@
                         <MudTh Class="@(cell.Number ? "num" : null)" aria-sort="@AriaSort(cell)">
                             @if (cell.Order is not null)
                             {
-                                <button type="button" class="@SortClass(cell)" aria-label="@string.Format(EnfiladeText.SortBy, cell.Title)" @onclick="() => SortByAsync(cell)">@cell.Title</button>
+                                <button type="button" class="@SortClass(cell)" aria-label="@Words.Format(EnfiladeText.SortBy, cell.Title)" @onclick="() => SortByAsync(cell)">@cell.Title</button>
                             }
                             else
                             {
@@ -121,7 +121,7 @@
                 </RowTemplate>
             </MudTable>
             <div class="pager">
-                <span>@string.Format(EnfiladeText.PageRange, Words.Number(First), Words.Number(Last), Words.Number(_page.Total))</span>
+                <span>@Words.Format(EnfiladeText.PageRange, Words.Number(First), Words.Number(Last), Words.Number(_page.Total))</span>
                 @if (Pages > 1)
                 {
                     <button type="button" class="link" aria-label="@EnfiladeText.PreviousPage" title="@EnfiladeText.PreviousPage" disabled="@(_shown <= 1)"

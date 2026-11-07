@@ -1,3 +1,4 @@
+using System.Globalization;
 using Enfilade.Tests.Hosts;
 
 namespace Enfilade.Tests;
@@ -44,6 +45,23 @@ public class WordsTests
     [InlineData(5, "5 клиентов")]
     [InlineData(21, "21 клиент")]
     public void Count_uses_russian_plural_forms(long count, string expected) => Assert.Equal(expected, Words.Count(Clients, count));
+
+    [Fact]
+    public void Count_is_safe_from_many_threads()
+    {
+        var culture = CultureInfo.CurrentUICulture;
+        var counts = Enumerable.Range(0, 2_000).ToArray();
+        var phrases = new string[counts.Length];
+
+        Parallel.For(0, counts.Length, index =>
+        {
+            CultureInfo.CurrentUICulture = culture;
+            CultureInfo.CurrentCulture = culture;
+            phrases[index] = Words.Count(Clients, counts[index]);
+        });
+
+        Assert.Equal(counts.Select(count => Words.Count(Clients, count)), phrases);
+    }
 
     [Fact]
     public void Number_groups_thousands_the_russian_way() => Assert.Equal("1 000", Words.Number(1000));
