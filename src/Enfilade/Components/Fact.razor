@@ -1,8 +1,9 @@
 @namespace Enfilade
+@inject ViewerTime Viewer
 
 <div class="fact">
     <dt>@Label</dt>
-    <dd>@(ChildContent ?? (RenderFragment)(builder => builder.AddContent(0, Words.Of(Value))))</dd>
+    <dd>@(ChildContent ?? (RenderFragment)(builder => builder.AddContent(0, Viewer.Of(Value))))</dd>
 </div>
 
 @code {

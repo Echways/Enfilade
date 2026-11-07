@@ -92,7 +92,7 @@ public class PageBlockTests : PanelContext
     [Fact]
     public void Timeline_shows_newest_first_in_the_viewer_zone()
     {
-        Words.Zone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Yekaterinburg");
+        Services.GetRequiredService<ViewerTime>().Settle("Asia/Yekaterinburg");
         var older = new TimelineEntry(new DateTimeOffset(2026, 10, 1, 9, 0, 0, TimeSpan.Zero), "Создан", "Анна");
         var newer = new TimelineEntry(new DateTimeOffset(2026, 10, 2, 22, 30, 0, TimeSpan.Zero), "Оплачен", Tone: Tone.Good);
 
@@ -104,6 +104,21 @@ public class PageBlockTests : PanelContext
         Assert.Contains("good", entries[0].GetAttribute("class"));
         Assert.Contains("Анна", entries[1].TextContent);
         Assert.Equal("2026-10-02T22:30:00.0000000+00:00", entries[0].QuerySelector("time")!.GetAttribute("datetime"));
+    }
+
+    [Fact]
+    public async Task Timeline_keeps_the_viewer_zone_when_rendered_from_another_context()
+    {
+        Services.GetRequiredService<ViewerTime>().Settle("Asia/Yekaterinburg");
+        TimelineEntry[] entries = [new(new DateTimeOffset(2026, 10, 2, 22, 30, 0, TimeSpan.Zero), "Оплачен")];
+        var timeline = Render<Timeline>(parameters => parameters.Add(timeline => timeline.Entries, entries));
+
+        Task rendering;
+        using (ExecutionContext.SuppressFlow())
+            rendering = Task.Run(() => timeline.Render(parameters => parameters.Add(timeline => timeline.Entries, [.. entries])));
+        await rendering;
+
+        Assert.Contains("2026-10-03 03:30", timeline.Find("time").TextContent);
     }
 
     [Fact]

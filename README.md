@@ -105,6 +105,7 @@ A section is a routable Razor component. It appears in the navigation in the ord
 | `AddCaption(string text)`               | Adds a caption above the sections that follow it.                              |
 | `AddPages(Assembly assembly)`           | Adds an assembly's routes without a navigation entry.                          |
 | `AddStylesheet(string path)`            | Links a stylesheet from static assets.                                         |
+| `ShowMessageOf<TException>(message)`    | Shows the message of an exception to the user; see [Error messages](#error-messages). |
 
 ## Actions
 
@@ -123,7 +124,7 @@ From code, inject `Act`:
 await Act.RunAsync(() => Store.DeleteAsync(order), done: "Order deleted");
 ```
 
-- A `PanelException(message)` shows its message to the user as is. Any other exception shows a general message and is logged.
+- A `PanelException(message)` shows its message to the user as is, and so does any exception registered with [`ShowMessageOf`](#error-messages). Any other exception shows a general message and is logged.
 - After a successful action, everything on the page that reports to `CurrentPage` reloads. Pass `Refresh="false"` (`refresh: false`) to skip it.
 - `RunAsync` returns whether the action ran to the end.
 
@@ -178,12 +179,12 @@ Pass `Items` instead of `Load` to let the listing sort, filter and page an in-me
 | `Href`         | A row link: middle click and "open in a new tab" work.                                     |
 | `OnOpen`       | Called with the row's item on click or Enter, for example to open a sheet.                   |
 | `Sort`         | Default sort key, `-` for descending: `"-total"`.                                       |
-| `PageSize`     | Rows per page. Default `25`.                                                               |
+| `PageSize`     | Rows per page, at least `1`. Default `25`.                                                 |
 | `Name`         | Prefix of the address keys, for two listings on one page: `orders.page`.                   |
 | `Empty`        | Content shown when there is nothing yet.                                                     |
 | `Dense`        | Tighter rows.                                                                                |
 
-`Cell` shows a value formatted by `Words.Of`: numbers, money, dates in the viewer's time zone, durations, `bool` and enums with `[Display(Name)]`.
+`Cell` shows a value formatted by `ViewerTime.Of`: numbers, money, dates in the viewer's time zone, durations, `bool` and enums with `[Display(Name)]`.
 
 | Parameter        | Description                                                                                  |
 | ---------------- | -------------------------------------------------------------------------------------------- |
@@ -225,7 +226,7 @@ The address keys are `page`, `sort`, `q` and the filter names. A hand-edited add
 
 ```razor
 <PageHead />
-<Listing TItem="Order" Load="Store.PageAsync" Selectable Live>
+<Listing TItem="Order" Load="Store.PageAsync" ItemKey="order => order.Id" Selectable Live>
     <Selected>
         <Button Kind="ButtonKind.Danger" OnClick="() => Store.CancelAsync(context)" Done="Orders cancelled">Cancel</Button>
     </Selected>
@@ -237,12 +238,12 @@ The address keys are `page`, `sort`, `q` and the filter names. A hand-edited add
 | ------------ | --------------------------------------------------------------------------------------------------------- |
 | `Selectable` | Adds checkboxes. The selection covers the current page and clears when the page, sort or filters change. |
 | `Selected`   | A bar above the table while rows are selected; `context` is the selected items.                          |
-| `ItemKey`    | What identifies a row, so the selection survives a reload: `order => order.Id`. Default: the item itself. |
+| `ItemKey`    | What identifies a row, so the selection survives a reload: `order => order.Id`. Default: the item itself, which only works for items that compare by value, such as records; a selectable listing with `Load` of other classes requires it. |
 | `Live`       | Reloads every `AutoRefreshInterval` while the tab is visible.                                             |
 
 `PageHead` without `Count` and `UpdatedAt` follows the page: it shows the total and the time of the last load of the first listing on the page, and its refresh stamp reloads every listing. An action run through `Button` or `Act` reloads them too.
 
-The first load shows a skeleton; a reload keeps the rows on screen; a failed load shows a message and a retry inside the listing while the rest of the page keeps working. Call `RefreshAsync()` on a `@ref` to reload from code.
+The first load shows a skeleton; a reload keeps the rows on screen; a failed load shows a message and a retry inside the listing while the rest of the page keeps working. The message is the exception's own when it is [shown to users](#error-messages), and a general one otherwise. Call `RefreshAsync()` on a `@ref` to reload from code.
 
 ## Dialogs
 
@@ -283,8 +284,9 @@ var order = await Dialogs.ShowFormAsync<OrderSheet, OrderDraft>("New order");
 `Form` validates with data annotations, shows a busy submit button and submits once on Enter. On success it reports `Done`, reloads the page's blocks, and inside a sheet closes it with the model, which `ShowFormAsync` returns; a closed sheet returns `null`.
 
 - `OnSubmit` throws `FieldException(field, message)` or `FieldException(errors)` for errors next to fields; they clear when the field changes.
-- A `PanelException` shows its message above the button; any other exception shows a general message and is logged.
-- A changed form asks before its sheet closes (the close button or Escape) and before the page is left.
+- A `PanelException` or a [registered](#error-messages) exception shows its message above the button; any other exception shows a general message and is logged.
+- A changed form asks before its sheet closes (the close button or Escape) and before the page is left. A change is any difference from the model as it was given to the form or last saved, compared by its JSON snapshot, so rows added to or removed from a collection count, and a value changed back does not. Mark a property `[JsonIgnore]` to leave it out. Give the form a new model instance to start over.
+- `IsDirty` on a `@ref` tells whether the form has changes, for example before switching views inside a page, which is not navigation.
 - Any MudBlazor input with `For=` works inside `Form`, and `Form` works on a page too, for example in settings.
 
 | Parameter        | Description                                                     |
@@ -316,13 +318,27 @@ var order = await Dialogs.ShowFormAsync<OrderSheet, OrderDraft>("New order");
 
 Another type fails with a message that points to MudBlazor inputs.
 
+## Error messages
+
+`Act`, `Button`, `Form` and `Listing` show the user the message of a `PanelException`. Register other exceptions whose messages are meant for users, such as a domain exception from a library that knows nothing of the panel:
+
+```csharp
+builder.Services.AddEnfilade()
+    .ShowMessageOf<DomainException>(failure => Words.Sentence(failure.Message));
+```
+
+- A registration covers the exception and its subclasses. Registrations are asked in order and the first message wins; returning `null` passes the exception to the next one.
+- `ShowMessageOf` also extends `IServiceCollection`, so a library can register its exceptions without the builder. For messages that need services, register an `IErrorMessage` implementation.
+- Inject `ErrorMessages` and call `Of(exception)` to get the message in your own components; it returns `null` for an exception the user should not see.
+- A shown message is not logged; any other exception is.
+
 ## Components
 
 ![Tabs with a timeline on an order page](docs/screenshots/order.png)
 
 | Component                    | Description                                                                                                           |
 | ---------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `Facts`, `Fact`           | A record's labelled values: `<Fact Label="Total" Value="order.Total" />`, formatted by `Words.Of`, or own content. |
+| `Facts`, `Fact`           | A record's labelled values: `<Fact Label="Total" Value="order.Total" />`, formatted by `ViewerTime.Of`, or own content. |
 | `Tag`                      | A status label with `Tone`: `Neutral`, `Good`, `Warn` or `Bad`.                                        |
 | `Tabs`, `Tab`              | Tabs whose choice lives in the address (`tab=`, or `Name`). A `Tab` has `Title` and optional `Name`; only the open tab renders. |
 | `Timeline`                 | Events from `TimelineEntry(At, Text, Who, Tone)`, newest first, in the viewer's time zone.              |
@@ -368,10 +384,25 @@ MudBlazor inputs, selects, switches, checkboxes, tables, menus and snackbars are
 | `Size(1536)`                 | `1.5 KB`                                                                 |
 | `Duration(1240)`             | `1.2 s`                                                                  |
 | `Share(0.123)`               | `12.3%`                                                                  |
-| `Of(value)`                   | Any of the above by type, `–` for `null`                                |
-| `Day`, `Minute`, `Clock` | `2026-10-26`, `2026-10-26 14:05`, `14:05` in the viewer's time zone |
 | `Middle(text, 10)`           | `tnk_AB…XYZ`                                                            |
 | `Count(pattern, n)`          | ICU plurals: `{n, plural, one {{number} order} other {{number} orders}}` |
+| `Of(value, zone)`             | Any of these by type, times in `zone`, `–` for `null`                   |
+| `Day`, `Minute`, `Clock`  | `2026-10-26`, `2026-10-26 14:05`, `14:05` in the given zone             |
+
+`ViewerTime` is the viewer's side of the same methods. It is a service of the connection, so a page or a component injects it, and its time zone holds wherever the render starts, including updates pushed from background work.
+
+```razor
+@inject ViewerTime Viewer
+
+<span>@Viewer.Minute(order.CreatedAt)</span>
+```
+
+| Member                         | Use                                                                      |
+| ------------------------------ | ------------------------------------------------------------------------ |
+| `Of(value)`                   | `Words.Of` in the viewer's time zone                                    |
+| `Day`, `Minute`, `Clock`  | `2026-10-26`, `2026-10-26 14:05`, `14:05` in the viewer's time zone   |
+| `ToViewer`, `FromViewer`    | A UTC moment to the viewer's wall clock and back                         |
+| `Zone`                        | The viewer's `TimeZoneInfo`                                             |
 
 Times are shown in the viewer's time zone, which the browser reports once per connection. A browser that reports no zone or an unknown one gets UTC. Set `TimeZone` to show every viewer the same zone. Keep data in UTC: blocks never change the host's values.
 

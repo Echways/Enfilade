@@ -1,0 +1,17 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+<Form @ref="Form" Model="Draft" OnSubmit="Save">
+    <InputText @bind-Value="Draft.Title" />
+    <button type="button" class="add-stop" @onclick="() => Draft.Stops.Add(string.Empty)">+</button>
+    <button type="button" class="drop-stop" @onclick="() => Draft.Stops.RemoveAt(Draft.Stops.Count - 1)">−</button>
+</Form>
+
+@code {
+    public Form Form { get; private set; } = default!;
+
+    [Parameter, EditorRequired]
+    public RouteDraft Draft { get; set; } = default!;
+
+    [Parameter]
+    public Func<Task> Save { get; set; } = () => Task.CompletedTask;
+}

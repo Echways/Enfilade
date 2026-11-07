@@ -10,7 +10,7 @@ internal static class SectionAccess
     {
         if (section.Anonymous)
             return true;
-        if (options.Guards(section.Page) && user.Identity?.IsAuthenticated != true)
+        if (options.LoginPath is not null && user.Identity?.IsAuthenticated != true)
             return false;
         if (section.Requirements.Count == 0)
             return true;

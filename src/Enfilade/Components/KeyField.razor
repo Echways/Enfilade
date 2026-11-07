@@ -1,14 +1,16 @@
 @namespace Enfilade
 <div class="kf pigment @(Born ? "born" : "")">
     <label class="kf-label" for="@_id">@Label</label>
-    <output id="@_id" class="kf-token">@for (var index = 0; index < Groups.Count; index++){var order = index;<span class="g" style="--i: @order">@Groups[order]</span>}</output>
+    <output id="@_id" class="kf-token">@for (var index = 0; index < _groups.Count; index++){var order = index;<span class="g" style="--i: @order">@_groups[order]</span>}</output>
     <CopyButton Value="@Value" Label="@CopyLabel" Class="kf-copy" />
 </div>
 
 @code {
     private const int GroupLength = 4;
 
-    private readonly string _id = "key-" + Guid.NewGuid().ToString("N")[..8];
+    private readonly string _id = ElementId.New("key");
+
+    private List<string> _groups = [];
 
     [Parameter, EditorRequired]
     public string Label { get; set; } = "";
@@ -22,14 +24,9 @@
     [Parameter]
     public bool Born { get; set; }
 
-    private List<string> Groups
+    protected override void OnParametersSet()
     {
-        get
-        {
-            var prefix = Value.IndexOf('_') + 1;
-            var groups = new List<string> { Value[..prefix] };
-            groups.AddRange(Value[prefix..].Chunk(GroupLength).Select(group => new string(group)));
-            return groups;
-        }
+        var prefix = Value.IndexOf('_') + 1;
+        _groups = [Value[..prefix], .. Value[prefix..].Chunk(GroupLength).Select(group => new string(group))];
     }
 }

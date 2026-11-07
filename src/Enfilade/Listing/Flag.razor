@@ -22,21 +22,9 @@
     [Parameter, EditorRequired]
     public string Name { get; set; } = "";
 
-    protected override void OnParametersSet()
-    {
-        var filter = new FlagFilter(Name, Title, Where);
-        if (_filter is null)
-            Context.Add(filter);
-        else
-            Context.Replace(_filter, filter);
-        _filter = filter;
-    }
+    protected override void OnParametersSet() => _filter = Context.Filters.Place(_filter, new FlagFilter(Name, Title, Where));
 
-    public void Dispose()
-    {
-        if (_filter is not null)
-            Context.Remove(_filter);
-    }
+    public void Dispose() => Context.Filters.Remove(_filter);
 
     private Task ToggleAsync(bool on) => Context.FilterAsync(Name, on ? On : null);
 

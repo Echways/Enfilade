@@ -65,6 +65,7 @@ public class EnfiladeOptionsTests
     [InlineData("#12345")]
     [InlineData("#1234567")]
     [InlineData("#GG0000")]
+    [InlineData("#0A7F5A\n")]
     public void Accent_must_be_a_color(string accent)
     {
         var error = Assert.Throws<OptionsValidationException>(() => Resolve([], shell => shell.Accent = accent));

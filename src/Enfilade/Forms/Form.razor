@@ -1,10 +1,14 @@
 @namespace Enfilade
 @implements IDisposable
+@using System.Buffers
+@using System.Text.Json
+@using System.Text.Json.Serialization
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.Extensions.Logging
 @inject ISnackbar Snackbar
 @inject CurrentPage CurrentPage
 @inject IDialogService Dialogs
+@inject ErrorMessages Errors
 @inject ILogger<Form> Logger
 
 <EditForm EditContext="_edit" OnValidSubmit="SubmitAsync" class="form">
@@ -21,11 +25,23 @@
         <Button Submit Busy="_busy">@(Submit ?? EnfiladeText.Save)</Button>
     </div>
 </EditForm>
-<NavigationLock OnBeforeInternalNavigation="LeavingAsync" ConfirmExternalNavigation="_dirty" />
+@if (_dirty)
+{
+    <NavigationLock OnBeforeInternalNavigation="LeavingAsync" ConfirmExternalNavigation="true" />
+}
 
 @code {
+    private static readonly JsonSerializerOptions SnapshotOptions = new()
+    {
+        IncludeFields = true,
+        ReferenceHandler = ReferenceHandler.IgnoreCycles,
+    };
+
+    private readonly ArrayBufferWriter<byte> _snapshot = new();
+    private Utf8JsonWriter? _writer;
     private EditContext _edit = default!;
     private ValidationMessageStore _server = default!;
+    private byte[] _saved = [];
     private string? _error;
     private bool _busy;
     private bool _dirty;
@@ -57,32 +73,56 @@
     [Parameter]
     public RenderFragment? Actions { get; set; }
 
+    public bool IsDirty => _dirty;
+
+    protected override void OnInitialized() => Guard?.Watch(this);
+
     protected override void OnParametersSet()
     {
-        if (_edit?.Model == Model)
+        if (_edit?.Model != Model)
+        {
+            if (_edit is not null)
+                _edit.OnFieldChanged -= FieldChanged;
+            _edit = new EditContext(Model);
+            _server = new ValidationMessageStore(_edit);
+            _edit.OnFieldChanged += FieldChanged;
+            _saved = Snapshot().ToArray();
+            _dirty = false;
             return;
+        }
 
-        if (_edit is not null)
-            _edit.OnFieldChanged -= FieldChanged;
-        _edit = new EditContext(Model);
-        _server = new ValidationMessageStore(_edit);
-        _edit.OnFieldChanged += FieldChanged;
-        Mark(false);
+        _dirty = Changed();
     }
 
-    public void Dispose() => _edit.OnFieldChanged -= FieldChanged;
+    public void Dispose()
+    {
+        _edit.OnFieldChanged -= FieldChanged;
+        _writer?.Dispose();
+        Guard?.Forget(this);
+    }
+
+    private bool Changed() => !Snapshot().SequenceEqual(_saved);
+
+    private ReadOnlySpan<byte> Snapshot()
+    {
+        _snapshot.ResetWrittenCount();
+        if (_writer is null)
+            _writer = new Utf8JsonWriter(_snapshot);
+        else
+            _writer.Reset();
+        JsonSerializer.Serialize(_writer, Model, Model.GetType(), SnapshotOptions);
+        return _snapshot.WrittenSpan;
+    }
 
     private void FieldChanged(object? sender, FieldChangedEventArgs args)
     {
         _server.Clear(args.FieldIdentifier);
-        Mark(true);
-    }
+        var dirty = Changed();
+        if (dirty == _dirty)
+            return;
 
-    private void Mark(bool dirty)
-    {
         _dirty = dirty;
-        if (Guard is not null)
-            Guard.Dirty = dirty;
+        StateHasChanged();
     }
 
     private async Task SubmitAsync()
@@ -97,7 +137,8 @@
             if (!await SaveAsync())
                 return;
 
-            Mark(false);
+            _saved = Snapshot().ToArray();
+            _dirty = false;
             Snackbar.Add(Done ?? EnfiladeText.Saved, Severity.Normal);
             if (Refresh)
                 await CurrentPage.RefreshAsync();
@@ -122,17 +163,12 @@
                 _server.Add(_edit.Field(field), message);
             _edit.NotifyValidationStateChanged();
         }
-        catch (PanelException exception)
-        {
-            _error = exception.Message;
-        }
-        catch (OperationCanceledException)
+        catch (Exception exception) when (ErrorMessages.Cancelled(exception))
         {
         }
         catch (Exception exception)
         {
-            Logger.LogError(exception, "Enfilade: a form could not be saved");
-            _error = EnfiladeText.Failed;
+            _error = Errors.Describe(exception, Logger, EnfiladeText.Failed);
         }
 
         return false;
@@ -140,7 +176,7 @@
 
     private async Task LeavingAsync(LocationChangingContext leaving)
     {
-        if (_dirty && !await Dialogs.ConfirmAsync(EnfiladeText.DiscardQuestion, EnfiladeText.DiscardMessage, EnfiladeText.Discard, danger: true))
+        if (!await Dialogs.ConfirmDiscardAsync())
             leaving.PreventNavigation();
     }
 }

@@ -1,3 +1,4 @@
+using System.Globalization;
 using Enfilade.Tests.Hosts;
 
 namespace Enfilade.Tests;
@@ -9,7 +10,7 @@ public class WordsTests
 
     private static readonly DateTimeOffset Moment = new(2026, 10, 12, 2, 30, 0, TimeSpan.FromHours(3));
 
-    public WordsTests() => Words.Zone = TimeZoneInfo.Utc;
+    private static readonly TimeZoneInfo Utc = TimeZoneInfo.Utc;
 
     [Fact]
     public void Middle_keeps_short_text_whole() => Assert.Equal("abc", Words.Middle("abc", 10));
@@ -19,6 +20,26 @@ public class WordsTests
         Assert.Equal("tnk_AB…XYZ", Words.Middle("tnk_ABCDEFGHIJKLMNOPQRSTUVWXYZ", 10));
 
     [Theory]
+    [InlineData(1, "…")]
+    [InlineData(2, "t…")]
+    [InlineData(3, "t…Z")]
+    [InlineData(7, "tnk_…YZ")]
+    [InlineData(8, "tnk_…XYZ")]
+    public void Middle_keeps_exactly_the_length_asked(int length, string expected)
+    {
+        var cut = Words.Middle("tnk_ABCDEFGHIJKLMNOPQRSTUVWXYZ", length);
+
+        Assert.Equal(expected, cut);
+        Assert.Equal(length, cut.Length);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void Middle_needs_room_for_the_ellipsis(int length) =>
+        Assert.Throws<ArgumentOutOfRangeException>(() => Words.Middle("text", length));
+
+    [Theory]
     [InlineData(1, "1 клиент")]
     [InlineData(2, "2 клиента")]
     [InlineData(5, "5 клиентов")]
@@ -26,24 +47,42 @@ public class WordsTests
     public void Count_uses_russian_plural_forms(long count, string expected) => Assert.Equal(expected, Words.Count(Clients, count));
 
     [Fact]
+    public void Count_is_safe_from_many_threads()
+    {
+        var culture = CultureInfo.CurrentUICulture;
+        var counts = Enumerable.Range(0, 2_000).ToArray();
+        var phrases = new string[counts.Length];
+
+        Parallel.For(0, counts.Length, index =>
+        {
+            CultureInfo.CurrentUICulture = culture;
+            CultureInfo.CurrentCulture = culture;
+            phrases[index] = Words.Count(Clients, counts[index]);
+        });
+
+        Assert.Equal(counts.Select(count => Words.Count(Clients, count)), phrases);
+    }
+
+    [Fact]
     public void Number_groups_thousands_the_russian_way() => Assert.Equal("1 000", Words.Number(1000));
 
     [Fact]
     public void Day_minute_and_clock_are_in_utc()
     {
-        Assert.Equal("2026-10-11", Words.Day(Moment));
-        Assert.Equal("2026-10-11 23:30", Words.Minute(Moment));
-        Assert.Equal("23:30", Words.Clock(Moment));
+        Assert.Equal("2026-10-11", Words.Day(Moment, Utc));
+        Assert.Equal("2026-10-11 23:30", Words.Minute(Moment, Utc));
+        Assert.Equal("23:30", Words.Clock(Moment, Utc));
+        Assert.Equal("23:30:00", Words.Clock(Moment, Utc, seconds: true));
     }
 
     [Fact]
     public void Day_minute_and_clock_follow_the_viewer_zone()
     {
-        Words.Zone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Yekaterinburg");
+        var zone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Yekaterinburg");
 
-        Assert.Equal("2026-10-12", Words.Day(Moment));
-        Assert.Equal("2026-10-12 04:30", Words.Minute(Moment));
-        Assert.Equal("04:30", Words.Clock(Moment));
+        Assert.Equal("2026-10-12", Words.Day(Moment, zone));
+        Assert.Equal("2026-10-12 04:30", Words.Minute(Moment, zone));
+        Assert.Equal("04:30", Words.Clock(Moment, zone));
     }
 
     [Theory]
@@ -80,16 +119,16 @@ public class WordsTests
     [InlineData(OrderStatus.Paid, "Оплачен")]
     [InlineData(OrderStatus.New, "New")]
     [InlineData("text", "text")]
-    public void Of_formats_by_type(object? value, string expected) => Assert.Equal(expected, Words.Of(value));
+    public void Of_formats_by_type(object? value, string expected) => Assert.Equal(expected, Words.Of(value, Utc));
 
     [Fact]
     public void Of_formats_money_times_and_spans()
     {
-        Assert.Equal("1\u00A0234,5", Words.Of(1234.5m));
-        Assert.Equal(Words.Minute(Moment), Words.Of(Moment));
-        Assert.Equal("2026-10-11 23:30", Words.Of(new DateTime(2026, 10, 11, 23, 30, 0)));
-        Assert.Equal("2026-10-12", Words.Of(new DateOnly(2026, 10, 12)));
-        Assert.Equal(Words.Duration(1_240), Words.Of(TimeSpan.FromMilliseconds(1_240)));
-        Assert.Equal("2\u00A0592\u00A0000\u00A0с", Words.Of(TimeSpan.FromDays(30)));
+        Assert.Equal("1\u00A0234,5", Words.Of(1234.5m, Utc));
+        Assert.Equal(Words.Minute(Moment, Utc), Words.Of(Moment, Utc));
+        Assert.Equal("2026-10-11 23:30", Words.Of(new DateTime(2026, 10, 11, 23, 30, 0), Utc));
+        Assert.Equal("2026-10-12", Words.Of(new DateOnly(2026, 10, 12), Utc));
+        Assert.Equal(Words.Duration(1_240), Words.Of(TimeSpan.FromMilliseconds(1_240), Utc));
+        Assert.Equal("2\u00A0592\u00A0000\u00A0с", Words.Of(TimeSpan.FromDays(30), Utc));
     }
 }

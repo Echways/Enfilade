@@ -34,19 +34,10 @@
     {
         var name = Name ?? MemberKey.Of(By)
             ?? throw new InvalidOperationException($"Enfilade: the choice \"{Title}\" needs a Name, because By is not a member path");
-        var filter = new ChoiceFilter(name, Title, By, Options);
-        if (_filter is null)
-            Context.Add(filter);
-        else
-            Context.Replace(_filter, filter);
-        _filter = filter;
+        _filter = Context.Filters.Place(_filter, new ChoiceFilter(name, Title, By, Options));
     }
 
-    public void Dispose()
-    {
-        if (_filter is not null)
-            Context.Remove(_filter);
-    }
+    public void Dispose() => Context.Filters.Remove(_filter);
 
     private Task ChooseAsync(string? raw) => Context.FilterAsync(_filter!.Name, string.IsNullOrEmpty(raw) ? null : raw);
 

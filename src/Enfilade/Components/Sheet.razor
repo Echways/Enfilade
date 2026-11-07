@@ -72,10 +72,9 @@
 
     private async Task CloseAsync()
     {
-        if (_guard.Dirty && !await Dialogs.ConfirmAsync(EnfiladeText.DiscardQuestion, EnfiladeText.DiscardMessage, EnfiladeText.Discard, danger: true))
+        if (_guard.Dirty && !await Dialogs.ConfirmDiscardAsync())
             return;
 
-        _guard.Dirty = false;
         Dialog.Cancel();
     }
 }

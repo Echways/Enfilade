@@ -26,7 +26,7 @@ internal static class FieldKinds
             return FieldKind.Date;
         if (plain == typeof(DateTime) || plain == typeof(DateTimeOffset))
             return FieldKind.Moment;
-        if (Type.GetTypeCode(plain) is >= TypeCode.SByte and <= TypeCode.Decimal)
+        if (Numeric.Is(plain))
             return FieldKind.Number;
 
         throw new NotSupportedException($"Enfilade: Field cannot edit {type.Name}; put a MudBlazor input with For= inside the Form instead");

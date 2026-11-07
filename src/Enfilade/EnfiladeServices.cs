@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -38,19 +37,26 @@ public static class EnfiladeServices
         });
         services.AddScoped<Clipboard>();
         services.AddScoped<CurrentPage>();
-        services.AddScoped<ViewerZone>();
-        services.TryAddEnumerable(ServiceDescriptor.Scoped<CircuitHandler, ZoneCircuitHandler>());
+        services.AddScoped<ViewerTime>();
         services.TryAddSingleton(TimeProvider.System);
+        services.TryAddScoped<ErrorMessages>();
         services.AddScoped<Act>();
         services.AddOptions<RequestLocalizationOptions>().Configure<IOptions<EnfiladeOptions>>((localization, shell) =>
         {
-            var spoken = LanguageChoice.Spoken(shell.Value).ToArray();
+            var spoken = LanguageChoice.Spoken(shell.Value);
             localization.SetDefaultCulture(shell.Value.Language)
                 .AddSupportedCultures(spoken)
                 .AddSupportedUICultures(spoken);
             localization.RequestCultureProviders = [new CookieRequestCultureProvider()];
         });
         return new EnfiladeBuilder(services);
+    }
+
+    public static IServiceCollection ShowMessageOf<TException>(this IServiceCollection services, Func<TException, string?> message)
+        where TException : Exception
+    {
+        services.AddSingleton<IErrorMessage>(new ErrorMessage<TException>(message));
+        return services;
     }
 
     public static RazorComponentsEndpointConventionBuilder MapEnfilade(this WebApplication app)

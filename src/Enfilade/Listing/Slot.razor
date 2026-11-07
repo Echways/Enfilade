@@ -14,19 +14,7 @@
     [Parameter, EditorRequired]
     public RenderFragment<TItem> ChildContent { get; set; } = default!;
 
-    protected override void OnParametersSet()
-    {
-        var definition = new CellDefinition<TItem>(Title, null, null, false, ChildContent);
-        if (_definition is null)
-            Context.Add(definition);
-        else
-            Context.Replace(_definition, definition);
-        _definition = definition;
-    }
+    protected override void OnParametersSet() => _definition = Context.Cells.Place(_definition, new CellDefinition<TItem>(Title, null, null, false, ChildContent));
 
-    public void Dispose()
-    {
-        if (_definition is not null)
-            Context.Remove(_definition);
-    }
+    public void Dispose() => Context.Cells.Remove(_definition);
 }

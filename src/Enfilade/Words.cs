@@ -1,37 +1,44 @@
+using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Reflection;
+using System.Text;
 using Jeffijoe.MessageFormat;
 
 namespace Enfilade;
 
 public static class Words
 {
-    private static readonly AsyncLocal<TimeZoneInfo?> ViewerZone = new();
+    private static readonly ConcurrentDictionary<(Enum Member, CultureInfo Culture), string> Names = new();
 
-    public static TimeZoneInfo Zone
-    {
-        get => ViewerZone.Value ?? TimeZoneInfo.Utc;
-        internal set => ViewerZone.Value = value;
-    }
+    private static readonly ConcurrentDictionary<string, CompositeFormat> Formats = new();
+
+    [ThreadStatic]
+    private static MessageFormatter? _formatter;
 
     public static string Sentence(string text) => text.Length == 0 ? text : char.ToUpperInvariant(text[0]) + text[1..];
 
-    public static string Day(DateTimeOffset moment) => ViewerTime.ToViewer(moment).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+    public static string Day(DateTimeOffset moment, TimeZoneInfo zone) => In(moment, zone, "yyyy-MM-dd");
 
-    public static string Minute(DateTimeOffset moment) => ViewerTime.ToViewer(moment).ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
+    public static string Minute(DateTimeOffset moment, TimeZoneInfo zone) => In(moment, zone, "yyyy-MM-dd HH:mm");
 
-    public static string Clock(DateTimeOffset moment, bool seconds = false) =>
-        ViewerTime.ToViewer(moment).ToString(seconds ? "HH:mm:ss" : "HH:mm", CultureInfo.InvariantCulture);
+    public static string Clock(DateTimeOffset moment, TimeZoneInfo zone, bool seconds = false) => In(moment, zone, seconds ? "HH:mm:ss" : "HH:mm");
 
-    public static string Middle(string text, int length) =>
-        text.Length <= length ? text : text[..(length * 3 / 5)] + "…" + text[^(length * 2 / 5 - 1)..];
+    public static string Middle(string text, int length)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(length);
+        if (text.Length <= length)
+            return text;
+
+        var head = length * 3 / 5;
+        return string.Concat(text.AsSpan(0, head), "…", text.AsSpan(text.Length - (length - head - 1)));
+    }
 
     public static string Number(long value) => value.ToString("N0", CultureInfo.CurrentCulture);
 
     public static string Duration(long milliseconds) => milliseconds < 1_000
-        ? string.Format(EnfiladeText.Milliseconds, Number(milliseconds))
-        : string.Format(EnfiladeText.Seconds, (milliseconds / 1_000.0).ToString(milliseconds < 10_000 ? "0.#" : "N0", CultureInfo.CurrentCulture));
+        ? Format(EnfiladeText.Milliseconds, Number(milliseconds))
+        : Format(EnfiladeText.Seconds, (milliseconds / 1_000.0).ToString(milliseconds < 10_000 ? "0.#" : "N0", CultureInfo.CurrentCulture));
 
     public static string Size(long bytes)
     {
@@ -44,24 +51,24 @@ public static class Words
             unit++;
         }
 
-        return string.Format(units[unit], value.ToString(unit == 0 || value >= 100 ? "N0" : "0.#", CultureInfo.CurrentCulture));
+        return Format(units[unit], value.ToString(unit == 0 || value >= 100 ? "N0" : "0.#", CultureInfo.CurrentCulture));
     }
 
     public static string Share(double share) =>
-        string.Format(EnfiladeText.Percent, Math.Round(100 * share, 1).ToString("0.#", CultureInfo.CurrentCulture));
+        Format(EnfiladeText.Percent, Math.Round(100 * share, 1).ToString("0.#", CultureInfo.CurrentCulture));
 
     public static string OrDash(long value) => value == 0 ? "–" : Number(value);
 
-    public static string Count(string pattern, long count) => MessageFormatter.Format(
+    public static string Count(string pattern, long count) => (_formatter ??= new MessageFormatter()).FormatMessage(
         pattern, new Dictionary<string, object?> { ["n"] = count, ["number"] = Number(count) }, CultureInfo.CurrentUICulture);
 
-    public static string Of(object? value) => value switch
+    public static string Of(object? value, TimeZoneInfo zone) => value switch
     {
         null => "–",
         sbyte or byte or short or ushort or int or uint or long or ulong => ((IFormattable)value).ToString("N0", CultureInfo.CurrentCulture),
         decimal or double or float => ((IFormattable)value).ToString("#,##0.##", CultureInfo.CurrentCulture),
-        DateTimeOffset moment => Minute(moment),
-        DateTime moment => Minute(moment.Kind == DateTimeKind.Local ? new DateTimeOffset(moment) : new DateTimeOffset(DateTime.SpecifyKind(moment, DateTimeKind.Utc))),
+        DateTimeOffset moment => Minute(moment, zone),
+        DateTime moment => Minute(moment.Kind == DateTimeKind.Local ? new DateTimeOffset(moment) : new DateTimeOffset(DateTime.SpecifyKind(moment, DateTimeKind.Utc)), zone),
         DateOnly day => day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
         TimeSpan span => Duration(span.Ticks / TimeSpan.TicksPerMillisecond),
         bool yes => yes ? EnfiladeText.Yes : EnfiladeText.No,
@@ -69,7 +76,15 @@ public static class Words
         _ => value.ToString() ?? "",
     };
 
-    private static string Named(Enum member)
+    private static string In(DateTimeOffset moment, TimeZoneInfo zone, string format) =>
+        TimeZoneInfo.ConvertTime(moment, zone).ToString(format, CultureInfo.InvariantCulture);
+
+    internal static string Format(string format, params ReadOnlySpan<object?> args) =>
+        string.Format(CultureInfo.CurrentCulture, Formats.GetOrAdd(format, CompositeFormat.Parse), args);
+
+    internal static string Named(Enum member) => Names.GetOrAdd((member, CultureInfo.CurrentUICulture), static key => Displayed(key.Member));
+
+    private static string Displayed(Enum member)
     {
         var name = member.ToString();
         return member.GetType().GetField(name)?.GetCustomAttribute<DisplayAttribute>()?.GetName() ?? name;

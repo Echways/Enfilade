@@ -1,11 +1,15 @@
+using System.Collections.Concurrent;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Authorization;
 
 namespace Enfilade;
 
-public sealed class EnfiladeOptions
+public sealed partial class EnfiladeOptions
 {
+    private readonly ConcurrentDictionary<Type, bool> _guarded = new();
+
+    private Assembly[]? _additionalAssemblies;
+
     public string Brand { get; set; } = "Enfilade";
 
     public string? Favicon { get; set; }
@@ -40,15 +44,17 @@ public sealed class EnfiladeOptions
     internal static bool KnowsItsTimeZone(EnfiladeOptions options) =>
         options.TimeZone is null || TimeZoneInfo.TryFindSystemTimeZoneById(options.TimeZone, out _);
 
-    internal static bool HasAColorAccent(EnfiladeOptions options) =>
-        options.Accent is null || Regex.IsMatch(options.Accent, "^#[0-9A-Fa-f]{6}$", RegexOptions.None, TimeSpan.FromSeconds(1));
+    internal static bool HasAColorAccent(EnfiladeOptions options) => options.Accent is null || Color().IsMatch(options.Accent);
 
     internal static bool RefreshesAtAll(EnfiladeOptions options) => options.AutoRefreshInterval > TimeSpan.Zero;
 
-    internal Assembly[] AdditionalAssemblies => [.. Assemblies.Where(assembly => assembly != typeof(EnfiladeOptions).Assembly)];
+    internal Assembly[] AdditionalAssemblies =>
+        _additionalAssemblies ??= [.. Assemblies.Where(assembly => assembly != typeof(EnfiladeOptions).Assembly)];
 
-    internal bool Guards(Type page) =>
-        LoginPath is not null && !page.GetCustomAttributes(inherit: true).OfType<IAllowAnonymous>().Any();
+    internal bool Guards(Type page) => LoginPath is not null && _guarded.GetOrAdd(page, static page => !Section.AllowsAnonymous(page));
 
     internal Section? SectionOf(Type page) => Navigation.OfType<Section>().FirstOrDefault(section => section.Page == page);
+
+    [GeneratedRegex(@"^#[0-9A-Fa-f]{6}\z")]
+    private static partial Regex Color();
 }
