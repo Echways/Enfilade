@@ -19,6 +19,26 @@ public class WordsTests
         Assert.Equal("tnk_AB…XYZ", Words.Middle("tnk_ABCDEFGHIJKLMNOPQRSTUVWXYZ", 10));
 
     [Theory]
+    [InlineData(1, "…")]
+    [InlineData(2, "t…")]
+    [InlineData(3, "t…Z")]
+    [InlineData(7, "tnk_…YZ")]
+    [InlineData(8, "tnk_…XYZ")]
+    public void Middle_keeps_exactly_the_length_asked(int length, string expected)
+    {
+        var cut = Words.Middle("tnk_ABCDEFGHIJKLMNOPQRSTUVWXYZ", length);
+
+        Assert.Equal(expected, cut);
+        Assert.Equal(length, cut.Length);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void Middle_needs_room_for_the_ellipsis(int length) =>
+        Assert.Throws<ArgumentOutOfRangeException>(() => Words.Middle("text", length));
+
+    [Theory]
     [InlineData(1, "1 клиент")]
     [InlineData(2, "2 клиента")]
     [InlineData(5, "5 клиентов")]

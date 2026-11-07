@@ -15,8 +15,15 @@ public static class Words
 
     public static string Clock(DateTimeOffset moment, TimeZoneInfo zone, bool seconds = false) => In(moment, zone, seconds ? "HH:mm:ss" : "HH:mm");
 
-    public static string Middle(string text, int length) =>
-        text.Length <= length ? text : text[..(length * 3 / 5)] + "…" + text[^(length * 2 / 5 - 1)..];
+    public static string Middle(string text, int length)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(length);
+        if (text.Length <= length)
+            return text;
+
+        var head = length * 3 / 5;
+        return string.Concat(text.AsSpan(0, head), "…", text.AsSpan(text.Length - (length - head - 1)));
+    }
 
     public static string Number(long value) => value.ToString("N0", CultureInfo.CurrentCulture);
 
