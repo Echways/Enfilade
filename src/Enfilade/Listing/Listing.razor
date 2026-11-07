@@ -135,12 +135,16 @@
 </CascadingValue>
 
 @code {
+    private static readonly bool ComparedByValue = typeof(TItem).IsValueType
+        || typeof(TItem).GetMethod(nameof(Equals), [typeof(object)])?.DeclaringType is { } owner && owner != typeof(object);
+
     private ListingContext<TItem> _context = default!;
     private PageSource _source = default!;
     private CancellationTokenSource? _loading;
     private ListPage<TItem>? _page;
     private ListQuery<TItem>? _query;
     private HashSet<object> _chosen = [];
+    private Func<TItem, object> _key = item => item!;
     private string? _shownSignature;
     private IReadOnlyCollection<TItem>? _items;
     private string? _loaded;
@@ -193,7 +197,7 @@
     public RenderFragment<IReadOnlyList<TItem>>? Selected { get; set; }
 
     [Parameter]
-    public Func<TItem, object> ItemKey { get; set; } = item => item!;
+    public Func<TItem, object>? ItemKey { get; set; }
 
     [Parameter]
     public bool Live { get; set; }
@@ -238,6 +242,13 @@
     {
         if ((Load is null) == (Items is null))
             throw new InvalidOperationException("Enfilade: a Listing needs either Load or Items, not both");
+        if (PageSize < 1)
+            throw new InvalidOperationException($"Enfilade: PageSize of a Listing must be positive, not {PageSize}");
+        if (Selectable && Load is not null && ItemKey is null && !ComparedByValue)
+            throw new InvalidOperationException(
+                $"Enfilade: a selectable Listing with Load needs ItemKey, such as item => item.Id: every load brings new {typeof(TItem).Name} instances, and they compare by reference");
+
+        _key = ItemKey ?? (item => item!);
 
         var itemsChanged = !ReferenceEquals(_items, Items);
         _items = Items;
@@ -286,7 +297,7 @@
             if (loading.IsCancellationRequested)
                 return;
 
-            _chosen = signature == _shownSignature ? [.. page.Items.Select(ItemKey).Where(_chosen.Contains)] : [];
+            _chosen = signature == _shownSignature ? [.. page.Items.Select(_key).Where(_chosen.Contains)] : [];
             _shownSignature = signature;
             _page = page;
             _query = query;
@@ -360,17 +371,17 @@
         Filters = address.Filters.Where(pair => pair.Key != name).ToDictionary(StringComparer.Ordinal),
     });
 
-    private bool Picked(TItem item) => _chosen.Contains(ItemKey(item));
+    private bool Picked(TItem item) => _chosen.Contains(_key(item));
 
     private void Choose(TItem item, bool on)
     {
         if (on)
-            _chosen.Add(ItemKey(item));
+            _chosen.Add(_key(item));
         else
-            _chosen.Remove(ItemKey(item));
+            _chosen.Remove(_key(item));
     }
 
-    private void ChooseAll(bool on) => _chosen = on ? [.. _page!.Items.Select(ItemKey)] : [];
+    private void ChooseAll(bool on) => _chosen = on ? [.. _page!.Items.Select(_key)] : [];
 
     private Task GoToPageAsync(int page) => _context.GoAsync(address => address with { Page = page });
 

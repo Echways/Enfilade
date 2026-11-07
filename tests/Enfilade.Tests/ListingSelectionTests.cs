@@ -60,6 +60,26 @@ public class ListingSelectionTests : PanelContext
     }
 
     [Fact]
+    public void Selectable_loaded_class_items_need_a_key()
+    {
+        var error = Assert.Throws<InvalidOperationException>(() => Render<Listing<Ticket>>(parameters => parameters
+            .Add(listing => listing.Load, Ticket.PageAsync)
+            .Add(listing => listing.Selectable, true)
+            .Add<Slot<Ticket>>(listing => listing.Columns, slot => slot.Add(cell => cell.ChildContent, ticket => ticket.Title))));
+
+        Assert.Contains(nameof(Listing<Ticket>.ItemKey), error.Message);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-5)]
+    public void Page_size_must_be_positive(int size) =>
+        Assert.Throws<InvalidOperationException>(() => Render<Listing<Order>>(parameters => parameters
+            .Add(listing => listing.Items, Order.Sixty)
+            .Add(listing => listing.PageSize, size)
+            .Add<Slot<Order>>(listing => listing.Columns, slot => slot.Add(cell => cell.ChildContent, order => order.Customer))));
+
+    [Fact]
     public void Live_listing_reloads_on_tick()
     {
         Services.Configure<EnfiladeOptions>(options => options.AutoRefreshInterval = TimeSpan.FromMilliseconds(50));
