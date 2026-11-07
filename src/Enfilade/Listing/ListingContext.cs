@@ -18,11 +18,31 @@ internal sealed class ListingContext<TItem>(NavigationManager navigation, Func<s
 
     private readonly List<FilterDefinition<TItem>> _filters = [];
 
+    private ListingAddress? _address;
+
+    private string? _addressUri;
+
     public IReadOnlyList<CellDefinition<TItem>> Cells => _cells;
 
     public IReadOnlyList<FilterDefinition<TItem>> Filters => _filters;
 
-    public ListingAddress Address => ListingAddress.Read(navigation.Uri, prefix());
+    public string? Prefix => prefix();
+
+    public ListingAddress Address
+    {
+        get
+        {
+            var uri = navigation.Uri;
+            var name = prefix();
+            if (_address is null || !ReferenceEquals(uri, _addressUri) || _address.Prefix != name)
+            {
+                _address = ListingAddress.Read(uri, name);
+                _addressUri = uri;
+            }
+
+            return _address;
+        }
+    }
 
     public bool Searches => searches();
 

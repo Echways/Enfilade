@@ -59,7 +59,7 @@
         if (_typing is not null)
             return;
 
-        var search = ListingAddress.Read(args.Location, Context.Address.Prefix).Search;
+        var search = Context.Address.Search;
         if (search != _text?.Trim())
         {
             _text = search;

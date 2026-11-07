@@ -22,6 +22,28 @@ public class ListQueryTests
     }
 
     [Fact]
+    public void In_memory_page_matches_the_queryable_page()
+    {
+        ListQuery<Order>[] queries =
+        [
+            new() { Page = 2, Size = 2, Order = Total },
+            new() { Order = Total, Sort = new SortOrder("total", true) },
+            new() { Order = (Expression<Func<Order, object?>>)(order => order.Total), Size = 1 },
+            new() { Conditions = [Conditions.Equal<Order, Status>(order => order.Status, Status.Paid)], Order = Total },
+            new() { Page = 9, Size = 2 },
+        ];
+
+        foreach (var query in queries)
+        {
+            var expected = Orders.ToPage(query);
+            var page = Orders.AsEnumerable().ToPage(query);
+
+            Assert.Equal(expected.Total, page.Total);
+            Assert.Equal(expected.Items, page.Items);
+        }
+    }
+
+    [Fact]
     public void Descending_order_reverses()
     {
         var page = Orders.ToPage(new ListQuery<Order> { Order = Total, Sort = new SortOrder("total", true) });

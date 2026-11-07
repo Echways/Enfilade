@@ -318,7 +318,7 @@
     }
 
     private Task<ListPage<TItem>> FetchAsync(ListQuery<TItem> query, CancellationToken token) =>
-        Load is not null ? Load(query, token) : Task.FromResult(Items!.AsQueryable().ToPage(query));
+        Load is not null ? Load(query, token) : Task.FromResult(Items!.ToPage(query));
 
     private ListQuery<TItem> QueryFor(ListingAddress address, int page)
     {
@@ -355,7 +355,7 @@
 
     private void LocationChanged(object? sender, LocationChangedEventArgs args)
     {
-        if (Signature(ListingAddress.Read(args.Location, Name)) != _loaded)
+        if (Signature(_context.Address) != _loaded)
             _ = InvokeAsync(LoadAsync);
     }
 
