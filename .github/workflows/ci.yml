@@ -3,9 +3,9 @@ name: CI
 on:
   push:
     branches: [main]
-    paths-ignore: ["**.md", "LICENSE"]
+    paths-ignore: ["**.md", "docs/**", "LICENSE"]
   pull_request:
-    paths-ignore: ["**.md", "LICENSE"]
+    paths-ignore: ["**.md", "docs/**", "LICENSE"]
   workflow_call:
 
 permissions:
@@ -16,10 +16,10 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  build:
-    name: Build, test and pack
+  lint:
+    name: Lint
     runs-on: ubuntu-26.04
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
       - name: Check out
         uses: actions/checkout@v7
@@ -30,11 +30,19 @@ jobs:
       - name: Check C# formatting
         run: dotnet format Enfilade.slnx --verify-no-changes
 
-      - name: Build
-        run: dotnet build Enfilade.slnx -c Release
+  test:
+    name: Tests
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up .NET
+        uses: ./.github/actions/dotnet
 
       - name: Test
-        run: dotnet test --project tests/Enfilade.Tests -c Release --no-build --results-directory "$GITHUB_WORKSPACE/TestResults" --report-xunit-junit --coverage --coverage-output-format cobertura
+        run: dotnet test --project tests/Enfilade.Tests -c Release --results-directory "$GITHUB_WORKSPACE/TestResults" --report-xunit-junit --coverage --coverage-output-format cobertura
 
       - name: Publish test report
         if: ${{ !cancelled() }}
@@ -46,8 +54,26 @@ jobs:
           require_tests: true
           include_time_in_summary: true
 
+      - name: Summarize coverage
+        if: ${{ !cancelled() }}
+        run: |
+          dotnet tool restore
+          dotnet reportgenerator -reports:"TestResults/**/*.cobertura.xml" -targetdir:coverage -reporttypes:MarkdownSummaryGithub
+          cat coverage/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY"
+
+  pack:
+    name: Pack
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up .NET
+        uses: ./.github/actions/dotnet
+
       - name: Pack
-        run: dotnet pack Enfilade.slnx -c Release --no-build -o artifacts/packages
+        run: dotnet pack Enfilade.slnx -c Release -o artifacts/packages
 
       - name: Upload packages
         uses: actions/upload-artifact@v7

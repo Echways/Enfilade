@@ -2630,3 +2630,45 @@ a.crumb:hover {
     letter-spacing: normal;
     color: var(--mist);
 }
+
+.output {
+    box-sizing: border-box;
+    max-height: 480px;
+    overflow: auto;
+    padding: 16px 20px;
+    border-radius: var(--round);
+    background: var(--deep);
+    box-shadow: inset 0 0 0 1px var(--rule), var(--edge);
+    color: var(--light);
+    scrollbar-width: thin;
+    scrollbar-color: var(--rule) transparent;
+    transition: box-shadow 0.3s var(--spring);
+}
+
+.output:hover {
+    box-shadow: inset 0 0 0 1px var(--line), var(--edge);
+}
+
+.output pre, .output .output-empty {
+    margin: 0;
+    font: 400 13px/20px var(--mono);
+    font-stretch: 87%;
+    letter-spacing: -0.01em;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.output .output-empty {
+    color: var(--mist);
+}
+
+.adder {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+}
+
+.adder .mud-input-control {
+    flex: 1 1 auto;
+    min-width: 0;
+}

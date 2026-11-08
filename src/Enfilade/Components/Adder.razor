@@ -1,0 +1,46 @@
+@namespace Enfilade
+@inject Act Act
+
+<div class="adder">
+    <MudTextField T="string" @bind-Value="_text" Immediate="true" Placeholder="@Placeholder" aria-label="@Placeholder" Disabled="Disabled"
+                  OnKeyDown="KeyAsync" />
+    <Button OnClick="AddAsync" Done="@Done" Refresh="Refresh" Disabled="@(Disabled || string.IsNullOrWhiteSpace(_text))">@ChildContent</Button>
+</div>
+
+@code {
+    private string? _text;
+
+    [Parameter, EditorRequired]
+    public string Placeholder { get; set; } = "";
+
+    [Parameter, EditorRequired]
+    public EventCallback<string> OnAdd { get; set; }
+
+    [Parameter]
+    public string? Done { get; set; }
+
+    [Parameter]
+    public bool Refresh { get; set; } = true;
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter, EditorRequired]
+    public RenderFragment ChildContent { get; set; } = default!;
+
+    private async Task AddAsync()
+    {
+        var value = _text?.Trim();
+        if (string.IsNullOrEmpty(value))
+            return;
+
+        await OnAdd.InvokeAsync(value);
+        _text = null;
+    }
+
+    private async Task KeyAsync(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter" && !Disabled && !string.IsNullOrWhiteSpace(_text))
+            await Act.RunAsync(AddAsync, Done, null, Refresh);
+    }
+}

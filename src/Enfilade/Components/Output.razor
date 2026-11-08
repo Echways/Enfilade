@@ -1,0 +1,20 @@
+@namespace Enfilade
+
+<div class="output" role="log" tabindex="0">
+    @if (string.IsNullOrEmpty(Text))
+    {
+        <p class="output-empty">@Empty</p>
+    }
+    else
+    {
+        <pre>@Text</pre>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string? Text { get; set; }
+
+    [Parameter, EditorRequired]
+    public string Empty { get; set; } = "";
+}
