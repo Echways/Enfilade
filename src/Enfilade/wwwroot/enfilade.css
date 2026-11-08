@@ -488,7 +488,7 @@ button.link:hover, .link:hover {
     color: inherit;
     background: none;
     border: 0;
-    border-radius: 999px;
+    border-radius: 2px;
     cursor: pointer;
     transition: background-color 0.4s var(--spring), color 0.4s var(--spring);
 }
@@ -633,17 +633,16 @@ button.link:hover, .link:hover {
     display: inline-block;
     font: 600 13px/20px var(--sans);
     padding: 10px 20px;
-    border-radius: var(--round);
+    border-radius: 2px;
     white-space: nowrap;
     text-decoration: none;
     cursor: pointer;
-    box-shadow: 0 10px 28px -14px rgba(0, 47, 167, 0.9), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-    transition: filter 0.4s var(--spring), transform 0.4s var(--spring), box-shadow 0.4s var(--spring);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    transition: filter 0.4s var(--spring), transform 0.4s var(--spring);
 }
 
 .btn-k:hover {
     filter: brightness(1.16);
-    box-shadow: 0 14px 32px -12px rgba(0, 47, 167, 1), inset 0 0 0 1px rgba(255, 255, 255, 0.12);
 }
 
 .btn-k:active, .btn-danger:active, .signin button:active {
@@ -775,7 +774,7 @@ button.link:hover, .link:hover {
 .tbl .note {
     margin-left: 4px;
     padding: 1px 8px;
-    border-radius: 999px;
+    border-radius: 2px;
     box-shadow: inset 0 0 0 1px var(--rule);
     font: 500 12px/18px var(--sans);
 }
@@ -1474,7 +1473,7 @@ button.btn-k {
     background: none;
     border: 1px solid var(--vermilion);
     padding: 9px 19px;
-    border-radius: var(--round);
+    border-radius: 2px;
     cursor: pointer;
     transition: background-color 0.4s var(--spring), transform 0.4s var(--spring);
 }
@@ -1744,7 +1743,7 @@ button.btn-k {
     padding: 4px 12px;
     background: rgba(255, 255, 255, 0.1);
     border: 0;
-    border-radius: 999px;
+    border-radius: 2px;
     font: 500 13px/20px var(--sans);
     color: var(--white);
     cursor: pointer;
@@ -2001,7 +2000,7 @@ a.crumb:hover {
 
 .crumb.on {
     padding: 3px 4px 3px 12px;
-    border-radius: 999px;
+    border-radius: 2px;
     box-shadow: inset 0 0 0 1px var(--rule);
     color: var(--light);
 }
@@ -2553,7 +2552,7 @@ a.crumb:hover {
     align-items: center;
     gap: 6px;
     padding: 1px 10px 1px 8px;
-    border-radius: 999px;
+    border-radius: 2px;
     box-shadow: inset 0 0 0 1px var(--rule);
     font: 500 12px/18px var(--sans);
     color: var(--light);
@@ -2564,7 +2563,6 @@ a.crumb:hover {
     content: "";
     width: 6px;
     height: 6px;
-    border-radius: 50%;
     background: var(--tone);
 }
 
@@ -3069,6 +3067,10 @@ a.crumb:hover {
 
 .figs:has(> .fig:nth-child(3)) > .fig:first-child b {
     --size: 132px;
+    --fit: min(var(--size), 70cqi / (var(--chars) * 0.65));
+    inline-size: 70%;
+    height: auto;
+    font-size: var(--fit);
     order: 1;
     align-items: center;
     font-weight: 100;
