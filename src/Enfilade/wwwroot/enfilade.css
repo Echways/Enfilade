@@ -2021,6 +2021,14 @@ a.crumb:hover {
         --size: clamp(32px, 11vw, 56px);
     }
 
+    .wizard {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .wizard-actions {
+        grid-column: 1;
+    }
+
     .block {
         margin-top: 80px;
     }
@@ -2759,6 +2767,29 @@ a.crumb:hover {
     display: flex;
     flex: none;
     gap: 12px;
+}
+
+.wizard {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 32px 48px;
+    align-items: start;
+}
+
+.wizard-body {
+    min-width: 0;
+}
+
+.wizard-actions {
+    grid-column: 2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px 28px;
+}
+
+.wizard-actions > :last-child {
+    margin-left: auto;
 }
 
 .banner {

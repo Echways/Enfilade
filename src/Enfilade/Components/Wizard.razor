@@ -1,0 +1,115 @@
+@namespace Enfilade
+
+<CascadingValue Value="this" IsFixed="true">
+    <div class="wizard">
+        <Steps Items="Items" />
+        <div class="wizard-body">
+            @ChildContent
+        </div>
+        <div class="wizard-actions">
+            @if (Index > 0)
+            {
+                <button type="button" class="link" @onclick="Back">@EnfiladeText.Back</button>
+            }
+            @if (Last)
+            {
+                <Button OnClick="FinishAsync" Done="@Done" Confirm="Confirm" Refresh="Refresh">@(Finish ?? EnfiladeText.Finish)</Button>
+            }
+            else
+            {
+                <Button OnClick="NextAsync" Refresh="false">@EnfiladeText.Next</Button>
+            }
+        </div>
+    </div>
+</CascadingValue>
+
+@code {
+    private readonly List<WizardStep> _steps = [];
+    private bool _refused;
+
+    [Parameter]
+    public int Current { get; set; }
+
+    [Parameter]
+    public EventCallback<int> CurrentChanged { get; set; }
+
+    [Parameter]
+    public EventCallback OnFinish { get; set; }
+
+    [Parameter]
+    public string? Finish { get; set; }
+
+    [Parameter]
+    public string? Done { get; set; }
+
+    [Parameter]
+    public Confirm? Confirm { get; set; }
+
+    [Parameter]
+    public bool Refresh { get; set; } = true;
+
+    [Parameter, EditorRequired]
+    public RenderFragment ChildContent { get; set; } = default!;
+
+    internal bool IsCurrent(WizardStep step) => _steps.IndexOf(step) == Index;
+
+    private int Index => Math.Clamp(Current, 0, Math.Max(0, _steps.Count - 1));
+
+    private bool Last => Index >= _steps.Count - 1;
+
+    private IReadOnlyList<Step> Items => [.. _steps.Select((step, index) => new Step(step.Title, StateOf(index), step.Detail))];
+
+    internal void Add(WizardStep step)
+    {
+        _steps.Add(step);
+        StateHasChanged();
+    }
+
+    internal void Remove(WizardStep step)
+    {
+        _steps.Remove(step);
+        StateHasChanged();
+    }
+
+    private StepState StateOf(int index) => index.CompareTo(Index) switch
+    {
+        > 0 => StepState.Pending,
+        < 0 => StepState.Done,
+        _ => _refused ? StepState.Failed : StepState.Current,
+    };
+
+    private Task Back() => GoToAsync(Index - 1);
+
+    private async Task NextAsync()
+    {
+        await LeaveAsync();
+        await GoToAsync(Index + 1);
+    }
+
+    private async Task FinishAsync()
+    {
+        await LeaveAsync();
+        await OnFinish.InvokeAsync();
+    }
+
+    private async Task LeaveAsync()
+    {
+        try
+        {
+            await _steps[Index].OnLeave.InvokeAsync();
+        }
+        catch
+        {
+            _refused = true;
+            StateHasChanged();
+            throw;
+        }
+    }
+
+    private async Task GoToAsync(int index)
+    {
+        _refused = false;
+        Current = index;
+        await CurrentChanged.InvokeAsync(index);
+    }
+}

@@ -1,0 +1,28 @@
+@namespace Enfilade
+@implements IDisposable
+
+@if (Owner.IsCurrent(this))
+{
+    @ChildContent
+}
+
+@code {
+    [CascadingParameter]
+    private Wizard Owner { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = "";
+
+    [Parameter]
+    public string? Detail { get; set; }
+
+    [Parameter]
+    public EventCallback OnLeave { get; set; }
+
+    [Parameter, EditorRequired]
+    public RenderFragment ChildContent { get; set; } = default!;
+
+    protected override void OnInitialized() => Owner.Add(this);
+
+    public void Dispose() => Owner.Remove(this);
+}

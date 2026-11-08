@@ -12,6 +12,7 @@
 | `Banner`                   | `Notice` для верха страницы: прямоугольный и подкрашенный. `Dismissible` добавляет кнопку закрытия, `OnDismiss` сообщает хосту, запоминать ли закрытие. |
 | `Menu`, `MenuItem`         | Меню «⋯» для действий над строкой, например в `Slot`. `MenuItem` выполняет `OnClick` через `Act` и принимает `Confirm`, `Done`, `Refresh`, `Danger` и `Disabled`, как `Button`. Для ссылок используйте `MudMenuItem`. |
 | `Steps`                    | Вертикальный ход процесса из `Step(Title, State, Detail)`; `State` — `Pending`, `Current`, `Done` или `Failed`.      |
+| `Wizard`, `WizardStep`     | Многошаговый сценарий: `Steps` и открытый `WizardStep` (`Title`, `Detail`, `OnLeave`) с кнопками «Назад», «Далее» и «Готово». `@bind-Current`, `OnFinish`, `Done`, `Confirm`. См. ниже. |
 | `Tabs`, `Tab`              | Вкладки, выбор которых хранится в адресе (`tab=` или `Name`). У `Tab` есть `Title` и необязательный `Name`; рендерится только открытая вкладка. |
 | `Timeline`                 | События из `TimelineEntry(At, Text, Who, Tone)`, новые сверху, в часовом поясе зрителя.                  |
 | `Pane`                     | Блок страницы с заголовком, `Hint` и `Actions`.                                                          |
@@ -115,3 +116,45 @@
 ```
 
 Открытая вкладка — это `?tab=history` в адресе, поэтому ссылка открывает страницу на нужной вкладке, а «Назад» работает как ожидается. Двум `Tabs` на одной странице нужны разные `Name`.
+
+
+## Меню строки
+
+`Menu` — кнопка «⋯» с действиями одной строки. Положите её в `Slot`; клик по ней не открывает строку. Пункт выполняется через `Act`, как `Button`, поэтому подтверждение, сообщение о результате, обработка ошибки и обновление страницы уже есть:
+
+```razor
+<Slot Title="">
+    <Menu>
+        <MenuItem OnClick="() => ArchiveAsync(context)" Done="В архиве">В архив</MenuItem>
+        <MenuItem OnClick="() => DeleteAsync(context)" Danger
+                  Confirm="@(new Confirm("Удалить заказ?", "Восстановить его не получится.", "Удалить", Danger: true))">Удалить</MenuItem>
+    </Menu>
+</Slot>
+```
+
+`Label` называет кнопку для скринридера (по умолчанию «Действия со строкой»). Для ссылки используйте `MudMenuItem Href`.
+
+## Wizard
+
+`Wizard` показывает `Steps` рядом с открытым шагом и кнопки перехода между шагами. Рисуется только открытый `WizardStep`. `Current` — номер открытого шага: привяжите его через `@bind-Current`, чтобы читать или задавать, или не указывайте, и мастер сам его хранит.
+
+```razor
+<Wizard @bind-Current="_step" OnFinish="CreateAsync" Done="Заказ создан">
+    <WizardStep Title="Клиент" Detail="@_draft.Customer" OnLeave="CheckCustomer">
+        <MudTextField @bind-Value="_draft.Customer" Label="Клиент" />
+    </WizardStep>
+    <WizardStep Title="Доставка">
+        <MudTextField @bind-Value="_draft.Address" Label="Адрес" />
+    </WizardStep>
+</Wizard>
+
+@code {
+    private void CheckCustomer()
+    {
+        if (string.IsNullOrWhiteSpace(_draft.Customer))
+            throw new PanelException("Укажите клиента");
+    }
+}
+```
+
+`OnLeave` выполняется при нажатии «Далее», а на последнем шаге — «Готово». `PanelException` оставляет пользователя на шаге, помечает его ошибкой в шапке и показывает своё сообщение. «Далее» никогда не перезагружает страницу. «Готово» выполняет `OnFinish` через `Act`, поэтому `Done`, `Confirm` и `Refresh` работают как у `Button`; `Finish` меняет подпись. «Назад» всегда свободен.

@@ -201,4 +201,13 @@
   <data name="Version" xml:space="preserve">
     <value>Версия {0}</value>
   </data>
+  <data name="Back" xml:space="preserve">
+    <value>Назад</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Далее</value>
+  </data>
+  <data name="Finish" xml:space="preserve">
+    <value>Готово</value>
+  </data>
 </root>
