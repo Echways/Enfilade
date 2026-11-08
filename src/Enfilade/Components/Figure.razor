@@ -3,10 +3,14 @@
     <b id="@_id-value" class="@(Text is null ? "" : "word")" style="--chars: @Written.Count(char.IsLetterOrDigit)">@Written</b>
     @if (Change is { } change)
     {
-        <span id="@_id-change" class="change @ToneOf(change)">
+        <span id="@_id-change" class="change @ToneOf(change).ToString().ToLowerInvariant()">
             <span aria-hidden="true">@Shown(change)</span>
             <span class="sr">@Words.Format(EnfiladeText.ChangeToPrevious, Shown(change))</span>
         </span>
+    }
+    @if (Spark is not null)
+    {
+        <Sparkline Values="Spark" Tone="@(Change is { } trend ? ToneOf(trend) : Tone.Neutral)" />
     }
     <figcaption id="@_id-note">
         <span>@First</span>
@@ -38,6 +42,9 @@
     [Parameter]
     public bool LowerIsBetter { get; set; }
 
+    [Parameter]
+    public IReadOnlyList<double>? Spark { get; set; }
+
     private string Written => Text ?? Words.Number(Value);
 
     private string Labels => Change is null ? $"{_id}-value {_id}-note" : $"{_id}-value {_id}-change {_id}-note";
@@ -49,10 +56,10 @@
         _ => Words.Share(0),
     };
 
-    private string ToneOf(double change) => (LowerIsBetter ? -Math.Sign(change) : Math.Sign(change)) switch
+    private Tone ToneOf(double change) => (LowerIsBetter ? -Math.Sign(change) : Math.Sign(change)) switch
     {
-        > 0 => "good",
-        < 0 => "bad",
-        _ => "neutral",
+        > 0 => Tone.Good,
+        < 0 => Tone.Bad,
+        _ => Tone.Neutral,
     };
 }

@@ -257,6 +257,12 @@ button.link:hover, .link:hover {
     white-space: nowrap;
 }
 
+.version {
+    margin-top: -48px;
+    color: var(--mist);
+    font: 12px/16px var(--sans);
+}
+
 .nav {
     position: relative;
     display: grid;
@@ -2393,6 +2399,47 @@ a.crumb:hover {
 
 .fig .change.bad {
     color: var(--vermilion);
+}
+
+.spark {
+    --tone: var(--mist);
+    display: inline-block;
+    width: 96px;
+    height: auto;
+    max-width: 100%;
+    vertical-align: middle;
+    overflow: visible;
+}
+
+.spark.good {
+    --tone: var(--glow);
+}
+
+.spark.warn {
+    --tone: var(--ochre);
+}
+
+.spark.bad {
+    --tone: var(--vermilion);
+}
+
+.spark polyline {
+    fill: none;
+    stroke: var(--tone);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+}
+
+.spark circle, .spark rect {
+    fill: var(--tone);
+}
+
+.fig .spark {
+    display: block;
+    width: min(100%, 144px);
+    margin-top: 12px;
 }
 
 .chart {

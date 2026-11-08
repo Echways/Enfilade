@@ -49,6 +49,32 @@ public class FigureTests : PanelContext
     public void Text_counts_its_letters() =>
         Assert.Equal("--chars: 9", Render<Figure>(parameters => parameters.Add(figure => figure.Text, "Отключено").Add(figure => figure.First, "связь").Add(figure => figure.Second, "с банком")).Find("b").GetAttribute("style"));
 
+    [Fact]
+    public void Spark_is_drawn_only_when_given()
+    {
+        var without = Render<Figure>(parameters => parameters.Add(figure => figure.First, "заказов").Add(figure => figure.Second, "сегодня"));
+        var with = Render<Figure>(parameters => parameters
+            .Add(figure => figure.First, "заказов")
+            .Add(figure => figure.Second, "сегодня")
+            .Add(figure => figure.Spark, [3, 5, 4]));
+
+        Assert.Empty(without.FindAll(".spark"));
+        Assert.Single(with.FindAll(".spark"));
+    }
+
+    [Fact]
+    public void Spark_takes_the_tone_of_the_change()
+    {
+        var figure = Render<Figure>(parameters => parameters
+            .Add(figure => figure.First, "возвратов")
+            .Add(figure => figure.Second, "сегодня")
+            .Add(figure => figure.Change, 0.04)
+            .Add(figure => figure.LowerIsBetter, true)
+            .Add(figure => figure.Spark, [3, 5, 4]));
+
+        Assert.Contains("bad", figure.Find(".spark").GetAttribute("class"));
+    }
+
     private AngleSharp.Dom.IElement Change(double share, bool lowerIsBetter = false) => Render<Figure>(parameters => parameters
         .Add(figure => figure.Value, 1284)
         .Add(figure => figure.First, "заказов")

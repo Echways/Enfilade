@@ -198,4 +198,7 @@
   <data name="RowActions" xml:space="preserve">
     <value>Row actions</value>
   </data>
+  <data name="Version" xml:space="preserve">
+    <value>Version {0}</value>
+  </data>
 </root>

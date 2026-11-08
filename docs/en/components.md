@@ -21,9 +21,10 @@
 | `Placeholder`              | Skeleton for content that is still loading.                                                                           |
 | `AutoRefresh`              | Invokes `OnTick` every `AutoRefreshInterval` while the tab is visible.                                            |
 | `Sheet`                    | Layout for a sheet: `ChildContent` and `Actions`.                                                                 |
-| `Figure`                   | Large number with two caption lines (`First`, `Second`). `Alarm` marks it red. `Change` (a share: `0.12` is +12%) shows the change to the previous period, good when it grows unless `LowerIsBetter`. Group in `<div class="figs">`. |
+| `Figure`                   | Large number with two caption lines (`First`, `Second`). `Alarm` marks it red. `Change` (a share: `0.12` is +12%) shows the change to the previous period, good when it grows unless `LowerIsBetter`. `Spark` adds a small line of recent values. Group in `<div class="figs">`. |
 | `Chart`                    | A line or bar chart over time from `Trend(Name, Readings)` of `Reading(At, Value)`. See below.                        |
 | `Strips`                   | Horizontal bars for a ranking, from `Strip(Label, Value, Shown)`.                                                   |
+| `Sparkline`                | A tiny chart for a table cell or a caption from `Values`: a line with its last point marked, or `Bars`. `Tone` colors it; `Summary` makes it an image for screen readers, without it it is decoration. |
 | `Meter`                    | `Used / Limit` with a bar that turns ochre at 90% and red at 100%.                                                  |
 | `Crumb`                    | Removable filter chip that links to the address without the filter.                                                   |
 | `CopyLine`, `CopyButton` | A value with a copy button.                                                                                           |
