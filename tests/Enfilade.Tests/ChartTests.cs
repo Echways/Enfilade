@@ -35,5 +35,19 @@ public class ChartTests : PanelContext
         Assert.Equal([new DateTime(2026, 10, 1).ToString("MMM yyyy", CultureInfo.CurrentCulture)], mud.ChartLabels);
     }
 
+    [Fact]
+    public void Long_axes_keep_only_every_few_labels_so_they_stay_readable()
+    {
+        var readings = Enumerable.Range(1, 30).Select(day => Reading(day, day)).ToList();
+
+        var chart = Render<Chart>(parameters => parameters.Add(chart => chart.Trends, [new Trend("Заказы", readings)]));
+
+        var mud = chart.FindComponent<MudChart<double>>().Instance;
+        Assert.Equal(30, mud.ChartLabels.Length);
+        Assert.Equal(10, mud.ChartLabels.Count(label => label.Length > 0));
+        Assert.Equal(new DateTime(2026, 10, 1).ToString("d MMM", CultureInfo.CurrentCulture), mud.ChartLabels[0]);
+        Assert.Equal("", mud.ChartLabels[1]);
+    }
+
     private static Reading Reading(int day, double value) => new(new DateTimeOffset(2026, 10, day, 12, 0, 0, TimeSpan.Zero), value);
 }

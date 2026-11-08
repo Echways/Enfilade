@@ -8,6 +8,8 @@
 </div>
 
 @code {
+    private const int MostLabels = 10;
+
     private static readonly string[] Palette = [EnfiladeTheme.KleinGlow, EnfiladeTheme.Light, EnfiladeTheme.Ochre, EnfiladeTheme.Mist, EnfiladeTheme.Vermilion];
 
     private List<ChartSeries<double>> _series = [];
@@ -39,7 +41,7 @@
     {
         var buckets = Buckets.Of(Trends, Step, From, To, Viewer.Zone);
         var format = Format ?? (value => Words.Number((long)Math.Round(value)));
-        _labels = [.. buckets.Select(bucket => bucket.Start.ToString(LabelFormat, CultureInfo.CurrentCulture))];
+        _labels = Thinned([.. buckets.Select(bucket => bucket.Start.ToString(LabelFormat, CultureInfo.CurrentCulture))]);
         _series = [.. Trends.Select((trend, index) => new ChartSeries<double>
         {
             Name = trend.Name,
@@ -48,6 +50,12 @@
         _options = Kind == ChartKind.Bars
             ? new BarChartOptions { ChartPalette = Palette, YAxisToStringFunc = format }
             : new LineChartOptions { ChartPalette = Palette, YAxisToStringFunc = format };
+    }
+
+    private static string[] Thinned(string[] labels)
+    {
+        var every = (int)Math.Ceiling(labels.Length / (double)MostLabels);
+        return [.. labels.Select((label, index) => index % every == 0 ? label : "")];
     }
 
     private string LabelFormat => Step switch
