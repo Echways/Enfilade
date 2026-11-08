@@ -1,0 +1,29 @@
+@namespace Enfilade
+
+<div class="notice @Tone.ToString().ToLowerInvariant()" role="@(Tone is Tone.Warn or Tone.Bad ? "alert" : "status")">
+    <div class="notice-text">
+        @if (Title is not null)
+        {
+            <strong>@Title</strong>
+        }
+        @ChildContent
+    </div>
+    @if (Actions is not null)
+    {
+        <div class="actions">@Actions</div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public Tone Tone { get; set; }
+
+    [Parameter]
+    public string? Title { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? Actions { get; set; }
+}
