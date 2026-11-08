@@ -30,6 +30,7 @@
 | `Crumb`                    | Removable filter chip that links to the address without the filter.                                                   |
 | `CopyLine`, `CopyButton` | A value with a copy button.                                                                                           |
 | `Output`                   | A bordered box for logs and command output: `Text` and `Empty`, the line shown when there is no text.                 |
+| `CodeEditor`               | A code editor on CodeMirror: `Value` is the initial text, `Language` (`python`) turns on highlighting, `ReadOnly` locks it. `OnChange` fires on every edit; read the text with `GetValueAsync()`, replace it with `SetValueAsync()`. The height is set by `.code-editor`. |
 | `Adder`                    | A one-line add form: `Placeholder`, `OnAdd` with the trimmed text, `Done`, and the button label as content. Enter adds too. |
 | `KeyField`                 | A secret token in groups, with a copy button.                                                                         |
 | `EntranceLayout`           | Full-screen layout without navigation, for sign-in pages: `@layout EntranceLayout`.                                 |
