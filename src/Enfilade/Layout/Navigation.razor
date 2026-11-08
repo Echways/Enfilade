@@ -12,7 +12,7 @@
 @inject ILogger<Navigation> Logger
 
 <nav class="nav" aria-label="@EnfiladeText.Sections" @ref="_nav">
-    <span class="mark pigment" aria-hidden="true"></span>
+    <span class="mark" aria-hidden="true"></span>
     @foreach (var entry in _shown)
     {
         if (entry is Section link)
