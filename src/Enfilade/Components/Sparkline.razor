@@ -1,0 +1,35 @@
+@namespace Enfilade
+
+@if (Values.Count > 0)
+{
+    <svg class="spark @Tone.ToString().ToLowerInvariant()" viewBox="0 0 @Sparks.Number(Sparks.Width) @Sparks.Number(Sparks.Height)"
+         role="@(Summary is null ? null : "img")" aria-label="@Summary" aria-hidden="@(Summary is null ? "true" : null)">
+        @if (Bars)
+        {
+            @foreach (var bar in Sparks.Bars(Values))
+            {
+                <rect x="@Sparks.Number(bar.X)" y="@Sparks.Number(bar.Y)" width="@Sparks.Number(bar.Width)" height="@Sparks.Number(bar.Height)" rx="1" />
+            }
+        }
+        else
+        {
+            var spots = Sparks.Line(Values);
+            <polyline points="@string.Join(' ', spots.Select(spot => $"{Sparks.Number(spot.X)},{Sparks.Number(spot.Y)}"))" />
+            <circle cx="@Sparks.Number(spots[^1].X)" cy="@Sparks.Number(spots[^1].Y)" r="2" />
+        }
+    </svg>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<double> Values { get; set; } = [];
+
+    [Parameter]
+    public Tone Tone { get; set; }
+
+    [Parameter]
+    public bool Bars { get; set; }
+
+    [Parameter]
+    public string? Summary { get; set; }
+}

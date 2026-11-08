@@ -1,3 +1,4 @@
+@using System.Reflection
 @inherits LayoutComponentBase
 @inject NavigationManager Navigation
 @inject IJSRuntime Js
@@ -12,6 +13,10 @@
 <div class="frame">
     <header class="side">
         <span class="brand">@Options.Value.Brand</span>
+        @if (Options.Value.ShowVersion)
+        {
+            <span class="version">@Words.Format(EnfiladeText.Version, LibraryVersion)</span>
+        }
         <Navigation />
         <AuthorizeView Context="auth">
             <Authorized>
@@ -46,6 +51,9 @@
 </div>
 
 @code {
+    private static readonly string LibraryVersion = typeof(MainLayout).Assembly
+        .GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion.Split('+')[0];
+
     private ErrorBoundary? _failure;
     private MudThemeProvider? _themes;
     private MudTheme _theme = default!;

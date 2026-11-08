@@ -114,6 +114,15 @@
   <data name="Working" xml:space="preserve">
     <value>Выполняется…</value>
   </data>
+  <data name="StepDone" xml:space="preserve">
+    <value>Шаг выполнен</value>
+  </data>
+  <data name="StepFailed" xml:space="preserve">
+    <value>Шаг не удался</value>
+  </data>
+  <data name="StepCurrent" xml:space="preserve">
+    <value>Текущий шаг</value>
+  </data>
   <data name="Yes" xml:space="preserve">
     <value>Да</value>
   </data>
@@ -185,5 +194,20 @@
   </data>
   <data name="ChangeToPrevious" xml:space="preserve">
     <value>{0} к прошлому периоду</value>
+  </data>
+  <data name="RowActions" xml:space="preserve">
+    <value>Действия со строкой</value>
+  </data>
+  <data name="Version" xml:space="preserve">
+    <value>Версия {0}</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>Назад</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Далее</value>
+  </data>
+  <data name="Finish" xml:space="preserve">
+    <value>Готово</value>
   </data>
 </root>

@@ -41,6 +41,10 @@
     --hairline-x: linear-gradient(90deg, transparent, var(--rule) 10%, var(--rule) 90%, transparent);
     --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.86' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23g)'/%3E%3C/svg%3E");
     --pigment: radial-gradient(120% 90% at 18% 8%, rgba(255, 255, 255, 0.07), transparent 62%), radial-gradient(110% 110% at 100% 100%, rgba(0, 4, 40, 0.38), transparent 70%), var(--klein);
+    --axis: #3A4470;
+    --rust: #C7381D;
+    --on-pigment: #EEEBE5;
+    --cloud: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20600%20400'%20preserveAspectRatio='none'%3E%3Cfilter%20id='d'%20filterUnits='userSpaceOnUse'%20x='0'%20y='0'%20width='600'%20height='400'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.018%200.026'%20numOctaves='2'%20seed='7'%20result='n'/%3E%3CfeDisplacementMap%20in='SourceGraphic'%20in2='n'%20scale='50'%20xChannelSelector='R'%20yChannelSelector='G'%20result='r'/%3E%3CfeGaussianBlur%20in='r'%20stdDeviation='16'/%3E%3C/filter%3E%3Crect%20x='90'%20y='80'%20width='420'%20height='240'%20fill='%23000'%20filter='url%28%23d%29'/%3E%3C/svg%3E");
     --gutter: 16px;
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -67,6 +71,7 @@
     --deep: #ECE9E2;
     --rule: #D9D5CC;
     --line: #9A9FB5;
+    --axis: #9A9FB5;
     --mist: #5A607A;
     --light: #0F1530;
     --glow: #2442D6;
@@ -89,6 +94,7 @@
         --deep: #ECE9E2;
         --rule: #D9D5CC;
         --line: #9A9FB5;
+    --axis: #9A9FB5;
         --mist: #5A607A;
         --light: #0F1530;
         --glow: #2442D6;
@@ -242,6 +248,7 @@ button.link:hover, .link:hover {
     position: sticky;
     top: 0;
     align-self: start;
+    z-index: 2;
     height: 100dvh;
     box-sizing: border-box;
     display: flex;
@@ -249,12 +256,21 @@ button.link:hover, .link:hover {
     gap: 56px;
     padding-block: 36px;
     min-width: 0;
+    text-align: right;
 }
 
 .brand {
+    padding-right: 28px;
     font: 200 24px/28px var(--sans);
     letter-spacing: -0.03em;
     white-space: nowrap;
+}
+
+.version {
+    margin-top: -48px;
+    padding-right: 28px;
+    color: var(--mist);
+    font: 12px/16px var(--sans);
 }
 
 .nav {
@@ -267,22 +283,41 @@ button.link:hover, .link:hover {
     position: relative;
     z-index: 1;
     display: block;
-    padding: 6px 0 6px 19px;
+    padding: 6px 28px 6px 0;
     color: var(--mist);
     text-decoration: none;
     white-space: nowrap;
-    transition: color 0.4s var(--spring), padding 0.5s var(--spring);
+    transition: color 0.4s var(--spring);
+}
+
+.nav a::before {
+    content: "";
+    position: absolute;
+    box-sizing: border-box;
+    right: -4px;
+    top: calc(50% - 3px);
+    width: 7px;
+    height: 7px;
+    background: var(--night);
+    border: 1px solid var(--axis);
+    transition: border-color 0.4s var(--spring);
 }
 
 .nav a:hover {
     color: var(--light);
-    padding-left: 22px;
+}
+
+.nav a:hover::before {
+    border-color: var(--light);
 }
 
 .nav a.active {
     color: var(--light);
     font-weight: 500;
-    padding-left: 19px;
+}
+
+.nav a.active::before {
+    opacity: 0;
 }
 
 .nav-icon {
@@ -301,7 +336,7 @@ button.link:hover, .link:hover {
 }
 
 .nav-caption {
-    padding: 26px 0 6px 19px;
+    padding: 26px 28px 6px 0;
     font: 400 12px/16px var(--sans);
     letter-spacing: 0.02em;
     color: var(--mist);
@@ -312,11 +347,11 @@ button.link:hover, .link:hover {
     position: absolute;
     left: 0;
     top: 0;
-    width: 7px;
-    height: 16px;
-    border-radius: 4px;
-    box-shadow: 0 0 0 1px rgba(74, 108, 255, 0.45), 0 0 14px rgba(74, 108, 255, 0.35);
-    transform: translate(var(--x, 0px), calc(var(--y, 0px) + var(--h, 36px) / 2 - 8px));
+    z-index: 2;
+    width: 9px;
+    height: 9px;
+    background: var(--glow);
+    transform: translate(calc(var(--x, 0px) + var(--w, 0px) - 4px), calc(var(--y, 0px) + var(--h, 36px) / 2 - 4px));
     opacity: 0;
 }
 
@@ -331,8 +366,9 @@ button.link:hover, .link:hover {
 .account {
     margin-top: auto;
     display: grid;
-    justify-items: start;
+    justify-items: end;
     gap: 4px;
+    padding-right: 28px;
     font: 500 13px/20px var(--sans);
     color: var(--mist);
 }
@@ -370,11 +406,45 @@ button.link:hover, .link:hover {
 
 .main {
     min-width: 0;
+    --rail: 40px;
+    position: relative;
     max-width: 1180px;
-    padding: 36px 0 128px 40px;
+    padding: 36px 0 128px var(--rail);
+}
+
+.main::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 36px;
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(180deg, var(--axis) calc(100% - 200px), transparent);
+}
+
+.head::before, .pane::before {
+    content: "";
+    position: absolute;
+    box-sizing: border-box;
+    left: calc(-1 * var(--rail) - 3px);
+    width: 7px;
+    height: 7px;
+    background: var(--night);
+    border: 1px solid var(--axis);
+}
+
+.head::before {
+    top: 27px;
+    background: var(--glow);
+    border-color: var(--glow);
+}
+
+.pane::before {
+    top: 11px;
 }
 
 .head {
+    position: relative;
     display: flex;
     flex-wrap: wrap;
     align-items: flex-end;
@@ -418,7 +488,7 @@ button.link:hover, .link:hover {
     color: inherit;
     background: none;
     border: 0;
-    border-radius: 999px;
+    border-radius: 2px;
     cursor: pointer;
     transition: background-color 0.4s var(--spring), color 0.4s var(--spring);
 }
@@ -502,8 +572,19 @@ button.link:hover, .link:hover {
         bottom: 4px;
         width: 18px;
         height: 4px;
-        border-radius: 2px;
         transform: translateX(calc(var(--x, 0px) + var(--w, 18px) / 2 - 9px));
+    }
+
+    .side {
+        text-align: left;
+    }
+
+    .brand, .version {
+        padding-right: 0;
+    }
+
+    .nav a::before {
+        display: none;
     }
 
     .account {
@@ -517,7 +598,16 @@ button.link:hover, .link:hover {
     }
 
     .main {
-        padding: 28px 0 calc(112px + var(--safe-bottom));
+        --rail: 32px;
+        padding: 28px 0 calc(112px + var(--safe-bottom)) var(--rail);
+    }
+
+    .main::before {
+        top: 28px;
+    }
+
+    .head::before {
+        top: 17px;
     }
 
     .title {
@@ -543,17 +633,16 @@ button.link:hover, .link:hover {
     display: inline-block;
     font: 600 13px/20px var(--sans);
     padding: 10px 20px;
-    border-radius: var(--round);
+    border-radius: 2px;
     white-space: nowrap;
     text-decoration: none;
     cursor: pointer;
-    box-shadow: 0 10px 28px -14px rgba(0, 47, 167, 0.9), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-    transition: filter 0.4s var(--spring), transform 0.4s var(--spring), box-shadow 0.4s var(--spring);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    transition: filter 0.4s var(--spring), transform 0.4s var(--spring);
 }
 
 .btn-k:hover {
     filter: brightness(1.16);
-    box-shadow: 0 14px 32px -12px rgba(0, 47, 167, 1), inset 0 0 0 1px rgba(255, 255, 255, 0.12);
 }
 
 .btn-k:active, .btn-danger:active, .signin button:active {
@@ -685,7 +774,7 @@ button.link:hover, .link:hover {
 .tbl .note {
     margin-left: 4px;
     padding: 1px 8px;
-    border-radius: 999px;
+    border-radius: 2px;
     box-shadow: inset 0 0 0 1px var(--rule);
     font: 500 12px/18px var(--sans);
 }
@@ -1384,7 +1473,7 @@ button.btn-k {
     background: none;
     border: 1px solid var(--vermilion);
     padding: 9px 19px;
-    border-radius: var(--round);
+    border-radius: 2px;
     cursor: pointer;
     transition: background-color 0.4s var(--spring), transform 0.4s var(--spring);
 }
@@ -1654,7 +1743,7 @@ button.btn-k {
     padding: 4px 12px;
     background: rgba(255, 255, 255, 0.1);
     border: 0;
-    border-radius: 999px;
+    border-radius: 2px;
     font: 500 13px/20px var(--sans);
     color: var(--white);
     cursor: pointer;
@@ -1911,7 +2000,7 @@ a.crumb:hover {
 
 .crumb.on {
     padding: 3px 4px 3px 12px;
-    border-radius: 999px;
+    border-radius: 2px;
     box-shadow: inset 0 0 0 1px var(--rule);
     color: var(--light);
 }
@@ -2013,6 +2102,14 @@ a.crumb:hover {
 
     .fig b.word {
         --size: clamp(32px, 11vw, 56px);
+    }
+
+    .wizard {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .wizard-actions {
+        grid-column: 1;
     }
 
     .block {
@@ -2395,6 +2492,47 @@ a.crumb:hover {
     color: var(--vermilion);
 }
 
+.spark {
+    --tone: var(--mist);
+    display: inline-block;
+    width: 96px;
+    height: auto;
+    max-width: 100%;
+    vertical-align: middle;
+    overflow: visible;
+}
+
+.spark.good {
+    --tone: var(--glow);
+}
+
+.spark.warn {
+    --tone: var(--ochre);
+}
+
+.spark.bad {
+    --tone: var(--vermilion);
+}
+
+.spark polyline {
+    fill: none;
+    stroke: var(--tone);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+}
+
+.spark circle, .spark rect {
+    fill: var(--tone);
+}
+
+.fig .spark {
+    display: block;
+    width: min(100%, 144px);
+    margin-top: 12px;
+}
+
 .chart {
     min-width: 0;
 }
@@ -2414,7 +2552,7 @@ a.crumb:hover {
     align-items: center;
     gap: 6px;
     padding: 1px 10px 1px 8px;
-    border-radius: 999px;
+    border-radius: 2px;
     box-shadow: inset 0 0 0 1px var(--rule);
     font: 500 12px/18px var(--sans);
     color: var(--light);
@@ -2425,7 +2563,6 @@ a.crumb:hover {
     content: "";
     width: 6px;
     height: 6px;
-    border-radius: 50%;
     background: var(--tone);
 }
 
@@ -2567,6 +2704,7 @@ a.crumb:hover {
 }
 
 .pane {
+    position: relative;
     margin-top: 72px;
 }
 
@@ -2662,6 +2800,23 @@ a.crumb:hover {
     color: var(--mist);
 }
 
+.code-editor {
+    height: 32rem;
+    border-radius: var(--round);
+    background: var(--deep);
+    box-shadow: inset 0 0 0 1px var(--rule), var(--edge);
+    overflow: hidden;
+    transition: box-shadow 0.3s var(--spring);
+}
+
+.code-editor:hover {
+    box-shadow: inset 0 0 0 1px var(--line), var(--edge);
+}
+
+.code-editor:focus-within {
+    box-shadow: inset 0 0 0 1px var(--glow), var(--edge);
+}
+
 .adder {
     display: flex;
     align-items: flex-end;
@@ -2671,4 +2826,375 @@ a.crumb:hover {
 .adder .mud-input-control {
     flex: 1 1 auto;
     min-width: 0;
+}
+
+.notice {
+    --tone: var(--mist);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 20px;
+    border-radius: var(--round);
+    background: var(--deep);
+    box-shadow: inset 3px 0 0 var(--tone), inset 0 0 0 1px var(--rule), var(--edge);
+    color: var(--light);
+    font: 400 14px/22px var(--sans);
+}
+
+.notice.good {
+    --tone: var(--glow);
+}
+
+.notice.warn {
+    --tone: var(--ochre);
+}
+
+.notice.bad {
+    --tone: var(--vermilion);
+}
+
+.notice-text {
+    min-width: 0;
+}
+
+.notice-text strong {
+    display: block;
+    font-weight: 500;
+}
+
+.notice .actions {
+    display: flex;
+    flex: none;
+    gap: 12px;
+}
+
+.wizard {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 32px 48px;
+    align-items: start;
+}
+
+.wizard-body {
+    min-width: 0;
+}
+
+.wizard-actions {
+    grid-column: 2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px 28px;
+}
+
+.wizard-actions > :last-child {
+    margin-left: auto;
+}
+
+.banner {
+    margin-bottom: 24px;
+}
+
+.banner .notice {
+    border-radius: 0;
+    background: color-mix(in oklab, var(--tone) 10%, var(--deep));
+}
+
+.steps {
+    display: grid;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.step {
+    --tone: var(--line);
+    position: relative;
+    display: flex;
+    gap: 16px;
+    padding-bottom: 20px;
+}
+
+.step:last-child {
+    padding-bottom: 0;
+}
+
+.step::before {
+    content: "";
+    position: absolute;
+    top: 18px;
+    bottom: 0;
+    left: 6px;
+    width: 1px;
+    background: var(--rule);
+}
+
+.step:last-child::before {
+    display: none;
+}
+
+.step-mark {
+    flex: none;
+    box-sizing: border-box;
+    width: 13px;
+    height: 13px;
+    margin-top: 5px;
+    border-radius: 50%;
+    background: var(--night);
+    box-shadow: inset 0 0 0 2px var(--tone);
+}
+
+.step.current {
+    --tone: var(--glow);
+}
+
+.step.done {
+    --tone: var(--glow);
+}
+
+.step.done .step-mark {
+    background: var(--tone);
+}
+
+.step.failed {
+    --tone: var(--vermilion);
+}
+
+.step.failed .step-mark {
+    background: var(--tone);
+}
+
+.step-text {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.step-title {
+    font: 500 15px/24px var(--sans);
+    color: var(--light);
+}
+
+.step.pending .step-title {
+    color: var(--mist);
+}
+
+.step-detail {
+    font: 400 13px/20px var(--sans);
+    color: var(--mist);
+}
+
+.figs:has(> .fig:nth-child(3)) {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    row-gap: 0;
+}
+
+.figs:has(> .fig:nth-child(3)) > .fig {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 22px 0 22px 32px;
+}
+
+.figs:has(> .fig:nth-child(3)) > .fig:not(:first-child) b {
+    --size: 56px;
+}
+
+.figs:has(> .fig:nth-child(3)) > .fig:nth-child(n + 3)::before {
+    inset: 0 0 auto 0;
+    width: auto;
+    height: 1px;
+    background: var(--rule);
+}
+
+.figs:has(> .fig:nth-child(3)) > .fig:nth-child(2)::before {
+    display: none;
+}
+
+.figs:has(> .fig:nth-child(3)) > .fig:first-child {
+    grid-row: 1 / span 3;
+    isolation: isolate;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 420px;
+    padding: 120px 40px;
+    text-align: center;
+    color: var(--on-pigment);
+}
+
+.figs:has(> .fig:nth-child(3):last-child) > .fig:first-child {
+    grid-row: 1 / span 2;
+}
+
+.figs:has(> .fig:nth-child(5):last-child) > .fig:first-child {
+    grid-row: 1 / span 4;
+}
+
+.figs:has(> .fig:nth-child(3)) > .fig:first-child::before,
+.figs:has(> .fig:nth-child(3)) > .fig:first-child::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    -webkit-mask-image: var(--cloud);
+    mask-image: var(--cloud);
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+}
+
+.figs:has(> .fig:nth-child(3)) > .fig:first-child::before {
+    background: var(--field, var(--klein));
+}
+
+.figs:has(> .fig:nth-child(3)) > .fig:first-child::after {
+    background-image: var(--grain);
+    background-size: 220px 220px;
+    mix-blend-mode: overlay;
+    opacity: 0.22;
+}
+
+.figs:has(> .fig:nth-child(3)) > .fig.alarm:first-child {
+    --field: var(--rust);
+}
+
+.fig.alarm b {
+    text-shadow: none;
+}
+
+.figs:has(> .fig:nth-child(3)) > .fig:first-child b {
+    --size: 132px;
+    --fit: min(var(--size), 70cqi / (var(--chars) * 0.65));
+    inline-size: 70%;
+    height: auto;
+    font-size: var(--fit);
+    order: 1;
+    align-items: center;
+    font-weight: 100;
+    color: var(--on-pigment);
+    text-shadow: none;
+}
+
+.figs:has(> .fig:nth-child(3)) > .fig:first-child .change {
+    order: 2;
+    margin-top: auto;
+    color: var(--on-pigment);
+}
+
+.figs:has(> .fig:nth-child(3)) > .fig:first-child .spark {
+    --tone: var(--on-pigment);
+    order: 3;
+    margin-inline: auto;
+}
+
+.figs:has(> .fig:nth-child(3)) > .fig:first-child figcaption {
+    display: contents;
+}
+
+.figs:has(> .fig:nth-child(3)) > .fig:first-child figcaption span {
+    color: var(--on-pigment);
+    opacity: 0.8;
+}
+
+.figs:has(> .fig:nth-child(3)) > .fig:first-child figcaption span:first-child {
+    order: 0;
+    margin: 0 0 auto;
+}
+
+.figs:has(> .fig:nth-child(3)) > .fig:first-child figcaption span:last-child {
+    order: 4;
+}
+
+@media (max-width: 840px) {
+    .figs:has(> .fig:nth-child(3)) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .figs:has(> .fig:nth-child(3)) > .fig,
+    .figs:has(> .fig:nth-child(3)) > .fig:nth-child(odd) {
+        padding: 18px 0;
+    }
+
+    .figs:has(> .fig:nth-child(3)) > .fig:nth-child(n + 2)::before {
+        display: block;
+        inset: 0 0 auto 0;
+        width: auto;
+        height: 1px;
+        background: var(--rule);
+    }
+
+    .figs:has(> .fig:nth-child(3)) > .fig:nth-child(2)::before {
+        display: none;
+    }
+
+    .figs:has(> .fig:nth-child(3)) > .fig:first-child,
+    .figs:has(> .fig:nth-child(3):last-child) > .fig:first-child,
+    .figs:has(> .fig:nth-child(5):last-child) > .fig:first-child {
+        grid-row: auto;
+        min-height: 340px;
+        padding: 92px 24px;
+    }
+
+    .figs:has(> .fig:nth-child(3)) > .fig:first-child::before {
+        display: block;
+    }
+
+    .figs:has(> .fig:nth-child(3)) > .fig:first-child b {
+        --size: 84px;
+    }
+
+    .figs:has(> .fig:nth-child(3)) > .fig:not(:first-child) b {
+        --size: 44px;
+    }
+}
+
+.strips {
+    gap: 0;
+}
+
+.strip {
+    position: relative;
+    margin-inline: 0;
+    padding: 0;
+    border-radius: 0;
+}
+
+.strip:hover {
+    background: none;
+}
+
+.strip:hover .strip-name {
+    color: var(--light);
+}
+
+.strip::before {
+    content: "";
+    grid-column: 3;
+    grid-row: 1;
+    align-self: stretch;
+    box-sizing: border-box;
+    background: linear-gradient(90deg, var(--rule) 1px, transparent 1px) 0 0 / 25% 100%;
+    border-right: 1px solid var(--rule);
+}
+
+.strip-name, .strip .num {
+    padding-block: 7px;
+}
+
+.strip-line {
+    grid-column: 3;
+    grid-row: 1;
+    align-self: center;
+    height: 12px;
+    border-radius: 0;
+    background: var(--glow);
+    opacity: 1;
+}
+
+.strip.lit .strip-line {
+    background: var(--light);
+    box-shadow: none;
 }

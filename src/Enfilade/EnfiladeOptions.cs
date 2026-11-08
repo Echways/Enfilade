@@ -12,6 +12,8 @@ public sealed partial class EnfiladeOptions
 
     public string Brand { get; set; } = "Enfilade";
 
+    public bool ShowVersion { get; set; } = true;
+
     public string? Favicon { get; set; }
 
     public string Language { get; set; } = "en";

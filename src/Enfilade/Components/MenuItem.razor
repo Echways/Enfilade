@@ -1,0 +1,42 @@
+@namespace Enfilade
+@inject Act Act
+
+<MudMenuItem Class="@(Danger ? "danger" : null)" Disabled="@(Disabled || _running)" OnClick="ClickAsync">@ChildContent</MudMenuItem>
+
+@code {
+    private bool _running;
+
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+
+    [Parameter]
+    public Confirm? Confirm { get; set; }
+
+    [Parameter]
+    public string? Done { get; set; }
+
+    [Parameter]
+    public bool Refresh { get; set; } = true;
+
+    [Parameter]
+    public bool Danger { get; set; }
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter, EditorRequired]
+    public RenderFragment ChildContent { get; set; } = default!;
+
+    private async Task ClickAsync()
+    {
+        _running = true;
+        try
+        {
+            await Act.RunAsync(() => OnClick.InvokeAsync(), Done, Confirm, Refresh);
+        }
+        finally
+        {
+            _running = false;
+        }
+    }
+}

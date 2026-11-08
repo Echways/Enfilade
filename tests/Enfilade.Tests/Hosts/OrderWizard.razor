@@ -1,0 +1,40 @@
+@if (!Hidden)
+{
+    <Wizard @bind-Current="Current" OnFinish="OnFinish" Done="@Done" Refresh="Refresh">
+        <WizardStep Title="Клиент" Detail="@Detail" OnLeave="OnLeave"><p class="customer">Данные клиента</p></WizardStep>
+        <WizardStep Title="Доставка"><p class="delivery">Адрес</p></WizardStep>
+        @if (Payment)
+        {
+            <WizardStep Title="Оплата" OnLeave="OnLeavePayment"><p class="payment">Способ оплаты</p></WizardStep>
+        }
+    </Wizard>
+}
+
+@code {
+    [Parameter]
+    public int Current { get; set; }
+
+    [Parameter]
+    public EventCallback OnLeave { get; set; }
+
+    [Parameter]
+    public EventCallback OnLeavePayment { get; set; }
+
+    [Parameter]
+    public EventCallback OnFinish { get; set; }
+
+    [Parameter]
+    public string? Detail { get; set; }
+
+    [Parameter]
+    public string? Done { get; set; }
+
+    [Parameter]
+    public bool Refresh { get; set; } = true;
+
+    [Parameter]
+    public bool Payment { get; set; } = true;
+
+    [Parameter]
+    public bool Hidden { get; set; }
+}

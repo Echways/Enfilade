@@ -114,6 +114,15 @@
   <data name="Working" xml:space="preserve">
     <value>Working…</value>
   </data>
+  <data name="StepDone" xml:space="preserve">
+    <value>Step done</value>
+  </data>
+  <data name="StepFailed" xml:space="preserve">
+    <value>Step failed</value>
+  </data>
+  <data name="StepCurrent" xml:space="preserve">
+    <value>Current step</value>
+  </data>
   <data name="Yes" xml:space="preserve">
     <value>Yes</value>
   </data>
@@ -185,5 +194,20 @@
   </data>
   <data name="ChangeToPrevious" xml:space="preserve">
     <value>{0} to the previous period</value>
+  </data>
+  <data name="RowActions" xml:space="preserve">
+    <value>Row actions</value>
+  </data>
+  <data name="Version" xml:space="preserve">
+    <value>Version {0}</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Next</value>
+  </data>
+  <data name="Finish" xml:space="preserve">
+    <value>Finish</value>
   </data>
 </root>
