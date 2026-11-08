@@ -9,6 +9,7 @@
 | `Facts`, `Fact`           | A record's labelled values: `<Fact Label="Total" Value="order.Total" />`, formatted by `ViewerTime.Of`, or own content. |
 | `Tag`                      | A status label with `Tone`: `Neutral`, `Good`, `Warn` or `Bad`.                                        |
 | `Notice`                   | An inline message with `Tone`, `Title`, content and `Actions`. Warnings and errors are announced as alerts.            |
+| `Banner`                   | A `Notice` for the top of a page, square and tinted. `Dismissible` adds a close button; `OnDismiss` tells the host, which decides whether to remember it. |
 | `Steps`                    | A vertical progress of a process from `Step(Title, State, Detail)`; `State` is `Pending`, `Current`, `Done` or `Failed`. |
 | `Tabs`, `Tab`              | Tabs whose choice lives in the address (`tab=`, or `Name`). A `Tab` has `Title` and optional `Name`; only the open tab renders. |
 | `Timeline`                 | Events from `TimelineEntry(At, Text, Who, Tone)`, newest first, in the viewer's time zone.              |

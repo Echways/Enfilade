@@ -2714,6 +2714,15 @@ a.crumb:hover {
     gap: 12px;
 }
 
+.banner {
+    margin-bottom: 24px;
+}
+
+.banner .notice {
+    border-radius: 0;
+    background: color-mix(in oklab, var(--tone) 10%, var(--deep));
+}
+
 .steps {
     display: grid;
     gap: 0;

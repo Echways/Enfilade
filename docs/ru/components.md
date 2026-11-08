@@ -9,6 +9,7 @@
 | `Facts`, `Fact`           | Подписанные значения записи: `<Fact Label="Total" Value="order.Total" />`, форматируются через `ViewerTime.Of`, либо собственное содержимое. |
 | `Tag`                      | Метка статуса с `Tone`: `Neutral`, `Good`, `Warn` или `Bad`.                                           |
 | `Notice`                   | Встроенное сообщение с `Tone`, `Title`, содержимым и `Actions`. Предупреждения и ошибки озвучиваются как alert.        |
+| `Banner`                   | `Notice` для верха страницы: прямоугольный и подкрашенный. `Dismissible` добавляет кнопку закрытия, `OnDismiss` сообщает хосту, запоминать ли закрытие. |
 | `Steps`                    | Вертикальный ход процесса из `Step(Title, State, Detail)`; `State` — `Pending`, `Current`, `Done` или `Failed`.      |
 | `Tabs`, `Tab`              | Вкладки, выбор которых хранится в адресе (`tab=` или `Name`). У `Tab` есть `Title` и необязательный `Name`; рендерится только открытая вкладка. |
 | `Timeline`                 | События из `TimelineEntry(At, Text, Who, Tone)`, новые сверху, в часовом поясе зрителя.                  |
