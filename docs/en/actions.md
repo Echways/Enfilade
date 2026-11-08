@@ -18,8 +18,26 @@ await Act.RunAsync(() => Store.DeleteAsync(order), done: "Order deleted");
 ```
 
 - A `PanelException(message)` shows its message to the user as is, and so does any exception registered with [`ShowMessageOf`](errors.md). Any other exception shows a general message and is logged.
-- After a successful action, everything on the page that reports to `CurrentPage` reloads. Pass `Refresh="false"` (`refresh: false`) to skip it.
-- `RunAsync` returns whether the action ran to the end.
+- After a successful or a failed action, everything on the page that reports to `CurrentPage` reloads: a failure often means the data has changed under the user, such as a record deleted elsewhere. A declined confirmation and a cancelled action leave the page alone. Pass `Refresh="false"` (`refresh: false`) to skip it.
+- `RunAsync` returns an `ActResult`, so the caller can tell the cases apart.
+
+| `ActResult` | What happened                                                    | Page reloaded |
+| ----------- | ---------------------------------------------------------------- | ------------- |
+| `Done`      | The action ran to the end.                                       | Yes           |
+| `Declined`  | The user declined the `Confirm` question; nothing ran.           | No            |
+| `Cancelled` | The action was cancelled, for example the user left the page.    | No            |
+| `Failed`    | The action threw; the user has been told.                        | Yes           |
+
+Confirmation belongs to `Act` too, so there is no need to ask separately and reload by hand:
+
+```csharp
+var result = await Act.RunAsync(
+    () => Store.IssueAsync(client),
+    confirm: new Confirm("Reissue the key?", "The old key stops working.", "Reissue"));
+
+if (result is ActResult.Done)
+    await Dialogs.ShowConnectionAsync(client);
+```
 
 ## Button parameters
 
