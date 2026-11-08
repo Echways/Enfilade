@@ -23,6 +23,8 @@
 | `Meter`                    | `Used / Limit` with a bar that turns ochre at 90% and red at 100%.                                                  |
 | `Crumb`                    | Removable filter chip that links to the address without the filter.                                                   |
 | `CopyLine`, `CopyButton` | A value with a copy button.                                                                                           |
+| `Output`                   | A bordered box for logs and command output: `Text` and `Empty`, the line shown when there is no text.                 |
+| `Adder`                    | A one-line add form: `Placeholder`, `OnAdd` with the trimmed text, `Done`, and the button label as content. Enter adds too. |
 | `KeyField`                 | A secret token in groups, with a copy button.                                                                         |
 | `EntranceLayout`           | Full-screen layout without navigation, for sign-in pages: `@layout EntranceLayout`.                                 |
 | `LanguageLink`             | Link to the next language, for pages outside the shell.                                                               |
