@@ -195,4 +195,7 @@
   <data name="ChangeToPrevious" xml:space="preserve">
     <value>{0} к прошлому периоду</value>
   </data>
+  <data name="RowActions" xml:space="preserve">
+    <value>Действия со строкой</value>
+  </data>
 </root>

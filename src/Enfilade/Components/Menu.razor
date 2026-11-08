@@ -1,0 +1,13 @@
+@namespace Enfilade
+
+<MudMenu Class="more" Label="⋯" AriaLabel="@(Label ?? EnfiladeText.RowActions)" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
+    @ChildContent
+</MudMenu>
+
+@code {
+    [Parameter]
+    public string? Label { get; set; }
+
+    [Parameter, EditorRequired]
+    public RenderFragment ChildContent { get; set; } = default!;
+}

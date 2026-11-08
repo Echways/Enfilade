@@ -10,6 +10,7 @@
 | `Tag`                      | Метка статуса с `Tone`: `Neutral`, `Good`, `Warn` или `Bad`.                                           |
 | `Notice`                   | Встроенное сообщение с `Tone`, `Title`, содержимым и `Actions`. Предупреждения и ошибки озвучиваются как alert.        |
 | `Banner`                   | `Notice` для верха страницы: прямоугольный и подкрашенный. `Dismissible` добавляет кнопку закрытия, `OnDismiss` сообщает хосту, запоминать ли закрытие. |
+| `Menu`, `MenuItem`         | Меню «⋯» для действий над строкой, например в `Slot`. `MenuItem` выполняет `OnClick` через `Act` и принимает `Confirm`, `Done`, `Refresh`, `Danger` и `Disabled`, как `Button`. Для ссылок используйте `MudMenuItem`. |
 | `Steps`                    | Вертикальный ход процесса из `Step(Title, State, Detail)`; `State` — `Pending`, `Current`, `Done` или `Failed`.      |
 | `Tabs`, `Tab`              | Вкладки, выбор которых хранится в адресе (`tab=` или `Name`). У `Tab` есть `Title` и необязательный `Name`; рендерится только открытая вкладка. |
 | `Timeline`                 | События из `TimelineEntry(At, Text, Who, Tone)`, новые сверху, в часовом поясе зрителя.                  |

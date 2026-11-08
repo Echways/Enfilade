@@ -195,4 +195,7 @@
   <data name="ChangeToPrevious" xml:space="preserve">
     <value>{0} to the previous period</value>
   </data>
+  <data name="RowActions" xml:space="preserve">
+    <value>Row actions</value>
+  </data>
 </root>
