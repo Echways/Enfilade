@@ -2672,3 +2672,129 @@ a.crumb:hover {
     flex: 1 1 auto;
     min-width: 0;
 }
+
+.notice {
+    --tone: var(--mist);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 20px;
+    border-radius: var(--round);
+    background: var(--deep);
+    box-shadow: inset 3px 0 0 var(--tone), inset 0 0 0 1px var(--rule), var(--edge);
+    color: var(--light);
+    font: 400 14px/22px var(--sans);
+}
+
+.notice.good {
+    --tone: var(--glow);
+}
+
+.notice.warn {
+    --tone: var(--ochre);
+}
+
+.notice.bad {
+    --tone: var(--vermilion);
+}
+
+.notice-text {
+    min-width: 0;
+}
+
+.notice-text strong {
+    display: block;
+    font-weight: 500;
+}
+
+.notice .actions {
+    display: flex;
+    flex: none;
+    gap: 12px;
+}
+
+.steps {
+    display: grid;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.step {
+    --tone: var(--line);
+    position: relative;
+    display: flex;
+    gap: 16px;
+    padding-bottom: 20px;
+}
+
+.step:last-child {
+    padding-bottom: 0;
+}
+
+.step::before {
+    content: "";
+    position: absolute;
+    top: 18px;
+    bottom: 0;
+    left: 6px;
+    width: 1px;
+    background: var(--rule);
+}
+
+.step:last-child::before {
+    display: none;
+}
+
+.step-mark {
+    flex: none;
+    box-sizing: border-box;
+    width: 13px;
+    height: 13px;
+    margin-top: 5px;
+    border-radius: 50%;
+    background: var(--night);
+    box-shadow: inset 0 0 0 2px var(--tone);
+}
+
+.step.current {
+    --tone: var(--glow);
+}
+
+.step.done {
+    --tone: var(--glow);
+}
+
+.step.done .step-mark {
+    background: var(--tone);
+}
+
+.step.failed {
+    --tone: var(--vermilion);
+}
+
+.step.failed .step-mark {
+    background: var(--tone);
+}
+
+.step-text {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.step-title {
+    font: 500 15px/24px var(--sans);
+    color: var(--light);
+}
+
+.step.pending .step-title {
+    color: var(--mist);
+}
+
+.step-detail {
+    font: 400 13px/20px var(--sans);
+    color: var(--mist);
+}

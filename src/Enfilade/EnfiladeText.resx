@@ -114,6 +114,15 @@
   <data name="Working" xml:space="preserve">
     <value>Working…</value>
   </data>
+  <data name="StepDone" xml:space="preserve">
+    <value>Step done</value>
+  </data>
+  <data name="StepFailed" xml:space="preserve">
+    <value>Step failed</value>
+  </data>
+  <data name="StepCurrent" xml:space="preserve">
+    <value>Current step</value>
+  </data>
   <data name="Yes" xml:space="preserve">
     <value>Yes</value>
   </data>

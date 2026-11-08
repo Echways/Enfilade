@@ -47,7 +47,7 @@ if (result is ActResult.Done)
 | `OnClick`       | The action. The button is disabled and shows that it is busy until it ends. |
 | `Confirm`       | `Confirm(Question, Message, Yes, Danger)` asked before the action.     |
 | `Done`          | Message shown after success.                                             |
-| `Refresh`       | Reloads the page's blocks after success. Default `true`.               |
+| `Refresh`       | Reloads the page's blocks after success or failure. Default `true`.               |
 | `Submit`        | Renders a submit button and leaves the work to the form.                 |
 | `Busy`, `Disabled` | Show the button as busy or disabled from outside.                   |
 

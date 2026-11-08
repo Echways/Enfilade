@@ -114,6 +114,15 @@
   <data name="Working" xml:space="preserve">
     <value>Выполняется…</value>
   </data>
+  <data name="StepDone" xml:space="preserve">
+    <value>Шаг выполнен</value>
+  </data>
+  <data name="StepFailed" xml:space="preserve">
+    <value>Шаг не удался</value>
+  </data>
+  <data name="StepCurrent" xml:space="preserve">
+    <value>Текущий шаг</value>
+  </data>
   <data name="Yes" xml:space="preserve">
     <value>Да</value>
   </data>
