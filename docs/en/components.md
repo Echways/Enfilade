@@ -135,6 +135,33 @@ A `Menu` is a "⋯" button for the actions of one row. Put it in a `Slot`; click
 
 `Label` names the button for screen readers (default "Row actions"). For a link, use `MudMenuItem Href`.
 
+## Catalogs
+
+`Catalog` displays an expandable group on the current page. Several catalogs can be open at once. Content is mounted on expansion and disposed on collapse.
+
+```razor
+<PageHead Title="Clients" Count="@Groups.Sum(group => group.ClientCount)">
+    <Actions>
+        <Button OnClick="CreateGroupAsync" Refresh="false">New catalog</Button>
+    </Actions>
+</PageHead>
+
+@foreach (var group in Groups)
+{
+    <Catalog @key="group.Id" Title="@group.Name" Count="@group.ClientCount">
+        <Listing TItem="Client" Name="@($"clients-{group.Id}")"
+                 Load="(query, token) => Store.ClientsAsync(group.Id, query, token)">
+            <Columns>
+                <Cell Title="Name" Value="client => client.Name" Sort />
+                <Cell Title="Email" Value="client => client.Email" />
+            </Columns>
+        </Listing>
+    </Catalog>
+}
+```
+
+In `CreateGroupAsync`, open [`ShowFormAsync`](forms.md) with a name field. Reload the groups from your store after a successful save. The `@key` preserves expanded groups across that update. Use the catalog's `Actions` slot for a [menu](#row-menu) with actions such as rename and delete. Give each nested `Listing` its own `Name` so their paging and filters are independent. For concurrent EF Core loads, give each request its own context.
+
 ## Wizard
 
 A `Wizard` shows `Steps` next to the open step and the buttons that move between them. Only the open `WizardStep` renders. `Current` is the index of the open step; bind it with `@bind-Current` to read or set it, or leave it out and the wizard keeps it itself.

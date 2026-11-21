@@ -963,6 +963,116 @@ button.btn-quiet:active:not(:disabled) {
     gap: 18px;
 }
 
+.catalog {
+    min-width: 0;
+    padding-block: 4px;
+    border-bottom: 1px solid var(--rule);
+}
+
+.catalog-head {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border-radius: var(--round);
+}
+
+.catalog-head:has(.catalog-toggle[aria-expanded="true"]) {
+    background: var(--wash);
+}
+
+.catalog-toggle {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 0;
+    border-radius: var(--round);
+    background: transparent;
+    color: var(--light);
+    font: 500 14px/22px var(--sans);
+    text-align: start;
+    cursor: pointer;
+    transition: background-color 0.2s var(--spring);
+}
+
+.catalog-toggle:hover {
+    background: var(--wash);
+}
+
+.catalog-chevron {
+    flex: none;
+    width: 7px;
+    height: 7px;
+    margin-inline: 1px 4px;
+    border-right: 1px solid currentColor;
+    border-bottom: 1px solid currentColor;
+    color: var(--mist);
+    transform: rotate(-45deg);
+    transition: color 0.2s var(--spring), transform 0.2s var(--spring);
+}
+
+.catalog-toggle[aria-expanded="true"] .catalog-chevron {
+    color: var(--light);
+    transform: rotate(45deg);
+}
+
+.catalog-toggle .catalog-icon {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    color: var(--mist);
+}
+
+.catalog-title {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.catalog-count {
+    flex: none;
+    color: var(--mist);
+    font: 500 12px/18px var(--sans);
+}
+
+.catalog-actions {
+    flex: none;
+    padding-inline-end: 8px;
+}
+
+.catalog-actions .more .mud-button-root {
+    min-width: 44px;
+    width: 44px;
+    height: 44px;
+}
+
+.catalog-body {
+    padding-block: 16px 20px;
+    padding-inline: 62px 12px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .catalog-body:not([hidden]) {
+        animation: catalog-in 0.18s var(--spring);
+    }
+}
+
+@keyframes catalog-in {
+    from {
+        opacity: 0;
+        transform: translateY(-3px);
+    }
+}
+
+@media (max-width: 599.98px) {
+    .catalog-body {
+        padding-inline-start: 12px;
+    }
+}
+
 .listing {
     display: grid;
     gap: 20px;

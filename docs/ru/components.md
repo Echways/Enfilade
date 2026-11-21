@@ -135,6 +135,33 @@
 
 `Label` называет кнопку для скринридера (по умолчанию «Действия со строкой»). Для ссылки используйте `MudMenuItem Href`.
 
+## Каталоги
+
+`Catalog` показывает раскрываемую группу на текущей странице. Несколько каталогов можно открыть одновременно. Содержимое создаётся при раскрытии и освобождается при сворачивании.
+
+```razor
+<PageHead Title="Клиенты" Count="@Groups.Sum(group => group.ClientCount)">
+    <Actions>
+        <Button OnClick="CreateGroupAsync" Refresh="false">Новый каталог</Button>
+    </Actions>
+</PageHead>
+
+@foreach (var group in Groups)
+{
+    <Catalog @key="group.Id" Title="@group.Name" Count="@group.ClientCount">
+        <Listing TItem="Client" Name="@($"clients-{group.Id}")"
+                 Load="(query, token) => Store.ClientsAsync(group.Id, query, token)">
+            <Columns>
+                <Cell Title="Имя" Value="client => client.Name" Sort />
+                <Cell Title="Email" Value="client => client.Email" />
+            </Columns>
+        </Listing>
+    </Catalog>
+}
+```
+
+В `CreateGroupAsync` откройте [`ShowFormAsync`](forms.md) с полем «Название». После успешного сохранения перечитайте группы из своего хранилища. Ключ `@key` сохраняет раскрытые группы при таком обновлении. В `Actions` самого каталога можно передать [меню](#меню-строки) для переименования и удаления. У каждого вложенного `Listing` свой `Name`, поэтому страницы и фильтры групп независимы. Для параллельных загрузок через EF Core используйте отдельный контекст на каждый запрос.
+
 ## Wizard
 
 `Wizard` показывает `Steps` рядом с открытым шагом и кнопки перехода между шагами. Рисуется только открытый `WizardStep`. `Current` — номер открытого шага: привяжите его через `@bind-Current`, чтобы читать или задавать, или не указывайте, и мастер сам его хранит.

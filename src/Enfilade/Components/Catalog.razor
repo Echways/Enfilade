@@ -1,0 +1,45 @@
+@namespace Enfilade
+
+<div class="catalog">
+    <div class="catalog-head">
+        <button type="button" class="catalog-toggle" aria-expanded="@(_expanded ? "true" : "false")" aria-controls="@_panel"
+                @onclick="Toggle">
+            <span class="catalog-chevron" aria-hidden="true"></span>
+            <MudIcon Class="catalog-icon" Icon="@Icons.Material.Outlined.Folder" />
+            <span class="catalog-title">@Title</span>
+            @if (Count is { } count)
+            {
+                <span class="sr">, </span><span class="catalog-count">@Words.Number(count)</span>
+            }
+        </button>
+        @if (Actions is not null)
+        {
+            <div class="catalog-actions">@Actions</div>
+        }
+    </div>
+    <div class="catalog-body" id="@_panel" hidden="@(!_expanded)">
+        @if (_expanded)
+        {
+            @ChildContent
+        }
+    </div>
+</div>
+
+@code {
+    private readonly string _panel = ElementId.New("catalog");
+    private bool _expanded;
+
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = "";
+
+    [Parameter]
+    public long? Count { get; set; }
+
+    [Parameter]
+    public RenderFragment? Actions { get; set; }
+
+    [Parameter, EditorRequired]
+    public RenderFragment ChildContent { get; set; } = default!;
+
+    private void Toggle() => _expanded = !_expanded;
+}
