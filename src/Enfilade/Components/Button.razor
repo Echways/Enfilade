@@ -6,6 +6,7 @@
     @ChildContent
     @if (Working)
     {
+        <span class="button-spinner" aria-hidden="true"></span>
         <span class="sr">@EnfiladeText.Working</span>
     }
 </button>
@@ -50,7 +51,7 @@
         Kind switch
         {
             ButtonKind.Danger => "btn-danger",
-            ButtonKind.Quiet => "link",
+            ButtonKind.Quiet => "link btn-quiet",
             _ => "btn-k pigment",
         },
         Working ? "busy" : null,

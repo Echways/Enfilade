@@ -212,7 +212,7 @@ code, .code {
     border-radius: inherit;
 }
 
-.pigment > * {
+.pigment > :where(:not(.sr)) {
     position: relative;
     z-index: 1;
 }
@@ -233,7 +233,7 @@ button.link, .link {
     transition: color 0.3s var(--spring);
 }
 
-button.link:hover, .link:hover {
+button.link:hover:not(:disabled), .link:hover:not(:disabled) {
     color: var(--light);
 }
 
@@ -488,7 +488,7 @@ button.link:hover, .link:hover {
     color: inherit;
     background: none;
     border: 0;
-    border-radius: 2px;
+    border-radius: var(--round);
     cursor: pointer;
     transition: background-color 0.4s var(--spring), color 0.4s var(--spring);
 }
@@ -629,24 +629,76 @@ button.link:hover, .link:hover {
     }
 }
 
-.btn-k {
+.btn-k, .btn-danger, button.btn-quiet {
     display: inline-block;
+    box-sizing: border-box;
+    min-height: 40px;
     font: 600 13px/20px var(--sans);
-    padding: 10px 20px;
-    border-radius: 2px;
+    padding: 9px 19px;
+    border: 1px solid transparent;
+    border-radius: var(--round);
+    text-align: center;
     white-space: nowrap;
     text-decoration: none;
     cursor: pointer;
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-    transition: filter 0.4s var(--spring), transform 0.4s var(--spring);
+    transition: background-color 0.25s var(--spring), color 0.25s var(--spring), filter 0.25s var(--spring);
 }
 
-.btn-k:hover {
-    filter: brightness(1.16);
+.btn-k {
+    border-color: rgba(255, 255, 255, 0.12);
 }
 
-.btn-k:active, .btn-danger:active, .signin button:active {
-    transform: scale(0.97);
+.btn-k:hover:not(:disabled) {
+    filter: brightness(1.12);
+}
+
+.btn-k:active:not(:disabled), .signin button:active:not(:disabled) {
+    filter: brightness(0.96);
+}
+
+.btn-danger {
+    color: var(--vermilion);
+    border-color: color-mix(in oklab, var(--vermilion) 55%, transparent);
+    background: color-mix(in oklab, var(--vermilion) 6%, transparent);
+}
+
+.btn-danger:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--vermilion) 13%, transparent);
+}
+
+.btn-danger:active:not(:disabled) {
+    background: color-mix(in oklab, var(--vermilion) 20%, transparent);
+}
+
+button.btn-quiet {
+    padding-inline: 13px;
+    color: var(--mist);
+    background: transparent;
+}
+
+button.btn-quiet:hover:not(:disabled) {
+    color: var(--light);
+    background: var(--wash);
+}
+
+button.btn-quiet:active:not(:disabled) {
+    background: var(--rule);
+}
+
+:is(.btn-k, .btn-danger, .btn-quiet, .signin button):disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+:is(.btn-k, .btn-danger, .btn-quiet).busy:disabled {
+    opacity: 0.72;
+    cursor: progress;
+}
+
+@media (pointer: coarse) {
+    .btn-k, .btn-danger, button.btn-quiet {
+        min-height: 44px;
+    }
 }
 
 .note, .nothing {
@@ -1004,20 +1056,28 @@ button.link:hover, .link:hover {
     flex-wrap: wrap;
     align-items: center;
     justify-content: flex-end;
-    gap: 8px 20px;
+    gap: 8px 12px;
     font: 500 13px/20px var(--sans);
     color: var(--mist);
     font-variant-numeric: tabular-nums;
 }
 
 .pager .link {
-    min-width: 32px;
-    min-height: 32px;
+    min-width: 36px;
+    min-height: 36px;
+    border: 1px solid var(--rule);
+    border-radius: var(--round);
     font-size: 17px;
+    transition: color 0.25s var(--spring), background-color 0.25s var(--spring);
+}
+
+.pager .link:hover:not(:disabled) {
+    background-color: var(--wash);
 }
 
 .pager .link:disabled {
     opacity: 0.35;
+    color: var(--mist);
     cursor: default;
 }
 
@@ -1421,34 +1481,16 @@ body:has(.mud-overlay-dialog) .mud-popover:has(.mud-menu-list) {
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    gap: 28px;
+    gap: 12px;
     padding: 28px;
 }
 
-.btn-k:disabled {
-    opacity: 0.4;
-    filter: none;
-    cursor: not-allowed;
-}
-
-button.btn-k {
-    border: 0;
-}
-
-.busy, .btn-k.busy:disabled {
-    cursor: progress;
-}
-
-.btn-k.busy:disabled {
-    opacity: 0.7;
-}
-
-.busy::after {
-    content: "";
+.button-spinner {
     display: inline-block;
+    box-sizing: border-box;
     width: 10px;
     height: 10px;
-    margin-left: 10px;
+    margin-inline-start: 8px;
     vertical-align: -1px;
     border: 1.5px solid currentColor;
     border-right-color: transparent;
@@ -1456,7 +1498,7 @@ button.btn-k {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-    .busy::after {
+    .button-spinner {
         animation: turn 0.8s linear infinite;
     }
 }
@@ -1465,21 +1507,6 @@ button.btn-k {
     to {
         transform: rotate(360deg);
     }
-}
-
-.btn-danger {
-    font: 600 13px/20px var(--sans);
-    color: var(--vermilion);
-    background: none;
-    border: 1px solid var(--vermilion);
-    padding: 9px 19px;
-    border-radius: 2px;
-    cursor: pointer;
-    transition: background-color 0.4s var(--spring), transform 0.4s var(--spring);
-}
-
-.btn-danger:hover {
-    background: rgba(255, 90, 60, 0.1);
 }
 
 .mud-dialog .fixed.pointer-events-none:focus,
@@ -1658,13 +1685,12 @@ button.btn-k {
     .confirm-foot.mud-dialog-actions {
         flex-direction: column-reverse;
         align-items: stretch;
-        gap: 4px;
+        gap: 8px;
         padding: 24px 20px 20px;
     }
 
-    .confirm-foot :is(.btn-k, .btn-danger, .link) {
-        padding-block: 13px;
-        text-align: center;
+    .confirm-foot :is(.btn-k, .btn-danger, .btn-quiet) {
+        min-height: 46px;
     }
 
     .confirm-head.mud-dialog-title {
@@ -2238,10 +2264,10 @@ a.crumb:hover {
     border-radius: var(--round);
     cursor: pointer;
     box-shadow: 0 14px 34px -16px rgba(0, 4, 40, 0.9);
-    transition: background-color 0.3s var(--spring), transform 0.4s var(--spring);
+    transition: background-color 0.25s var(--spring), filter 0.25s var(--spring);
 }
 
-.signin button:hover {
+.signin button:hover:not(:disabled) {
     background: #E8ECFA;
 }
 
@@ -2448,11 +2474,16 @@ a.crumb:hover {
 }
 
 @media (pointer: coarse) {
-    button.link, a.link, .crumb-off, .stamp {
+    .pager .link {
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    button.link:not(.btn-quiet, .pager .link), a.link, .crumb-off, .stamp {
         position: relative;
     }
 
-    button.link::before, a.link::before, .crumb-off::before, .stamp::before {
+    button.link:not(.btn-quiet, .pager .link)::before, a.link::before, .crumb-off::before, .stamp::before {
         content: "";
         position: absolute;
         inset: -12px -8px;

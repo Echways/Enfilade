@@ -7,7 +7,7 @@
         <p>@Message</p>
     </DialogContent>
     <DialogActions>
-        <button type="button" class="link" @onclick="Dialog.Cancel">@EnfiladeText.Cancel</button>
+        <button type="button" class="link btn-quiet" @onclick="Dialog.Cancel">@EnfiladeText.Cancel</button>
         <button type="button" class="@(Danger ? "btn-danger" : "btn-k pigment")" @onclick="() => Dialog.Close(DialogResult.Ok(true))">@Yes</button>
     </DialogActions>
 </MudDialog>
