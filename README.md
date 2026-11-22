@@ -96,7 +96,7 @@ A section is any routable component. A table with search and sorting:
 | Navigation | Sections with icons and live counters, captions, account menu, language switch. |
 | Listings | Server or in-memory data, filters, selection, live reload, loading, empty and error states. |
 | Forms and dialogs | Side and bottom sheets, validation, field errors, unsaved-changes guard. |
-| Blocks | Figures with change, line and bar charts, rankings, meters, tabs, timeline, facts. |
+| Blocks | Figures with change, line and bar charts, rankings, meters, tabs, timeline, facts, [expandable catalogs](https://github.com/Echways/Enfilade/blob/main/docs/en/components.md#catalogs). |
 | Errors | Readable messages for your own exceptions, contained failures, retry. |
 | Access | Host authentication, roles and policies, per-section visibility. |
 | Formatting | Numbers, sizes, durations, ICU plurals, the viewer's time zone. |
@@ -113,7 +113,7 @@ A section is any routable component. A table with search and sorting:
 | [Actions](https://github.com/Echways/Enfilade/blob/main/docs/en/actions.md) | `Button`, `Act`, `CurrentPage` |
 | [Listings](https://github.com/Echways/Enfilade/blob/main/docs/en/listings.md) | Tables, filters, selection |
 | [Dialogs and forms](https://github.com/Echways/Enfilade/blob/main/docs/en/forms.md) | Sheets, `Form`, `Field` |
-| [Components](https://github.com/Echways/Enfilade/blob/main/docs/en/components.md) | Figures, charts, tabs and the rest |
+| [Components](https://github.com/Echways/Enfilade/blob/main/docs/en/components.md) | Figures, charts, tabs and catalogs |
 | [Error messages](https://github.com/Echways/Enfilade/blob/main/docs/en/errors.md) | What users see on failure |
 | [Formatting](https://github.com/Echways/Enfilade/blob/main/docs/en/formatting.md) | `Words`, `ViewerTime` |
 | [Styling](https://github.com/Echways/Enfilade/blob/main/docs/en/styling.md) | Themes, accent, tokens |

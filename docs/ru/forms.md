@@ -38,7 +38,9 @@ var result = await sheet.Result;
 var order = await Dialogs.ShowFormAsync<OrderSheet, OrderDraft>("New order");
 ```
 
-![A form in a side sheet](../screenshots/sheet.png)
+![Форма нового заказа со скруглённой кнопкой создания в боковой панели](../screenshots/sheet.png)
+
+В разделе [Каталоги](components.md#каталоги) показано, как открыть форму и обновить группы после сохранения.
 
 `Form` проверяет модель по атрибутам данных, показывает занятую кнопку отправки и отправляет один раз по Enter. После успеха он сообщает `Done`, перезагружает блоки страницы, а внутри панели закрывает её и возвращает модель, которую отдаёт `ShowFormAsync`; закрытая панель возвращает `null`.
 

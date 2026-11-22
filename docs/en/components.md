@@ -14,6 +14,7 @@
 | `Steps`                    | A vertical progress of a process from `Step(Title, State, Detail)`; `State` is `Pending`, `Current`, `Done` or `Failed`. |
 | `Wizard`, `WizardStep`     | A multi-step flow: `Steps` and the open `WizardStep` (`Title`, `Detail`, `OnLeave`) with Back, Next and Finish. `@bind-Current`, `OnFinish`, `Done`, `Confirm`. See below. |
 | `Tabs`, `Tab`              | Tabs whose choice lives in the address (`tab=`, or `Name`). A `Tab` has `Title` and optional `Name`; only the open tab renders. |
+| `Catalog`                  | An [expandable group](#catalogs) with a title, an optional count and an actions slot. |
 | `Timeline`                 | Events from `TimelineEntry(At, Text, Who, Tone)`, newest first, in the viewer's time zone.              |
 | `Pane`                     | A titled section of a page with `Hint` and `Actions`.                                                    |
 | `Setting`                  | A settings row: `Title`, `Hint` and the control on the right. Group rows in `<div class="settings">`. |
@@ -134,6 +135,49 @@ A `Menu` is a "⋯" button for the actions of one row. Put it in a `Slot`; click
 ```
 
 `Label` names the button for screen readers (default "Row actions"). For a link, use `MudMenuItem Href`.
+
+## Catalogs
+
+`Catalog` displays an expandable group on the current page. Several catalogs can be open at once. Content is mounted on expansion and disposed on collapse.
+
+![The Clients page with Group 124 expanded and Group 134 collapsed](../screenshots/catalogs.png)
+
+[View the same page on a phone](../screenshots/catalogs-mobile.png).
+
+```razor
+@inject IDialogService Dialogs
+
+<PageHead Title="Clients" Count="@Groups.Sum(group => group.ClientCount)">
+    <Actions>
+        <Button OnClick="CreateGroupAsync" Refresh="false">New catalog</Button>
+    </Actions>
+</PageHead>
+
+@foreach (var group in Groups)
+{
+    <Catalog @key="group.Id" Title="@group.Name" Count="@group.ClientCount">
+        <Listing TItem="Client" Name="@($"clients-{group.Id}")"
+                 Load="(query, token) => Store.ClientsAsync(group.Id, query, token)">
+            <Columns>
+                <Cell Title="Name" Value="client => client.Name" Sort />
+                <Cell Title="Email" Value="client => client.Email" />
+            </Columns>
+        </Listing>
+    </Catalog>
+}
+
+@code {
+    private async Task CreateGroupAsync()
+    {
+        if (await Dialogs.ShowFormAsync<NewClientGroup, ClientGroupDraft>("New catalog") is not null)
+            Groups = await Store.GroupsAsync();
+    }
+}
+```
+
+`NewClientGroup` is a [form in a sheet](forms.md) with a required name field. Save the group in the form's `OnSubmit` handler. `ShowFormAsync` returns the draft when the save succeeds. Reload the groups at that point. The `@key` preserves the expanded groups across that update.
+
+Put a [menu](#row-menu) in the catalog's `Actions` slot for actions such as rename and delete. Give each nested `Listing` a distinct `Name` to keep its paging and filters independent. For concurrent EF Core loads, give each request its own context.
 
 ## Wizard
 

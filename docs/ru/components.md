@@ -14,6 +14,7 @@
 | `Steps`                    | Вертикальный ход процесса из `Step(Title, State, Detail)`; `State` — `Pending`, `Current`, `Done` или `Failed`.      |
 | `Wizard`, `WizardStep`     | Многошаговый сценарий: `Steps` и открытый `WizardStep` (`Title`, `Detail`, `OnLeave`) с кнопками «Назад», «Далее» и «Готово». `@bind-Current`, `OnFinish`, `Done`, `Confirm`. См. ниже. |
 | `Tabs`, `Tab`              | Вкладки, выбор которых хранится в адресе (`tab=` или `Name`). У `Tab` есть `Title` и необязательный `Name`; рендерится только открытая вкладка. |
+| `Catalog`                  | [Раскрываемая группа](#каталоги) с названием, необязательным счётчиком и слотом действий. |
 | `Timeline`                 | События из `TimelineEntry(At, Text, Who, Tone)`, новые сверху, в часовом поясе зрителя.                  |
 | `Pane`                     | Блок страницы с заголовком, `Hint` и `Actions`.                                                          |
 | `Setting`                  | Строка настроек: `Title`, `Hint` и элемент управления справа. Строки группируются в `<div class="settings">`. |
@@ -134,6 +135,49 @@
 ```
 
 `Label` называет кнопку для скринридера (по умолчанию «Действия со строкой»). Для ссылки используйте `MudMenuItem Href`.
+
+## Каталоги
+
+`Catalog` показывает раскрываемую группу на текущей странице. Несколько каталогов можно открыть одновременно. Содержимое создаётся при раскрытии и освобождается при сворачивании.
+
+![Страница клиентов с раскрытой группой 124 и свёрнутой группой 134](../screenshots/catalogs.png)
+
+[Та же страница на телефоне](../screenshots/catalogs-mobile.png).
+
+```razor
+@inject IDialogService Dialogs
+
+<PageHead Title="Клиенты" Count="@Groups.Sum(group => group.ClientCount)">
+    <Actions>
+        <Button OnClick="CreateGroupAsync" Refresh="false">Новый каталог</Button>
+    </Actions>
+</PageHead>
+
+@foreach (var group in Groups)
+{
+    <Catalog @key="group.Id" Title="@group.Name" Count="@group.ClientCount">
+        <Listing TItem="Client" Name="@($"clients-{group.Id}")"
+                 Load="(query, token) => Store.ClientsAsync(group.Id, query, token)">
+            <Columns>
+                <Cell Title="Имя" Value="client => client.Name" Sort />
+                <Cell Title="Email" Value="client => client.Email" />
+            </Columns>
+        </Listing>
+    </Catalog>
+}
+
+@code {
+    private async Task CreateGroupAsync()
+    {
+        if (await Dialogs.ShowFormAsync<NewClientGroup, ClientGroupDraft>("Новый каталог") is not null)
+            Groups = await Store.GroupsAsync();
+    }
+}
+```
+
+`NewClientGroup` — это [форма в панели](forms.md) с обязательным полем «Название». Сохраняйте группу в обработчике `OnSubmit`. После успешного сохранения `ShowFormAsync` вернёт модель, и можно перечитать группы. Ключ `@key` сохраняет раскрытые группы при таком обновлении.
+
+Поместите [меню](#меню-строки) в слот `Actions` каталога, чтобы добавить переименование или удаление. Укажите отдельный `Name` для каждого вложенного `Listing`, чтобы страницы и фильтры групп были независимы. Для параллельных загрузок через EF Core используйте отдельный контекст на каждый запрос.
 
 ## Wizard
 

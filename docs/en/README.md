@@ -18,7 +18,7 @@ Enfilade is a Blazor Server shell for admin panels. These pages describe every p
 | [Actions](actions.md) | `Button` and `Act`: confirmation, busy state, readable errors, refreshing the page. |
 | [Listings](listings.md) | Tables over any store: sorting, paging, filters, selection, live reload, address state. |
 | [Dialogs and forms](forms.md) | Side sheets, forms from data annotations, unsaved changes. |
-| [Components](components.md) | Figures, charts, rankings, tabs, timeline, facts, panes and the rest. |
+| [Components](components.md) | Figures, charts, tabs, timeline, facts, panes and [expandable catalogs](components.md#catalogs). |
 | [Error messages](errors.md) | What the user sees when something fails, and how to control it. |
 
 ## Around the page

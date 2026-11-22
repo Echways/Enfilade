@@ -96,7 +96,7 @@ app.Run();
 | Навигация | Разделы с иконками и живыми счётчиками, заголовки групп, меню аккаунта, переключатель языка. |
 | Списки | Данные с сервера или из памяти, фильтры, выбор строк, живое обновление, состояния загрузки, пустоты и ошибки. |
 | Формы и диалоги | Боковые и нижние панели, валидация, ошибки у полей, защита от потери изменений. |
-| Блоки | Показатели с динамикой, линейные и столбчатые графики, рейтинги, шкалы, вкладки, хронология, карточки фактов. |
+| Блоки | Показатели с динамикой, линейные и столбчатые графики, рейтинги, шкалы, вкладки, хронология, карточки фактов, [раскрываемые каталоги](https://github.com/Echways/Enfilade/blob/main/docs/ru/components.md#каталоги). |
 | Ошибки | Понятные сообщения для ваших исключений, локализованные сбои, повтор. |
 | Доступ | Аутентификация хоста, роли и политики, видимость разделов. |
 | Форматирование | Числа, размеры, длительности, ICU-множественные, часовой пояс зрителя. |
@@ -113,7 +113,7 @@ app.Run();
 | [Действия](https://github.com/Echways/Enfilade/blob/main/docs/ru/actions.md) | `Button`, `Act`, `CurrentPage` |
 | [Списки](https://github.com/Echways/Enfilade/blob/main/docs/ru/listings.md) | Таблицы, фильтры, выбор строк |
 | [Диалоги и формы](https://github.com/Echways/Enfilade/blob/main/docs/ru/forms.md) | Панели, `Form`, `Field` |
-| [Компоненты](https://github.com/Echways/Enfilade/blob/main/docs/ru/components.md) | Показатели, графики, вкладки и остальное |
+| [Компоненты](https://github.com/Echways/Enfilade/blob/main/docs/ru/components.md) | Показатели, графики, вкладки и каталоги |
 | [Сообщения об ошибках](https://github.com/Echways/Enfilade/blob/main/docs/ru/errors.md) | Что видит пользователь при сбое |
 | [Форматирование](https://github.com/Echways/Enfilade/blob/main/docs/ru/formatting.md) | `Words`, `ViewerTime` |
 | [Оформление](https://github.com/Echways/Enfilade/blob/main/docs/ru/styling.md) | Темы, акцентный цвет, токены |
