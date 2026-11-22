@@ -14,6 +14,8 @@ public sealed partial class EnfiladeOptions
 
     public bool ShowVersion { get; set; } = true;
 
+    public string? Version { get; set; }
+
     public string? Favicon { get; set; }
 
     public string Language { get; set; } = "en";
