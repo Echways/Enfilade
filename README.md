@@ -17,6 +17,7 @@ Register routable components as sections. Enfilade provides the navigation, them
 builder.Services.AddEnfilade()
     .AddSection<Home>("Home")
     .AddSection<Orders>("Orders");
+    .AddSection<Clients>("Clients");
 
 app.MapEnfilade();
 ```
