@@ -17,6 +17,7 @@
 builder.Services.AddEnfilade()
     .AddSection<Home>("Home")
     .AddSection<Orders>("Orders");
+    .AddSection<Clients>("Clients");
 
 app.MapEnfilade();
 ```
