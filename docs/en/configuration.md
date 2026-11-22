@@ -23,7 +23,8 @@ builder.Services.AddEnfilade(shell => shell.Appearance = Appearance.System);
 | Option                  | Default      | Description                                     |
 | ----------------------- | ------------ | ----------------------------------------------- |
 | `Brand`               | `Enfilade` | Name in the navigation and document titles.     |
-| `ShowVersion`         | `true`     | Shows the Enfilade version under the brand.     |
+| `ShowVersion`         | `true`     | Shows the version under the brand.              |
+| `Version`             | —          | Version to display. Defaults to the Enfilade version. |
 | `Favicon`             | —           | Static asset path of the icon.                  |
 | `Language`            | `en`       | Default language. Must be one of `Languages`. |
 | `Languages`           | —           | Languages offered in the switch.                |
