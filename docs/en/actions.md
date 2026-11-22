@@ -43,7 +43,7 @@ if (result is ActResult.Done)
 
 | Parameter         | Description                                                              |
 | ----------------- | ------------------------------------------------------------------------ |
-| `Kind`          | `Primary` (default), `Danger` or `Quiet`.                              |
+| `Kind`          | `Primary` (default) for the main action, `Danger` for destructive actions, `Quiet` for secondary actions.                              |
 | `OnClick`       | The action. The button is disabled and shows that it is busy until it ends. |
 | `Confirm`       | `Confirm(Question, Message, Yes, Danger)` asked before the action.     |
 | `Done`          | Message shown after success.                                             |

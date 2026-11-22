@@ -38,7 +38,9 @@ For a plain confirmation before an action, `Button` with `Confirm` is shorter; s
 var order = await Dialogs.ShowFormAsync<OrderSheet, OrderDraft>("New order");
 ```
 
-![A form in a side sheet](../screenshots/sheet.png)
+![New order form with a rounded Create button in a side sheet](../screenshots/sheet.png)
+
+The [Catalogs](components.md#catalogs) example shows how to open a form and refresh the groups after saving.
 
 `Form` validates with data annotations, shows a busy submit button and submits once on Enter. On success it reports `Done`, reloads the page's blocks, and inside a sheet closes it with the model, which `ShowFormAsync` returns; a closed sheet returns `null`.
 

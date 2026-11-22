@@ -36,7 +36,8 @@ Use the tokens in your own stylesheets and they follow the theme:
 | --------------------------------------------- | ------------------------------------------------ |
 | `btn-k pigment`                             | Primary button.                                  |
 | `btn-danger`                                | Destructive button.                              |
-| `link`                                      | Quiet text button.                               |
+| `btn-quiet`                                 | Secondary button with a hover background.        |
+| `link`                                      | Inline text action.                              |
 | `tbl`, `tbl dense`                        | On `MudTable`. Add `num` to numeric columns. |
 | `empty`                                     | Empty state; `EmptyState` renders it.          |
 | `block`, `lead`                           | Titled section further down a page; `Pane` replaces them. |
